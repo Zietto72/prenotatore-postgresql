@@ -9,6 +9,11 @@ let zonePrices = {};
 const selected = new Set();
 let eventoCorrente = '';
 
+// ✅ BASE_URL si adatta automaticamente a locale o online
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:3000"
+  : "https://teatro-booking-2.onrender.com";
+
 window.addEventListener("DOMContentLoaded", async () => {
   try {
     const pathParts = window.location.pathname.split('/').filter(p => p);
@@ -278,7 +283,7 @@ window.procediPagamento = function () {
 };
 
 function inviaEmailConferma(datiPrenotazione) {
-  fetch('http://localhost:3000/genera-pdf-e-invia', {
+  fetch('${BASE_URL}/genera-pdf-e-invia', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
