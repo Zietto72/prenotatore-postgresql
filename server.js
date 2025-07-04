@@ -139,7 +139,8 @@ try {
       const safeName = s.nome.trim().replace(/\s+/g, ' ');
       const label = `${s.posto} – ${safeName}`;
       const fileName = `${s.posto}_${s.nome.replace(/\s+/g, '_')}.pdf`;
-      const fileUrl = `http://localhost:3000/eventi/${evento}/PDF/${fileName}`;
+const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
       return `
         <a href="${fileUrl}" target="_blank" style="
           display: inline-block;
