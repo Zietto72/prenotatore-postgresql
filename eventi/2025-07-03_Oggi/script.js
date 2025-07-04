@@ -278,7 +278,7 @@ window.procediPagamento = function () {
 };
 
 function inviaEmailConferma(datiPrenotazione) {
-  fetch('http://localhost:3000/genera-pdf-e-invia', {
+  fetch('https://teatro-booking-2.onrender.com/genera-pdf-e-invia', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
