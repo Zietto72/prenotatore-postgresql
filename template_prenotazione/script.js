@@ -283,7 +283,7 @@ window.procediPagamento = function () {
 };
 
 function inviaEmailConferma(datiPrenotazione) {
-  fetch('${BASE_URL}/genera-pdf-e-invia', {
+  fetch(`${BASE_URL}/genera-pdf-e-invia`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
