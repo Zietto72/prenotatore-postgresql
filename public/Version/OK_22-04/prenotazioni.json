@@ -1,0 +1,18 @@
+[
+  {
+    "posto": "LATERALE_SX_1",
+    "nome": "SX 1",
+    "email": "enzio.isaia@gmail.com",
+    "telefono": "12365478",
+    "prenotatore": "Enzio isaia",
+    "bookingCode": "WY23EV87"
+  },
+  {
+    "posto": "LATERALE_SX_2",
+    "nome": "SX 2",
+    "email": "enzio.isaia@gmail.com",
+    "telefono": "12365478",
+    "prenotatore": "Enzio isaia",
+    "bookingCode": "WY23EV87"
+  }
+]

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Resoconto Prenotazioni con Verifica PDF</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background-color: #f0f0f0; }
+    /* Prenotati con PDF presente: verde */
+    .occupied { background-color: #e6ffe6; }
+    /* Prenotati ma PDF mancante: arancio */
+    .missing  { background-color: #ffe6b3; }
+    button.delete-btn { background-color: #e74c3c; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; }
+    button.delete-btn:hover { background-color: #c0392b; }
+  </style>
+</head>
+<body>
+  <h1>Resoconto Prenotazioni</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Posto</th>
+        <th>Spettatore</th>
+        <th>Email</th>
+        <th>Telefono</th>
+        <th>Prenotatore</th>
+        <th>Codice Prenot.</th>
+        <th>Azioni</th>
+      </tr>
+    </thead>
+    <tbody id="reportBody">
+      <tr><td colspan="7">Caricamento...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    async function caricaPrenotazioni() {
+      try {
+        // 1) Carica SVG e dati prenotazioni
+        const [svgText, bookings] = await Promise.all([
+          fetch('svg/svg_modificato.svg').then(r => r.text()),
+          fetch('/resoconto').then(r => r.json())
+        ]);
+
+        // 2) Estrai ID di tutti i posti dalla SVG
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+        const seats = Array.from(svgDoc.querySelectorAll('[data-posto]'))
+          .map(el => el.getAttribute('data-posto'));
+
+        // 3) Costruisci la tabella
+        const tbody = document.getElementById('reportBody');
+        tbody.innerHTML = '';
+
+        for (const id of seats) {
+          const match = bookings.find(b => b.posto === id);
+          const row = document.createElement('tr');
+
+          if (match) {
+            // Default: prenotato e PDF presente
+            let cssClass = 'occupied';
+            // Verifica presenza PDF
+            const safeName = match.nome.replace(/\s+/g, '_');
+            const fileName = `${id}_${safeName}.pdf`;
+            try {
+              const resp = await fetch(`/api/pdf-exists/${fileName}`);
+              if (resp.ok) {
+                const { exists } = await resp.json();
+                if (!exists) {
+                  cssClass = 'missing';
+                }
+              } else {
+                // se API restituisce errore, consideriamo mancante
+                cssClass = 'missing';
+              }
+            } catch (e) {
+              // in caso di fetch fallito, consideriamo mancante
+              cssClass = 'missing';
+            }
+            row.classList.add(cssClass);
+          }
+
+          row.innerHTML = `
+            <td>${id}</td>
+            <td>${match ? match.nome : ''}</td>
+            <td>${match ? match.email : ''}</td>
+            <td>${match ? match.telefono : ''}</td>
+            <td>${match ? match.prenotatore : ''}</td>
+            <td>${match && match.bookingCode ? match.bookingCode : ''}</td>
+            <td>${match ? `<button class="delete-btn" onclick="eliminaPrenotazione('${id}', '${match.nome}')">❌</button>` : ''}</td>
+          `;
+
+          tbody.appendChild(row);
+        }
+      } catch (err) {
+        console.error('Errore caricamento resoconto:', err);
+        document.getElementById('reportBody').innerHTML =
+          '<tr><td colspan="7">Errore nel caricamento del resoconto.</td></tr>';
+      }
+    }
+
+    function eliminaPrenotazione(posto, nome) {
+      if (!confirm(`Vuoi davvero eliminare la prenotazione per ${posto} – ${nome}?`)) return;
+
+      fetch('/elimina-prenotazione', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ posto, nome })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Prenotazione eliminata.');
+          caricaPrenotazioni();
+        } else {
+          alert('Errore durante l\'eliminazione.');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Errore di comunicazione con il server.');
+      });
+    }
+
+    // Avvia caricamento
+    caricaPrenotazioni();
+  </script>
+</body>
+</html>

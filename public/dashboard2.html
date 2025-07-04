@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Eventi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-blue-700 text-white flex flex-col p-4">
+    <h1 class="text-2xl font-bold mb-8">La mia Associazione</h1>
+    <nav class="flex flex-col space-y-4">
+      <a href="#" class="hover:bg-blue-500 rounded p-2">Eventi</a>
+      <a href="#" class="hover:bg-blue-500 rounded p-2">Prenotazioni</a>
+      <a href="#" class="hover:bg-blue-500 rounded p-2">Statistiche</a>
+      <a href="#" class="hover:bg-blue-500 rounded p-2">Impostazioni</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8">
+  <div id="previewArea" class="hidden w-full h-[80vh] mt-8 bg-white shadow rounded-lg overflow-hidden">
+  <iframe id="previewIframe" src="" class="w-full h-full border-0"></iframe>
+</div>
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-3xl font-bold">Eventi</h2>
+      <button id="creaEventoBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center">
+        <span class="text-xl mr-2">+</span> Crea Evento
+      </button>
+    </div>
+
+    <div id="eventiContainer" class="flex flex-col space-y-4">
+      <!-- Cards evento generate qui -->
+    </div>
+  </main>
+
+  <!-- Modal Crea/Modifica Evento -->
+  <div id="modalEvento" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+    <div class="bg-white p-8 rounded-lg w-96 transform transition-transform scale-95 opacity-0 duration-300" id="modalContent">
+      <h3 class="text-2xl font-bold mb-4" id="modalTitle">Crea Evento</h3>
+      <input id="inputNomeEvento" type="text" placeholder="Nome Evento" class="w-full border p-2 mb-4 rounded">
+      <input id="inputDataEvento" type="date" class="w-full border p-2 mb-4 rounded">
+      <input id="inputNumeroPosti" type="number" placeholder="Numero Posti Totali" class="w-full border p-2 mb-4 rounded">
+      <input id="inputSvgEvento" type="file" accept=".svg" class="w-full border p-2 mb-4 rounded">
+      <label for="inputImgEvento" class="block text-sm font-bold mb-1">Immagine Spettacolo</label>
+      <input id="inputImgEvento" type="file" accept="image/*" class="w-full border p-2 mb-4 rounded">
+      <div id="zonePricesContainer"></div>
+      <div class="flex justify-end space-x-4 mt-4">
+        <button onclick="chiudiModal()" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">Annulla</button>
+        <button onclick="salvaEvento()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Salva</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed top-5 right-5 space-y-2 z-50"></div>
+
+<script>
+const eventiContainer = document.getElementById('eventiContainer');
+const modalEvento = document.getElementById('modalEvento');
+const modalContent = document.getElementById('modalContent');
+const inputNomeEvento = document.getElementById('inputNomeEvento');
+const inputDataEvento = document.getElementById('inputDataEvento');
+const inputSvgEvento = document.getElementById('inputSvgEvento');
+const zonePricesContainer = document.getElementById('zonePricesContainer');
+
+function mostraToast(messaggio, tipo = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `px-4 py-2 rounded shadow text-white ${tipo === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+  toast.textContent = messaggio;
+  document.getElementById('toastContainer').appendChild(toast);
+  setTimeout(() => { toast.remove(); }, 3000);
+}
+
+document.getElementById('creaEventoBtn').addEventListener('click', () => {
+  inputNomeEvento.value = '';
+  inputDataEvento.value = '';
+  inputSvgEvento.value = '';
+  zonePricesContainer.innerHTML = '';
+  document.getElementById('modalTitle').textContent = 'Crea Evento';
+  modalEvento.classList.remove('hidden');
+  setTimeout(() => {
+    modalContent.classList.remove('scale-95', 'opacity-0');
+    modalContent.classList.add('scale-100', 'opacity-100');
+  }, 10);
+});
+
+inputSvgEvento.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  const parser = new DOMParser();
+  const svgDoc = parser.parseFromString(text, "image/svg+xml");
+  const zones = new Set(Array.from(svgDoc.querySelectorAll('[data-zona]')).map(el => el.getAttribute('data-zona')));
+
+  zonePricesContainer.innerHTML = '';
+  zones.forEach(zona => {
+    const label = document.createElement('label');
+    label.textContent = `Prezzo per zona ${zona}`;
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.name = zona;
+    input.step = '0.01';
+    input.required = true;
+    input.className = 'w-full border p-2 mb-2 rounded';
+    zonePricesContainer.appendChild(label);
+    zonePricesContainer.appendChild(input);
+  });
+});
+
+function chiudiModal() {
+  modalContent.classList.remove('scale-100', 'opacity-100');
+  modalContent.classList.add('scale-95', 'opacity-0');
+  setTimeout(() => { modalEvento.classList.add('hidden'); }, 300);
+}
+
+async function salvaEvento() {
+  const nome = inputNomeEvento.value.trim();
+  const data = inputDataEvento.value;
+  const numeroPostiTotali = document.getElementById('inputNumeroPosti').value.trim();
+  const svgFile = inputSvgEvento.files[0];
+  const imgFile = document.getElementById('inputImgEvento').files[0]; // 🔵 Nuovo: immagine spettacolo
+
+  // Controllo obbligatorio
+  if (!nome || !data || !svgFile) {
+    mostraToast('Compila tutti i campi e carica una mappa SVG.', 'error');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('nome', nome);
+  formData.append('data', data);
+  formData.append('numeroPostiTotali', numeroPostiTotali);
+  formData.append('svg', svgFile);
+
+  if (imgFile) {
+    formData.append('imgEvento', imgFile); // 🔵 Se esiste, allega immagine spettacolo
+  }
+
+  const zonePrices = {};
+  document.querySelectorAll('#zonePricesContainer input').forEach(input => {
+    zonePrices[input.name] = parseFloat(input.value);
+  });
+  formData.append('zonePrices', JSON.stringify(zonePrices));
+
+  try {
+    const res = await fetch('/crea-evento', { method: 'POST', body: formData });
+    const json = await res.json();
+
+    if (json.success) {
+      mostraToast('Evento creato con successo!');
+      chiudiModal();
+      caricaEventi();
+    } else {
+      mostraToast('Errore nella creazione evento.', 'error');
+    }
+  } catch (err) {
+    console.error('Errore durante la creazione evento:', err);
+    mostraToast('Errore di comunicazione con il server.', 'error');
+  }
+}
+
+function apriPreview(folderName) {
+  const previewArea = document.getElementById(`previewArea-${folderName.replace(/\s+/g, '')}`);
+  const iframe = document.getElementById(`previewIframe-${folderName.replace(/\s+/g, '')}`);
+
+  if (!previewArea || !iframe) return;
+
+  if (!previewArea.classList.contains('hidden')) {
+    previewArea.classList.add('hidden');
+    iframe.src = '';
+  } else {
+    previewArea.classList.remove('hidden');
+    iframe.src = `/eventi/${encodeURIComponent(folderName)}/index.html`;
+  }
+}
+
+
+
+async function caricaEventi() {
+  const res = await fetch('/eventi-list');
+  const eventi = await res.json();
+  eventiContainer.innerHTML = '';
+
+  eventi.forEach(evento => {
+    const nomeEvento = typeof evento === 'string' ? evento : evento.nome;
+    const dataEvento = evento.data || '';
+    const postiTotali = evento.numeroPostiTotali || 0;
+    const folderName = evento.folderName || nomeEvento;
+    const imgIntest = evento.imgIntest || '';
+    const imgEvento = evento.imgEvento ? `/eventi/${folderName}/${evento.imgEvento}` : ''; // 🔥 CORRETTO!
+
+    const card = document.createElement('div');
+    card.className = 'bg-white border-l-4 border-blue-600 hover:border-blue-400 shadow-md hover:shadow-lg rounded-md p-4 flex flex-col transition-all duration-300';
+
+    card.innerHTML = `
+      <div class="flex justify-between items-start mb-2">
+        <div class="flex-1">
+          ${imgIntest ? `<img src="${imgIntest}" alt="Logo Evento" class="w-24 h-auto mb-2 rounded-md">` : ''}
+          <h3 class="text-xl font-bold">${nomeEvento}</h3>
+          <p class="flex items-center text-sm text-gray-600">
+            <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>Data: <span class="text-lg font-bold">${dataEvento}</span>
+          </p>
+          <p class="flex items-center text-sm text-gray-600">
+            <i data-lucide="ticket" class="w-4 h-4 mr-2"></i>Totali: <span class="text-lg font-bold">${postiTotali}</span>
+          </p>
+          <p class="flex items-center text-sm text-gray-600" id="disponibili-${nomeEvento.replace(/\s+/g, '')}">
+            <i data-lucide="ticket-check" class="w-4 h-4 mr-2"></i>Disponibili: <span class="text-lg font-bold">-</span>
+          </p>
+        </div>
+        <button onclick="eliminaEvento('${folderName}')" class="ml-2 bg-red-500 hover:bg-red-700 text-white rounded-md px-2 py-1 text-sm flex items-center justify-center self-start">
+          ❌
+        </button>
+      </div>
+
+      ${imgEvento ? `<img src="${imgEvento}" alt="Immagine Spettacolo" class="w-full h-48 object-cover rounded-lg mb-4">` : ''}
+
+      <div class="flex space-x-2 mt-4">
+        <button id="btnPrenotazioni-${folderName.replace(/\s+/g, '')}" class="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded" onclick="togglePrenotazioni('${nomeEvento.replace(/'/g, "\\'")}', '${folderName}', ${postiTotali})">
+          Prenotazioni
+        </button>
+        <button id="btnPiantina-${folderName.replace(/\s+/g, '')}" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" onclick="apriPreview('${folderName}')">
+          Piantina
+        </button>
+      </div>
+
+      <div class="flex space-x-2 mt-4">
+        <div id="prenotazioni-${nomeEvento.replace(/\s+/g, '')}" class="flex-1 hidden bg-white rounded-lg shadow-md overflow-hidden"></div>
+        <div id="previewArea-${folderName.replace(/\s+/g, '')}" class="flex-1 hidden bg-gray-100 rounded-lg shadow-md overflow-hidden h-250">
+          <iframe id="previewIframe-${folderName.replace(/\s+/g, '')}" src="" class="w-full h-full border-0"></iframe>
+        </div>
+      </div>
+    `;
+
+    eventiContainer.appendChild(card);
+    lucide.createIcons();
+
+    // Carica subito le prenotazioni per aggiornare i disponibili
+    fetch(`/eventi/${encodeURIComponent(folderName)}/prenotazioni`)
+      .then(res => res.json())
+      .then(prenotazioni => {
+        const disponibili = postiTotali - (prenotazioni.length || 0);
+        const disponibiliEl = document.getElementById(`disponibili-${nomeEvento.replace(/\s+/g, '')}`);
+        if (disponibiliEl) {
+          disponibiliEl.innerHTML = `<i data-lucide="ticket-check" class="w-4 h-4 mr-2"></i>Disponibili: <span class="text-lg font-bold">${disponibili}</span>`;
+          lucide.createIcons();
+        }
+      })
+      .catch(err => {
+        console.error('Errore caricamento prenotazioni per evento', nomeEvento, err);
+      });
+  });
+}
+
+async function eliminaEvento(nome) {
+  if (!confirm(`Sei sicuro di voler eliminare l'evento "${nome}"?`)) return;
+  const res = await fetch(`/eventi/${encodeURIComponent(nome)}/elimina`, { method: 'POST' });
+  const json = await res.json();
+  if (json.success) {
+    mostraToast('Evento eliminato.');
+    caricaEventi();
+  } else {
+    mostraToast('Errore eliminazione evento.', 'error');
+  }
+}
+
+async function togglePrenotazioni(nome, folderName, postiTotali) {
+  const containerId = `prenotazioni-${nome.replace(/\s+/g, '')}`;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!container.classList.contains('hidden')) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = '<p class="text-gray-500 text-center p-4">Caricamento prenotazioni...</p>';
+
+  try {
+    const resPrenotazioni = await fetch(`/eventi/${encodeURIComponent(folderName)}/prenotazioni`);
+    const prenotazioni = await resPrenotazioni.json();
+
+    const resPdf = await fetch(`/eventi/${encodeURIComponent(folderName)}/pdf-list`);
+    const pdfFiles = await resPdf.json();
+
+    const disponibili = postiTotali - prenotazioni.length;
+    const idDisponibili = `disponibili-${nome.replace(/\s+/g, '')}`;
+    const disponibiliEl = document.getElementById(idDisponibili);
+    if (disponibiliEl) {
+      disponibiliEl.innerHTML = `<i data-lucide="ticket-check" class="w-4 h-4 mr-2"></i>Disponibili: <span class="text-lg font-bold">${disponibili}</span>`;
+      lucide.createIcons();
+    }
+
+    if (!Array.isArray(prenotazioni) || prenotazioni.length === 0) {
+      container.innerHTML = '<p class="text-gray-500 text-center p-4">Nessuna prenotazione trovata.</p>';
+      return;
+    }
+
+    let html = `
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="bg-gray-100 text-gray-700 uppercase text-xs">
+            <th class="border-b p-2 text-left">Posto</th>
+            <th class="border-b p-2 text-left">Nome</th>
+            <th class="border-b p-2 text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const p of prenotazioni) {
+      const safeNome = (p.nome || '').trim().replace(/\s+/g, '_');
+      const fileName = `${p.posto}_${safeNome}.pdf`;
+      const idDettagli = `dettagli-${p.posto.replace(/\s+/g, '')}`;
+
+      let rowClass = "cursor-pointer hover:bg-gray-100";
+      if (!pdfFiles.includes(fileName)) {
+        rowClass += " bg-orange-200"; // Se manca il PDF, coloro la riga
+      }
+
+      html += `
+        <tr class="${rowClass}" onclick="toggleDettagli('${idDettagli}')">
+          <td class="border-b p-2">${p.posto || ''}</td>
+          <td class="border-b p-2">${p.nome || ''}</td>
+          <td class="border-b p-2 text-center">
+            <button onclick="event.stopPropagation(); eliminaPrenotazione('${folderName}', '${p.posto.replace(/'/g, "\\'")}', '${p.nome.replace(/'/g, "\\'")}')" class="bg-red-500 hover:bg-red-700 text-white rounded-lg w-6 h-6 flex items-center justify-center text-xs">
+              ❌
+            </button>
+          </td>
+        </tr>
+        <tr id="${idDettagli}" class="hidden bg-gray-50">
+          <td colspan="3" class="p-2 text-sm">
+            <i data-lucide="at-sign" class="w-4 h-4 mr-2"></i>Email: ${p.email || '---'}<br>
+            📞 Telefono: ${p.telefono || '---'}<br>
+            🧑 Prenotatore: ${p.prenotatore || '---'}<br>
+            🔒 Codice: ${p.bookingCode || '---'}
+          </td>
+        </tr>
+      `;
+    }
+
+    html += `</tbody></table>`;
+
+    container.innerHTML = html;
+    lucide.createIcons();
+
+  } catch (err) {
+    console.error('Errore caricamento prenotazioni:', err);
+    container.innerHTML = '<p class="text-red-500 text-center p-4">Errore caricamento prenotazioni.</p>';
+  }
+}
+
+async function eliminaPrenotazione(evento, posto, nome) {
+  if (!confirm(`Eliminare prenotazione posto ${posto}?`)) return;
+
+  try {
+    const res = await fetch(`/eventi/${encodeURIComponent(evento)}/elimina-prenotazione`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ posto, nome })
+    });
+    const result = await res.json();
+    if (result.success) {
+      mostraToast('Prenotazione eliminata.');
+      location.reload();
+    } else {
+      mostraToast('Errore eliminazione.', 'error');
+    }
+  } catch (err) {
+    console.error('Errore eliminazione prenotazione:', err);
+    mostraToast('Errore eliminazione.', 'error');
+  }
+}
+
+async function visualizzaPrenotazioni(nome) {
+  mostraToast(`Visualizzazione prenotazioni per "${nome}" ancora da implementare.`, 'success');
+}
+
+function toggleDettagli(id) {
+  const riga = document.getElementById(id);
+  if (riga) {
+    riga.classList.toggle('hidden');
+  }
+}
+
+window.addEventListener('DOMContentLoaded', caricaEventi);
+</script>
+
+</body>
+</html>

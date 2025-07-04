@@ -1,0 +1,426 @@
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  font-family: Arial, sans-serif;
+}
+
+#svgContainer {
+  width: 100vw;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+#svgContainer svg {
+  height: auto;
+  width: auto;
+  max-height: 90vh;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.modal {
+    pointer-events: auto;
+}
+
+.modal .modal-content {
+    pointer-events: none;
+}
+
+.modal .modal-content * {
+    pointer-events: auto;
+}
+
+.center-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.center-container img {
+    max-width: 500px;
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Stili generali per le modali modernizzate */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  font-family: "Helvetica Neue", sans-serif;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.modal h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  color: #444;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.button-group button {
+  background-color: #222;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button-group button:hover {
+  background-color: #444;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #000;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+}
+
+/* Stili per il pulsante di chiusura delle modali */
+.close, .close-confirmation, .close-unlock, .close-status, .close-prenotatore, .close-spettatore, .close-satispay {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus, .close-confirmation:hover, .close-confirmation:focus, .close-unlock:hover, .close-unlock:focus, .close-status:hover, .close-status:focus, .close-prenotatore:hover, .close-prenotatore:focus, .close-spettatore:hover, .close-spettatore:focus, .close-satispay:hover, .close-satispay:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-image {
+    display: block;
+    margin: 0 auto;
+    max-width: 50%;
+    max-height: 300px;
+}
+
+/* Stili per il contenuto delle modali di conferma */
+.modal-confirmation-content p {
+    margin-bottom: 20px; /* Aumenta la spaziatura tra le righe */
+    font-size: 18px; /* Aumenta la dimensione del testo */
+}
+
+.modal-confirmation-content p span {
+    font-weight: bold; /* Evidenzia i dati inseriti */
+}
+
+/* Centra il QR code */
+#satispayQRCode {
+    display: block;
+    margin: 0 auto; /* Centra l'elemento */
+}
+
+/* Stili per gli input di testo, email, telefono e password */
+input[type="text"], input[type="email"], input[type="tel"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    box-sizing: border-box;
+}
+
+/* Stili per lo spinner di caricamento */
+.spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    border: 6px solid #ccc;
+    border-top: 6px solid #6c7ae0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Stili responsivi per schermi piccoli */
+@media (max-width: 600px) {
+    .container {
+        grid-gap: 0px; /* Ridotto lo spazio tra i quadratini */
+    }
+
+    .seat {
+        width: 30px; /* Ridotta la larghezza dei quadratini */
+        height: 30px; /* Ridotta l'altezza dei quadratini */
+        margin: 10px; /* Spazio uniforme su tutti i lati */
+    }
+
+    button {
+        padding: 10px 20px; /* Ridotto leggermente per adattarsi agli schermi più piccoli */
+        font-size: 16px; /* Ridotto leggermente per adattarsi agli schermi più piccoli */
+    }
+}
+
+/* Stili per i pulsanti di cancellazione */
+button.delete {
+    background-color: #ff4c4c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+/* Stili per le etichette delle righe */
+.row-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: red;
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+/* Stili generali per il corpo della pagina */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+    overflow: auto;
+}
+
+/* Stili per l'intestazione principale */
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+h2 {
+    text-align: center;
+    color: #fc0000;
+}
+
+/* Contenitore principale per i quadratini dei posti */
+.container {
+    display: grid;
+    grid-gap: 10px; /* Spazio tra i quadratini */
+    justify-content: center;
+}
+
+/* Stili per i quadratini dei posti */
+.seat {
+    width: 45px; /* Larghezza dei quadratini per desktop */
+    height: 45px; /* Altezza dei quadratini per desktop */
+    background-color: #ddd;
+    text-align: center;
+    line-height: 45px; /* Centrato */
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 10px; /* Spazio uniforme su tutti i lati */
+}
+
+/* Stili per i posti selezionati */
+.seat.selected {
+    background-color: #6c7ae0;
+    color: #fff;
+}
+
+/* Stili per i posti occupati */
+.seat.occupied {
+    background-color: #ff4c4c;
+    cursor: not-allowed;
+}
+
+.occupied {
+  fill: red !important;
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Stili per i posti disponibili in platea */
+.available.platea {
+    background-color: #4caf50; /* Colore verde per la platea */
+    color: white; /* Testo bianco */
+}
+
+/* Stili per i posti disponibili in galleria */
+.available.galleria {
+    background-color: #ffeb3b; /* Colore giallo per la galleria */
+    color: black; /* Testo nero */
+}
+
+/* Stili per il riepilogo dei posti selezionati */
+.summary {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Stili per i paragrafi nel riepilogo */
+.summary p {
+    display: inline-block;
+    margin: 0 10px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Stili per i pulsanti */
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 20px 40px; /* Ingrandito i pulsanti */
+    font-size: 20px; /* Ingrandito il testo dei pulsanti */
+    background-color: #3ccc15;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Stili per i pulsanti disabilitati */
+button:disabled {
+    background-color: #999;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* Colore blu per i posti selezionati */
+.selected rect {
+  fill: #007bff !important;
+}
+
+/* Colore verde al passaggio del mouse */
+.posto:hover {
+  fill: #28a745 !important;
+  cursor: pointer;
+}
+
+.posto.selected {
+  fill: #007bff !important;
+}
+
+#infoPrenotazione {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 1rem;
+  font-size: 1rem;
+}
+@media (max-width: 768px) {
+  #svgContainer {
+    padding: 0.5rem;
+  }
+
+  #svgContainer svg {
+    max-height: 60vh;
+  }
+
+  #infoPrenotazione {
+    font-size: 1.1rem;
+    padding: 0.5rem;
+  }
+
+  #bookButton {
+    font-size: 1.1rem;
+    padding: 12px 24px;
+  }
+
+  .modal {
+    width: 95%;
+    padding: 1.5rem;
+  }
+
+  .form-group input {
+    font-size: 1rem;
+    padding: 12px;
+  }
+}
+}

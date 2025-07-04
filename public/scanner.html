@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Scanner QR - Teatro</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; }
+    #result { font-size: 1.2rem; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Scanner QR Code</h2>
+  <div id="reader" style="width: 300px; margin: auto;"></div>
+  <div id="result">📷 Inquadra un QR code</div>
+
+  <script>
+    function onScanSuccess(decodedText) {
+      try {
+        const dati = JSON.parse(decodedText);
+
+        // Mostra i dati letti
+        document.getElementById("result").innerHTML = `
+          <strong>🎟 Spettatore:</strong> ${dati.spettatore}<br>
+          <strong>🎭 Spettacolo:</strong> ${dati.spettacolo}<br>
+          <strong>📍 Posto:</strong> ${dati.posto}<br>
+          <strong>📆 Data:</strong> ${dati.data}<br>
+          <strong>🆔 Codice:</strong> ${dati.codice}
+        `;
+
+        // QUI puoi aggiungere una chiamata fetch per convalidare il codice
+        /*
+        fetch(`/verifica-codice?codice=${dati.codice}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.valido) {
+              // Accesso OK
+            } else {
+              // Non valido
+            }
+          });
+        */
+
+      } catch (e) {
+        document.getElementById("result").innerText = "❌ QR non valido.";
+      }
+    }
+
+    new Html5Qrcode("reader").start(
+      { facingMode: "environment" }, // posteriore
+      { fps: 10, qrbox: 250 },
+      onScanSuccess
+    );
+  </script>
+</body>
+</html>

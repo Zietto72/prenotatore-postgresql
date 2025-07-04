@@ -1,0 +1,79 @@
+verifica.html <!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Verifica QR Code</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; }
+    canvas { display: none; }
+    .result { margin-top: 20px; font-size: 18px; }
+  </style>
+</head>
+<body>
+
+  <h1>Controllo Accessi – QR Code</h1>
+
+  <input type="file" accept="image/*" id="qrInput"><br><br>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="result" id="resultBox"></div>
+
+  <script>
+    document.getElementById('qrInput').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.getElementById('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+
+          if (qrCode) {
+            let dati;
+            try {
+              dati = JSON.parse(qrCode.data);
+            } catch (e) {
+              return mostraRisultato(false, '❌ QR code non valido (JSON)');
+            }
+
+            // ✅ Invia richiesta al server per verifica
+            fetch('/verifica-codice-qr', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(dati)
+            })
+            .then(r => r.json())
+            .then(res => {
+              if (res.valido) {
+                mostraRisultato(true, `✅ Accesso valido: ${res.nome}, posto ${res.posto}`);
+              } else {
+                mostraRisultato(false, '❌ Codice non valido');
+              }
+            });
+          } else {
+            mostraRisultato(false, '❌ Nessun QR code rilevato');
+          }
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function mostraRisultato(valido, messaggio) {
+      const box = document.getElementById('resultBox');
+      box.textContent = messaggio;
+      box.style.color = valido ? 'green' : 'red';
+    }
+  </script>
+
+</body>
+</html>

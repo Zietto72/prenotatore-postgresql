@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>SVG - Aggiungi "posto", "zona", appiattisci gruppi, pulisci spazi</title>
+</head>
+<body>
+  <h2>SVG: aggiungi class="posto ..." + data-posto + data-zona per ogni &lt;rect&gt;; rimuovi gruppi ridondanti; pulisci spazi</h2>
+  <input type="file" id="fileInput" accept=".svg"><br><br>
+  <button id="downloadBtn" disabled>Scarica SVG modificato</button>
+  <pre id="log" style="background:#f0f0f0; padding:1em;"></pre>
+
+  <script>
+    let modifiedSVG = '';
+
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(e.target.result, "image/svg+xml");
+
+        const rects = svgDoc.querySelectorAll('rect[class]');
+        let sostituiti = 0;
+
+        rects.forEach(rect => {
+          let g = rect.parentElement;
+          while (g && !g.hasAttribute('id')) {
+            g = g.parentElement;
+          }
+          if (!g) return;
+
+          const id = g.getAttribute('id');
+          const zona = id ? id.split('_')[0] : '';
+          const parent = rect.parentNode;
+          const originalClass = rect.getAttribute("class").trim();
+
+          const newRect = svgDoc.createElementNS("http://www.w3.org/2000/svg", "rect");
+          newRect.setAttribute("class", `posto ${originalClass}`);
+          newRect.setAttribute("data-posto", id);
+          if (zona) {
+            newRect.setAttribute("data-zona", zona);
+          }
+
+          Array.from(rect.attributes).forEach(attr => {
+            if (attr.name !== 'class') {
+              newRect.setAttribute(attr.name, attr.value);
+            }
+          });
+
+          parent.replaceChild(newRect, rect);
+          sostituiti++;
+        });
+
+        const flattenRepeatedGroups = () => {
+          const allGroups = svgDoc.querySelectorAll('g[class]');
+          allGroups.forEach(group => {
+            const className = group.getAttribute('class');
+            while (
+              group.childElementCount === 1 &&
+              group.firstElementChild.tagName === 'g' &&
+              group.firstElementChild.getAttribute('class') === className
+            ) {
+              const inner = group.firstElementChild;
+              while (inner.firstChild) {
+                group.appendChild(inner.firstChild);
+              }
+              group.removeChild(inner);
+            }
+          });
+        };
+
+        flattenRepeatedGroups();
+
+        const beautifySVG = (raw) => {
+          return raw
+            .replace(/>\s+</g, '>\n<')
+            .replace(/\n\s*\n/g, '\n')
+            .replace(/[ \t]{2,}/g, '  ')
+            .replace(/^\s+|\s+$/gm, '');
+        };
+
+        const serializer = new XMLSerializer();
+        const rawSVG = serializer.serializeToString(svgDoc);
+        modifiedSVG = beautifySVG(rawSVG);
+
+        document.getElementById('downloadBtn').disabled = false;
+        document.getElementById('log').textContent = `Modifica completata. Rettangoli aggiornati: ${sostituiti}`;
+      };
+
+      reader.readAsText(file);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      const blob = new Blob([modifiedSVG], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'svg_modificato.svg';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>

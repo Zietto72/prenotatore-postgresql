@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Livello_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 205.7 258.4">
+  <!-- Generator: Adobe Illustrator 29.3.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 151)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #1d1d1b;
+      }
+
+      .st0, .st1, .st2 {
+        isolation: isolate;
+      }
+
+      .st0, .st2 {
+        font-family: MyriadPro-Black, 'Myriad Pro';
+        font-size: 9.7px;
+        font-weight: 800;
+      }
+
+      .st3 {
+        fill: #f1e623;
+      }
+
+      .st3, .st4, .st5, .st6, .st7 {
+        stroke: #1d1d1b;
+        stroke-miterlimit: 10;
+        stroke-width: .5px;
+      }
+
+      .st4 {
+        fill: #98d4e7;
+      }
+
+      .st5 {
+        fill: #b7b6b6;
+      }
+
+      .st2 {
+        fill: #e5241e;
+      }
+
+      .st6 {
+        fill: #efac24;
+      }
+
+      .st7 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <g id="LATERALE_SX">
+    <g id="L5-SX">
+      <rect class="posto st6" x="5.8" y="84.9" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(13.6 97.9)"><tspan x="0" y="0">1</tspan></text>
+      </g>
+    </g>
+    <g id="L4-SX">
+      <rect class="posto st6" x="5.8" y="115.3" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(13.6 128.2)"><tspan x="0" y="0">2</tspan></text>
+      </g>
+    </g>
+    <g id="L3-SX">
+      <rect class="posto st6" x="5.8" y="145.6" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(13.6 158.6)"><tspan x="0" y="0">3</tspan></text>
+      </g>
+    </g>
+    <g id="L2-SX">
+      <rect class="posto st6" x="5.8" y="176" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(13.6 189)"><tspan x="0" y="0">4</tspan></text>
+      </g>
+    </g>
+    <g id="L1-SX">
+      <rect class="posto st6" x="5.8" y="206.4" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(13.6 219.4)"><tspan x="0" y="0">5</tspan></text>
+      </g>
+    </g>
+  </g>
+  <g id="LATERALE_DX">
+    <g id="L5-DX">
+      <rect class="posto st3" x="180.1" y="84.9" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(187.8 97.9)"><tspan x="0" y="0">1</tspan></text>
+      </g>
+    </g>
+    <g id="L4-DX">
+      <rect class="posto st3" x="180.1" y="115.3" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(187.8 128.2)"><tspan x="0" y="0">2</tspan></text>
+      </g>
+    </g>
+    <g id="L3-DX">
+      <rect class="posto st3" x="180.1" y="145.6" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(187.8 158.6)"><tspan x="0" y="0">3</tspan></text>
+      </g>
+    </g>
+    <g id="L2-DX">
+      <rect class="posto st3" x="180.1" y="176" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(187.8 189)"><tspan x="0" y="0">4</tspan></text>
+      </g>
+    </g>
+    <g id="L1-DX">
+      <rect class="posto st3" x="180.1" y="206.4" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(187.8 219.4)"><tspan x="0" y="0">5</tspan></text>
+      </g>
+    </g>
+  </g>
+  <g id="PLATEA">
+    <g id="A1">
+      <rect class="posto st7" x="57" y="84.9" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(64.8 97.9)"><tspan x="0" y="0">1</tspan></text>
+      </g>
+    </g>
+    <g id="A2">
+      <rect class="posto st7" x="83.3" y="84.9" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(91.1 97.9)"><tspan x="0" y="0">2</tspan></text>
+      </g>
+    </g>
+    <g id="A3">
+      <rect class="posto st7" x="109.6" y="84.9" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(117.4 97.9)"><tspan x="0" y="0">3</tspan></text>
+      </g>
+    </g>
+    <g id="A4">
+      <rect class="posto st7" x="135.9" y="84.9" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(143.7 97.9)"><tspan x="0" y="0">4</tspan></text>
+      </g>
+    </g>
+    <g id="B1">
+      <rect class="posto st7" x="57" y="113.5" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(64.8 126.5)"><tspan x="0" y="0">1</tspan></text>
+      </g>
+    </g>
+    <g id="B2">
+      <rect class="posto st7" x="83.3" y="113.5" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(91.1 126.5)"><tspan x="0" y="0">2</tspan></text>
+      </g>
+    </g>
+    <g id="B3">
+      <rect class="posto st7" x="109.6" y="113.5" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(117.4 126.5)"><tspan x="0" y="0">3</tspan></text>
+      </g>
+    </g>
+    <g id="B4">
+      <rect class="posto st7" x="135.9" y="113.5" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(143.7 126.5)"><tspan x="0" y="0">4</tspan></text>
+      </g>
+    </g>
+  </g>
+  <g id="GALLERIA">
+    <g id="A1-2">
+      <rect class="posto st4" x="57" y="160" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(64.8 173)"><tspan x="0" y="0">1</tspan></text>
+      </g>
+    </g>
+    <g id="A2-2">
+      <rect class="posto st4" x="83.3" y="160" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(91.1 173)"><tspan x="0" y="0">2</tspan></text>
+      </g>
+    </g>
+    <g id="A3-2">
+      <rect class="posto st4" x="109.6" y="160" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(117.4 173)"><tspan x="0" y="0">3</tspan></text>
+      </g>
+    </g>
+    <g id="A4-2">
+      <rect class="posto st4" x="135.9" y="160" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(143.7 173)"><tspan x="0" y="0">4</tspan></text>
+      </g>
+    </g>
+    <g id="B1-2">
+      <rect class="posto st4" x="57" y="188.7" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(64.8 201.6)"><tspan x="0" y="0">1</tspan></text>
+      </g>
+    </g>
+    <g id="B2-2">
+      <rect class="posto st4" x="83.3" y="188.7" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(91.1 201.6)"><tspan x="0" y="0">2</tspan></text>
+      </g>
+    </g>
+    <g id="B3-2">
+      <rect class="posto st4" x="109.6" y="188.7" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(117.4 201.6)"><tspan x="0" y="0">3</tspan></text>
+      </g>
+    </g>
+    <g id="B4-2">
+      <rect class="posto st4" x="135.9" y="188.7" width="20.9" height="20.9"/>
+      <g class="st1">
+        <text class="st0" transform="translate(143.7 201.6)"><tspan x="0" y="0">4</tspan></text>
+      </g>
+    </g>
+  </g>
+  <g id="varie">
+    <rect id="PALCO" class="st5" x="56.3" y="22.7" width="101.3" height="40.2"/>
+    <g class="st1">
+      <text class="st2" transform="translate(42.6 97.9)"><tspan x="0" y="0">A</tspan></text>
+    </g>
+    <g class="st1">
+      <text class="st2" transform="translate(43 126)"><tspan x="0" y="0">B</tspan></text>
+    </g>
+    <g class="st1">
+      <text class="st2" transform="translate(42.6 173.7)"><tspan x="0" y="0">A</tspan></text>
+    </g>
+    <g class="st1">
+      <text class="st2" transform="translate(43 202.8)"><tspan x="0" y="0">B</tspan></text>
+    </g>
+  </g>
+  <metadata>
+    <sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/">
+      <slices/>
+      <sliceSourceBounds x="5.58" y="30.91" width="195.62" height="205.05" bottomLeftOrigin="true"/>
+    </sfw>
+  </metadata>
+</svg>

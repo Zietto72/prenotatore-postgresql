@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Controllo Accessi - Scanner QR</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #result { margin-top: 20px; font-size: 1.2em; }
+  </style>
+</head>
+<body>
+  <h1>Scanner QR Code</h1>
+  <div id="reader" style="width:300px;"></div>
+  <div id="result"></div>
+
+  <script>
+    const evento = prompt("Inserisci il nome della cartella evento (es: 2025-07-05_MioSpettacolo)");
+
+    function onScanSuccess(decodedText) {
+      html5QrcodeScanner.clear();
+      document.getElementById("result").innerText = "Codice trovato: " + decodedText;
+
+      fetch(`/verifica-codice?evento=${encodeURIComponent(evento)}&codice=${encodeURIComponent(decodedText)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.valido) {
+            document.getElementById("result").innerHTML = `
+              ✅ Accesso consentito<br>
+              <strong>${data.nome}</strong> – posto: <strong>${data.posto}</strong>
+            `;
+          } else {
+            document.getElementById("result").innerHTML = "❌ Codice non valido";
+          }
+        });
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+  </script>
+</body>
+</html>

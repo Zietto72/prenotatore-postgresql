@@ -1,0 +1,31 @@
+{
+  "name": "teatro-booking",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "@emailjs/nodejs": "^5.0.2",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "fs": "0.0.1-security",
+    "fs-extra": "^11.3.0",
+    "jsdom": "^20.0.3",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.10.1",
+    "pdfkit": "^0.16.0",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "sqlite3": "^5.1.7"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
