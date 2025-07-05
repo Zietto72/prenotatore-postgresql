@@ -315,12 +315,20 @@ function inviaEmailConferma(datiPrenotazione) {
 
   console.log('✅ Dati che mando al server:', payload);
 
-  fetch('http://localhost:3000/genera-pdf-e-invia', {
+  fetch(`${window.location.origin}/genera-pdf-e-invia`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-    .then(response => response.json())
+    .then(async response => {
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Errore risposta server (HTML):", errorText);
+        throw new Error("Errore chiamata backend");
+      }
+
+      return response.json();
+    })
     .then(data => {
       if (data.success) {
         window.datiPrenotazione.spettatori.forEach(s => {

@@ -9,6 +9,8 @@ const QRCode = require('qrcode');
 const config = require('./config/config.json');
 const { showName, showDate, imgIntest, notespdf, emailJsUserId, apiUrl, zonePrices } = config;
 const app = express();
+const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+
 
 
 // --- Nuovo endpoint: verifica esistenza PDF ---
@@ -50,7 +52,6 @@ if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
 const config = await getEventoConfig(dbPath);                     // ✅ usa dbPath qui
 const { showName, showDate, imgIntest, imgEvento } = config;
-const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}`;
     const sqlite3 = require('sqlite3').verbose();
     const db = new sqlite3.Database(dbPath);
@@ -139,7 +140,6 @@ try {
       const safeName = s.nome.trim().replace(/\s+/g, ' ');
       const label = `${s.posto} – ${safeName}`;
       const fileName = `${s.posto}_${s.nome.replace(/\s+/g, '_')}.pdf`;
-const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
       return `
         <a href="${fileUrl}" target="_blank" style="
@@ -338,14 +338,16 @@ app.get('/eventi-list', async (req, res) => {
     if (fs.existsSync(dbPath)) {
       try {
         const config = await getEventoConfig(dbPath);
-        listaEventi.push({
-          nome: config.showName || nomeCartella,
-          folderName: nomeCartella,
-          data: config.showDate || '',
-          numeroPostiTotali: parseInt(config.numeroPostiTotali || 0),
-          imgIntest: config.imgIntest || '',
-          imgEvento: config.imgEvento || ''
-        });
+       listaEventi.push({
+  nome: config.showName || nomeCartella,
+  folderName: nomeCartella,
+  data: config.showDate || '',
+  ora: config.showTime || '', // 🔴 << AGGIUNGI QUESTA LINEA
+  numeroPostiTotali: parseInt(config.numeroPostiTotali || 0),
+  imgIntest: config.imgIntest || '',
+  imgEvento: config.imgEvento || '',
+  zonePrices: config.zonePrices || {}
+});
       } catch (e) {
         console.error(`Errore lettura config da DB evento ${nomeCartella}:`, e);
         listaEventi.push({ nome: nomeCartella, folderName: nomeCartella, data: '', numeroPostiTotali: 0 });
@@ -494,6 +496,7 @@ app.post('/crea-evento', upload.fields([{ name: 'svg' }, { name: 'imgEvento' }])
   try {
     const nome = req.body.nome.trim();
     const data = req.body.data;
+    const ora = req.body.ora || '';
     const numeroPostiTotali = req.body.numeroPostiTotali;
     const files = req.files;
     const zonePrices = JSON.parse(req.body.zonePrices || '{}');
@@ -575,6 +578,7 @@ app.post('/crea-evento', upload.fields([{ name: 'svg' }, { name: 'imgEvento' }])
       const insertConfig = db.prepare(`INSERT INTO config (key, value) VALUES (?, ?)`);
       insertConfig.run('showName', nome);
       insertConfig.run('showDate', data);
+      insertConfig.run('showTime', ora);
       insertConfig.run('imgIntest', globalConfig.imgIntest);
       insertConfig.run('notespdf', globalConfig.notespdf);
       insertConfig.run('svgFile', nomeSvg);
@@ -639,6 +643,86 @@ app.post('/verifica-codice-qr', (req, res) => {
   } catch (e) {
     console.error('Errore verifica QR:', e);
     return res.status(500).json({ valido: false });
+  }
+});
+
+// --- Modifica dati dell'evento (nome, data, svg, posti, prezzi)
+app.post('/eventi/:evento/modifica', upload.fields([{ name: 'svg' }, { name: 'imgEvento' }]), async (req, res) => {
+  try {
+    const evento = req.params.evento;
+    const dir = path.join(__dirname, 'eventi', evento);
+    const dbPath = path.join(dir, 'data', 'booking.sqlite');
+
+    if (!fs.existsSync(dbPath)) {
+      return res.status(404).json({ success: false, message: 'Evento non trovato' });
+    }
+
+    const db = new sqlite3.Database(dbPath);
+    const files = req.files;
+    const body = req.body;
+
+    const updateConfig = db.prepare(`UPDATE config SET value = ? WHERE key = ?`);
+
+updateConfig.run(body.nome, 'showName');
+updateConfig.run(body.data, 'showDate');
+updateConfig.run(body.ora, 'showTime'); // ✅ aggiunto per salvare l'ora
+updateConfig.run(body.numeroPostiTotali, 'numeroPostiTotali');
+updateConfig.run(JSON.stringify(JSON.parse(body.zonePrices || '{}')), 'zonePrices');
+
+
+    if (files['svg']) {
+      const svgPath = path.join(dir, 'svg', files['svg'][0].originalname);
+      fs.renameSync(files['svg'][0].path, svgPath);
+      updateConfig.run(files['svg'][0].originalname, 'svgFile');
+    }
+
+    if (files['imgEvento']) {
+      const imgPath = path.join(dir, 'images', 'spettacolo.png');
+      fs.renameSync(files['imgEvento'][0].path, imgPath);
+      updateConfig.run('images/spettacolo.png', 'imgEvento');
+    }
+
+    updateConfig.finalize();
+    db.close();
+
+    console.log(`✏️ Evento "${evento}" aggiornato.`);
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("❌ Errore modifica evento:", err);
+    res.status(500).json({ success: false, message: 'Errore interno server' });
+  }
+});
+
+// ---- Sostituione immagine dello spettacolo
+app.post('/eventi/:evento/modifica-immagine', upload.single('imgEvento'), (req, res) => {
+  const evento = req.params.evento;
+  const file = req.file;
+  if (!file) return res.status(400).json({ success: false, message: 'File mancante' });
+
+  const eventoDir = path.join(__dirname, 'eventi', evento);
+  const imagesDir = path.join(eventoDir, 'images');
+  const dbPath = path.join(eventoDir, 'data', 'booking.sqlite');
+
+  const imgSavePath = path.join(imagesDir, 'spettacolo.png');
+
+  try {
+    // Sovrascrive immagine
+    fs.renameSync(file.path, imgSavePath);
+
+    // Aggiorna percorso immagine nel database
+    const db = new sqlite3.Database(dbPath);
+    db.run(`UPDATE config SET value = ? WHERE key = 'imgEvento'`, ['images/spettacolo.png'], function (err) {
+      db.close();
+      if (err) {
+        console.error('Errore aggiornamento DB:', err);
+        return res.status(500).json({ success: false });
+      }
+      res.json({ success: true });
+    });
+  } catch (e) {
+    console.error('Errore salvataggio immagine:', e);
+    res.status(500).json({ success: false });
   }
 });
 
