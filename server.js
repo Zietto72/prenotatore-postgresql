@@ -75,13 +75,105 @@ try {
 }
 
 // ✅ Contenuto testuale
-doc.setFontSize(12);
-doc.text(`Spettacolo: ${showName}`, 10, 50);
-doc.text(`Data: ${showDate}`, 10, 60);
-doc.text(`Posto: ${s.posto}`, 10, 70);
-doc.text(`Spettatore: ${s.nome}`, 10, 80);
-doc.text(`Prenotato da: ${prenotatore} (${email})`, 10, 90);
-doc.text(`Prezzo: € ${parseFloat(s.prezzo).toFixed(2)}`, 10, 100);
+// Font e dimensioni di base
+const x = 10;
+let y = 50;
+
+// Spettacolo
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(10);
+doc.text('Spettacolo:', x, y);
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(14);
+doc.text(showName, x + 35, y);
+
+// 🔽 Linea separatrice
+y += 5;
+doc.setDrawColor(150);
+doc.setLineWidth(0.2);
+doc.line(x, y, 200, y);
+
+// Data
+y += 10;
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(10);
+doc.text('Data:', x, y);
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(14);
+doc.text(showDate, x + 35, y);
+
+// 🔽 Linea separatrice
+y += 5;
+doc.setDrawColor(150);
+doc.setLineWidth(0.2);
+doc.line(x, y, 200, y);
+
+// Posto
+y += 10;
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(10);
+doc.setTextColor(0, 0, 0);  // Etichetta in nero
+doc.text('Posto:', x, y);
+
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(14);
+doc.setTextColor(220, 38, 38); // Rosso acceso (RGB)
+doc.text(s.posto, x + 35, y);
+
+// Ripristina colore nero per le righe successive
+doc.setTextColor(0, 0, 0);
+
+// 🔽 Linea separatrice
+y += 5;
+doc.setDrawColor(150);
+doc.setLineWidth(0.2);
+doc.line(x, y, 200, y);
+
+// Spettatore
+y += 10;
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(10);
+doc.text('Spettatore:', x, y);
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(14);
+doc.text(s.nome, x + 35, y);
+
+// 🔽 Linea separatrice
+y += 5;
+doc.setDrawColor(150);
+doc.setLineWidth(0.2);
+doc.line(x, y, 200, y);
+
+// Prenotatore
+y += 10;
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(10);
+doc.text('Prenotato da:', x, y);
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(14);
+doc.text(`${prenotatore} (${email})`, x + 35, y);
+
+// 🔽 Linea separatrice
+y += 5;
+doc.setDrawColor(150);
+doc.setLineWidth(0.2);
+doc.line(x, y, 200, y);
+
+// Prezzo
+y += 10;
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(10);
+doc.text('Prezzo:', x, y);
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(14);
+doc.text(`€ ${parseFloat(s.prezzo).toFixed(2)}`, x + 35, y);
+
+// 🔽 Linea separatrice
+y += 5;
+doc.setDrawColor(150);
+doc.setLineWidth(0.2);
+doc.line(x, y, 200, y);
+
 
 // ✅ QR Code con dati completi
 try {
