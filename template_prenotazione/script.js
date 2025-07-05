@@ -255,7 +255,7 @@ window.apriRiepilogo = function () {
     totale += prezzo;
 
     contenuto += `<b>${id}</b> (${zona} – €${prezzo.toFixed(2)}): ${nome}<br>`;
-    spettatori.push({ posto: id, nome });
+    spettatori.push({ posto: id, nome, prezzo });
   });
 
   document.getElementById('riepilogoContenuto').innerHTML = `

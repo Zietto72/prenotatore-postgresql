@@ -1,3 +1,4 @@
+require('dotenv').config();
 const db = require('./db');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -80,7 +81,7 @@ doc.text(`Data: ${showDate}`, 10, 60);
 doc.text(`Posto: ${s.posto}`, 10, 70);
 doc.text(`Spettatore: ${s.nome}`, 10, 80);
 doc.text(`Prenotato da: ${prenotatore} (${email})`, 10, 90);
-doc.text(`Prezzo: € ${totale.toFixed(2)}`, 10, 100);
+doc.text(`Prezzo: € ${parseFloat(s.prezzo).toFixed(2)}`, 10, 100);
 
 // ✅ QR Code con dati completi
 try {
