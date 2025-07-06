@@ -31,11 +31,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     imgIntest = config.imgIntest;
     zonePrices = config.zonePrices || {}; // ⚠️ stringa → oggetto JS
 
+// ✅ Intestazione sopra la piantina
+const intestazione = document.getElementById("intestazioneSpettacolo");
+if (intestazione) {
+intestazione.innerHTML = `<strong>${config.showName}</strong><br>${config.showDate} ${config.showTime}`;
+}
+
     // ✅ Carica il file SVG
     const svgText = await fetch(`/eventi/${eventoCorrente}/svg/${config.svgFile}`).then(r => r.text());
     const container = document.getElementById("svgContainer");
     container.innerHTML = svgText;
     const svg = container.querySelector("svg");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     if (!svg) throw new Error("SVG non trovato dopo iniezione");
 
     // ✅ Carica i posti occupati
@@ -254,16 +261,16 @@ window.apriRiepilogo = function () {
     const prezzo = zonePrices[zona];
     totale += prezzo;
 
-    contenuto += `<b>${id}</b> (${zona} – €${prezzo.toFixed(2)}): ${nome}<br>`;
+    contenuto += `Posto: <b>${id}</b> (€${prezzo.toFixed(2)}): <b>${nome}</b><br>`;
     spettatori.push({ posto: id, nome, prezzo });
   });
 
   document.getElementById('riepilogoContenuto').innerHTML = `
-    <p><b>Prenotatore:</b> ${prenotatoreData.nome}</p>
-    <p><b>Email:</b> ${prenotatoreData.email}</p>
-    <p><b>Telefono:</b> ${prenotatoreData.telefono}</p><hr>
+    <p>Prenotatore: <b>${prenotatoreData.nome}</b></p>
+    <p>Email: <b>${prenotatoreData.email}</b></p>
+    <p>Telefono: <b>${prenotatoreData.telefono}</b></p><hr>
     <p>${contenuto}</p>
-    <p><b>Totale:</b> €${totale.toFixed(2)}</p>
+    <p>Totale: <b>€${totale.toFixed(2)}</b></p>
   `;
 
   document.getElementById('spettatoriModal').style.display = 'none';

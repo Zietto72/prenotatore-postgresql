@@ -7,16 +7,38 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Seleziona un posto</h1>
-
+<header id="intestazioneSpettacolo" style="text-align: center; font-size: 25px; margin-bottom: 0px;"></header>
   <div id="svgContainer">
     <!-- L'SVG verrà caricato dinamicamente -->
   </div>
 
 <!-- INFO POSTI SELEZIONATI E PULSANTE PRENOTA -->
-<div id="infoPrenotazione">
-  <p>Posti selezionati: <span id="selectedSeats">0</span> – Totale: <span id="totalAmountModal">0.00</span> €</p>
-  <button id="bookButton" onclick="apriModalePrenotatore()" disabled>Prenota</button>
+<div id="infoPrenotazione" style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  padding: 12px 0;
+  border-top: 1px solid #ccc;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+">
+  <button id="bookButton" onclick="apriModalePrenotatore()" disabled style="
+    padding: 10px 24px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    max-width: 100%;
+  ">
+    Prenota – <span id="selectedSeats">0</span> posti (€ <span id="totalAmountModal">0.00</span>)
+  </button>
 </div>
 
   <!-- MODALI QUI (prenotatore, spettatori, riepilogo, messaggio) -->
@@ -27,49 +49,9 @@
   <script type="module" src="script.js"></script>
 
   <!-- Script per aggiornare il prezzo dinamicamente nel box iniziale -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const svg = document.querySelector("svg");
-      const selected = new Set();
-      const zonePrices = {
-        PLATEA: 10,
-        GALLERIA: 7.5
-      };
 
-      svg?.querySelectorAll('.posto').forEach(posto => {
-        posto.addEventListener("click", () => {
-          const g = posto.closest("g");
-          const id = g?.id;
-          if (!id) return;
 
-          if (selected.has(id)) {
-            selected.delete(id);
-            g.classList.remove("selected");
-          } else {
-            if (selected.size >= 8) {
-              alert("Puoi prenotare al massimo 8 posti per volta.");
-              return;
-            }
-            selected.add(id);
-            g.classList.add("selected");
-          }
 
-          // Aggiorna conteggio e totale
-          document.getElementById('selectedSeats').textContent = selected.size;
-
-          let totale = 0;
-          selected.forEach(seatId => {
-            const zona = Object.keys(zonePrices).find(z => seatId.includes(z)) || 'PLATEA';
-            totale += zonePrices[zona];
-          });
-          document.getElementById('totalAmountModal').textContent = totale.toFixed(2);
-
-          // Mostra il pulsante
-          document.getElementById("bookButton").disabled = selected.size === 0;
-        });
-      });
-    });
-  </script>
   <!-- MODALE: Riepilogo -->
 <div id="riepilogoModal" class="modal" style="display: none;">
   <div class="modal-content">
@@ -98,7 +80,7 @@
 <div id="prenotatoreModal" class="modal" style="display: none;">
   <div class="modal-content">
     <button class="modal-close" onclick="chiudiModale()">×</button>
-    <h2>Dati del Prenotatore</h2>
+    <h2>Dati di chi sta prenotando</h2>
     <form>
       <div class="form-group">
         <label for="prenotatoreNome">Nome e Cognome</label>
@@ -121,6 +103,33 @@
     </form>
   </div>
 </div>
+
+<div id="barraAttesa" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  text-align: center;
+  padding: 20px;
+  z-index: 999;
+">
+  <p style="margin-bottom: 10px; font-size: 16px;">Sto inviando la tua prenotazione…</p>
+  <div style="width: 100%; background-color: #ddd; border-radius: 8px;">
+    <div id="barraInterna" style="
+      width: 0%;
+      height: 12px;
+      background-color: #007bff;
+      border-radius: 8px;
+      transition: width 1s ease-in-out;
+    "></div>
+  </div>
+</div>
+
 
 
 <div id="messaggioConferma" style="
