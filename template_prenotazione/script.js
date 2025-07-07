@@ -286,16 +286,33 @@ window.apriRiepilogo = function () {
 };
 
 window.procediPagamento = function () {
-  inviaEmailConferma(window.datiPrenotazione);
+  // Mostra la barra di attesa
+  const barraAttesa = document.getElementById('barraAttesa');
+  const barraInterna = document.getElementById('barraInterna');
+  barraAttesa.style.display = 'block';
+  document.body.style.pointerEvents = 'none'; // Blocca tutte le interazioni
+
+  // Resetta e avvia animazione della barra
+  barraInterna.style.width = '0%';
+  setTimeout(() => {
+    barraInterna.style.width = '100%';
+  }, 100);
+
+  inviaEmailConferma(window.datiPrenotazione)
+    .finally(() => {
+      // Nascondi barra di attesa e riattiva interazioni
+      barraAttesa.style.display = 'none';
+      document.body.style.pointerEvents = 'auto';
+    });
 };
 
 function inviaEmailConferma(datiPrenotazione) {
-  fetch(`${BASE_URL}/genera-pdf-e-invia`, {
+  return fetch(`${BASE_URL}/genera-pdf-e-invia`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      evento: eventoCorrente,    // 👈 AGGIUNTA CORRETTA
-      ...datiPrenotazione        // 👈 Mantieni tutto il resto
+      evento: eventoCorrente,
+      ...datiPrenotazione
     })
   })
     .then(response => response.json())
