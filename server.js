@@ -1,9 +1,13 @@
 require('dotenv').config();
+const bcrypt = require('bcrypt');
+const SALT_ROUNDS = 10;
+const session = require('express-session');
 const db = require('./db');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const configDbPath = path.join(__dirname, 'config', 'config.sqlite');
 const { jsPDF } = require('jspdf');
 const QRCode = require('qrcode');
 // Import template data from public folder
@@ -11,8 +15,15 @@ const config = require('./config/config.json');
 const { showName, showDate, imgIntest, notespdf, emailJsUserId, apiUrl, zonePrices } = config;
 const app = express();
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-
-
+app.get('config/config.json', (req, res) => {
+  res.sendFile(path.join(__dirname, 'config.json'));
+});
+/// --- Login
+app.use(session({
+  secret: 'xxx', // Cambiala in produzione
+  resave: false,
+  saveUninitialized: true
+}));
 
 // --- Nuovo endpoint: verifica esistenza PDF ---
 // Va definito PRIMA di express.static per evitare che static restituisca 404
@@ -26,9 +37,7 @@ app.get('/api/pdf-exists/:evento/:filename', (req, res) => {
 app.use(bodyParser.json({ limit: '10mb' }));
 
 // Rende accessibile il file di configurazione al browser
-app.use('/config.json', express.static(path.join(__dirname, 'config/config.json')));
 
-app.use(express.static('public'));
 app.use('/eventi', express.static(path.join(__dirname, 'eventi')));
 
 
@@ -295,6 +304,8 @@ const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
   }
 });
 
+
+
 // Parametri per resconto.html
 
 // 1) Ritorna tutte le prenotazioni dal database
@@ -389,6 +400,18 @@ app.post('/elimina-prenotazione', (req, res) => {
       );
     }
   );
+});
+
+//--- sidebar index.html
+app.post('/salva-config-generale', async (req, res) => {
+  try {
+    const config = req.body;
+    await fs.promises.writeFile('config.json', JSON.stringify(config, null, 2));
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Errore salvataggio config.json:", err);
+    res.json({ success: false });
+  }
 });
 
 // Crea evento da dashboard
@@ -528,15 +551,41 @@ app.post('/eventi/:evento/elimina', (req, res) => {
   }
 
   try {
-    fse.removeSync(eventoPath);  // Elimina tutta la cartella evento
-    console.log(`✅ Evento "${evento}" eliminato.`);
-    res.json({ success: true });
+    // 1. Elimina la cartella evento
+    fse.removeSync(eventoPath);
+    console.log(`✅ Evento "${evento}" eliminato da file system.`);
+
+    // 2. Elimina dal database config/config.sqlite
+    const dbPath = path.join(__dirname, 'config', 'config.sqlite');
+    const db = new sqlite3.Database(dbPath);
+
+    // 🔒 Prende l'email dell'utente loggato dalla sessione
+    const emailUtente = req.session.utente?.email;
+
+    if (!emailUtente) {
+      return res.status(403).json({ success: false, message: 'Utente non autenticato' });
+    }
+
+    db.run(
+      'DELETE FROM eventi_utenti WHERE nomeCartella = ? AND emailUtente = ?',
+      [evento, emailUtente],
+      function (err) {
+        db.close();
+        if (err) {
+          console.error('❌ Errore eliminazione DB:', err.message);
+          return res.status(500).json({ success: false });
+        }
+
+        console.log(`🗃️ Evento "${evento}" eliminato anche dal database per utente ${emailUtente}`);
+        res.json({ success: true });
+      }
+    );
+
   } catch (err) {
-    console.error('Errore eliminazione evento:', err);
+    console.error('❌ Errore eliminazione evento:', err);
     res.status(500).json({ error: 'Errore eliminazione evento' });
   }
 });
-
 // --- Elimina singola prenotazione ---
 app.post('/eventi/:evento/elimina-prenotazione', (req, res) => {
   const evento = req.params.evento;
@@ -685,16 +734,38 @@ app.post('/crea-evento', upload.fields([{ name: 'svg' }, { name: 'imgEvento' }])
     });
 
     console.log(`✅ Evento "${folder}" creato correttamente con database dedicato.`);
-    res.json({ success: true });
+    
+    
+    
+ // 🔄 Salva metadati evento nel database centrale config.sqlite
+const configDb = new sqlite3.Database(configDbPath);
 
-  } catch (err) {
-    console.error("❌ Errore creazione evento:", err);
-    res.status(500).json({ success: false, message: 'Errore interno server' });
+configDb.run(
+  `INSERT INTO eventi_utenti (nomeCartella, titolo, data, emailUtente)
+   VALUES (?, ?, ?, ?)`,
+  [folder, nome, data, req.session.utente.email],
+  (err) => {
+    if (err) {
+      console.error('❌ Errore salvataggio evento in config.sqlite:', err.message);
+    } else {
+      console.log(`🗂 Evento "${nome}" salvato per ${req.session.utente.email}`);
+    }
   }
-});
+);
 
-    // Verifica QRCODE da app QR CODE READER
+configDb.close();
 
+// ✅ Risposta finale al client
+res.json({ success: true });
+
+} catch (err) {
+  console.error("❌ Errore creazione evento:", err);
+  res.status(500).json({ success: false, message: 'Errore interno server' });
+}
+}); // 👈 CHIUSURA della route POST /crea-evento
+
+
+// ✅ Verifica QRCODE da app QR CODE READER
 app.get('/verifica-codice', (req, res) => {
   const codice = req.query.codice;
   const evento = req.query.evento;
@@ -819,7 +890,164 @@ app.post('/eventi/:evento/modifica-immagine', upload.single('imgEvento'), (req, 
   }
 });
 
+/// --- login
+
+
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  const sqlite3 = require('sqlite3').verbose();
+  const db = new sqlite3.Database(configDbPath);
+
+  db.get(`SELECT * FROM configurazione WHERE emailUtente = ?`, [email], (err, row) => {
+    db.close();
+    if (err || !row) return res.status(401).json({ success: false, message: 'Credenziali non valide' });
+
+    // Se vuoi gestire la password, puoi aggiungerla nella tabella configurazione
+    // Qui la saltiamo per semplicità
+    req.session.utente = {
+      nome: row.nomeUtente,
+      email: row.emailUtente,
+    };
+    res.json({ success: true });
+  });
+});
+
+
+function requireLogin(req, res, next) {
+  if (!req.session.utente) {
+    return res.status(401).json({ error: 'Non autorizzato' });
+  }
+  next();
+}
+
+app.get('/config-utente', requireLogin, (req, res) => {
+  const sqlite3 = require('sqlite3').verbose();
+  const db = new sqlite3.Database(configDbPath);
+
+  db.get(`SELECT * FROM configurazione WHERE emailUtente = ?`, [req.session.utente.email], (err, row) => {
+    db.close();
+    if (err || !row) return res.status(404).json({ success: false });
+    res.json(row);
+  });
+});
+
+app.post('/salva-config-utente', requireLogin, (req, res) => {
+  const { nomeUtente, indirizzoUtente, emailUtente, imgIntest, notespdf } = req.body;
+
+  const sqlite3 = require('sqlite3').verbose();
+  const db = new sqlite3.Database(configDbPath);
+
+  db.run(`
+    UPDATE configurazione
+    SET nomeUtente = ?, indirizzoUtente = ?, emailUtente = ?, imgIntest = ?, notespdf = ?
+    WHERE emailUtente = ?
+  `, [nomeUtente, indirizzoUtente, emailUtente, imgIntest, notespdf, req.session.utente.email], function (err) {
+    db.close();
+    if (err) return res.status(500).json({ success: false });
+    res.json({ success: true });
+  });
+});
+
+//---pwd
+
+app.post('/register', (req, res) => {
+  const { email, password } = req.body;
+  const sqlite3 = require('sqlite3').verbose();
+  const db = new sqlite3.Database(configDbPath);
+
+  db.get('SELECT * FROM configurazione WHERE emailUtente = ?', [email], (err, row) => {
+    if (err) {
+      db.close();
+      return res.status(500).json({ success: false, message: 'Errore database' });
+    }
+
+    if (row) {
+      db.close();
+      return res.status(400).json({ success: false, message: 'Email già registrata' });
+    }
+
+    bcrypt.hash(password, SALT_ROUNDS, (err, hash) => {
+      if (err) {
+        db.close();
+        return res.status(500).json({ success: false, message: 'Errore crittografia' });
+      }
+
+      db.run(`
+        INSERT INTO configurazione (emailUtente, passwordUtente, nomeUtente, indirizzoUtente, imgIntest, notespdf)
+        VALUES (?, ?, '', '', '', '')
+      `, [email, hash], function (err) {
+        db.close();
+        if (err) {
+          return res.status(500).json({ success: false });
+        }
+        res.json({ success: true });
+      });
+    });
+  });
+});
+
+app.get('/lista-eventi', requireLogin, async (req, res) => {
+  const db = new sqlite3.Database(path.join(__dirname, 'config', 'config.sqlite'));
+
+  db.all(
+    `SELECT * FROM eventi_utenti WHERE emailUtente = ? ORDER BY data DESC`,
+    [req.session.utente.email],
+    async (err, rows) => {
+      if (err) {
+        db.close();
+        console.error('Errore lettura eventi:', err.message);
+        return res.status(500).json({ success: false });
+      }
+
+      const eventiCompleti = [];
+
+      for (const row of rows) {
+        const eventoFolder = row.nomeCartella;
+        const eventoPath = path.join(__dirname, 'eventi', eventoFolder, 'data', 'booking.sqlite');
+
+        let config = {};
+        if (fs.existsSync(eventoPath)) {
+          try {
+            config = await getEventoConfig(eventoPath);
+          } catch (e) {
+            console.warn(`⚠️ Errore lettura config evento ${eventoFolder}:`, e.message);
+          }
+        }
+
+        eventiCompleti.push({
+          id: row.id,
+          nomeCartella: eventoFolder,
+          titolo: row.titolo || config.showName || eventoFolder,
+          data: row.data || config.showDate || '',
+          ora: config.showTime || '',
+          emailUtente: row.emailUtente,
+          numeroPostiTotali: parseInt(config.numeroPostiTotali || 0),
+          imgEvento: config.imgEvento || '',
+          imgIntest: config.imgIntest || '',
+          zonePrices: config.zonePrices || {}
+        });
+      }
+
+      db.close();
+      res.json({ success: true, eventi: eventiCompleti });
+    }
+  );
+});
+
+app.get('/home.html', requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, 'home.html'));
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/login.html');
+  });
+});
+
 // --- Avvio del server ---
+
+
 const PORT = 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server avviato su http://localhost:${PORT}`);

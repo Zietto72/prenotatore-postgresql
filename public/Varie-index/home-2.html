@@ -1,76 +1,90 @@
 <!DOCTYPE html>
+
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Eventi</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Eventi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex">
-
-  <!-- Sidebar -->
-  <aside class="w-64 bg-blue-700 text-white flex flex-col p-4">
-    <h1 class="text-2xl font-bold mb-8">La mia Associazione</h1>
-    <nav class="flex flex-col space-y-4">
-      <a href="#" class="hover:bg-blue-500 rounded p-2">Eventi</a>
-      <a href="#" class="hover:bg-blue-500 rounded p-2">Prenotazioni</a>
-      <a href="#" class="hover:bg-blue-500 rounded p-2">Statistiche</a>
-      <a href="#" class="hover:bg-blue-500 rounded p-2">Impostazioni</a>
-    </nav>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="flex-1 p-8">
-      <div class="flex justify-between items-center mb-8">
-      <h2 class="text-3xl font-bold">Eventi</h2>
-      <button id="creaEventoBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center">
-        <span class="text-xl mr-2">+</span> Crea Evento
+<!-- Sidebar -->
+<aside class="w-64 bg-blue-700 text-white flex flex-col p-4">
+<h1 class="text-2xl font-bold mb-8">La mia Associazione</h1>
+<nav class="flex flex-col space-y-4"><button class="hover:bg-blue-500 rounded p-2 text-left" onclick="mostraSezione('eventi')">Eventi</button><button class="hover:bg-blue-500 rounded p-2 text-left" onclick="mostraSezione('impostazioni')">Impostazioni</button></nav>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-8"><div id="eventiSection">
+<div class="flex justify-between items-center mb-8">
+<h2 class="text-3xl font-bold">Eventi</h2>
+<button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center" id="creaEventoBtn">
+<span class="text-xl mr-2">+</span> Crea Evento
       </button>
-    </div>
-
-    <div id="eventiContainer" class="flex flex-col space-y-4">
-      <!-- Cards evento generate qui -->
-    </div>
-  </main>
-
-  <!-- Modal Crea/Modifica Evento -->
-  <div id="modalEvento" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
-<div class="bg-white p-6 rounded-lg w-[90vw] max-w-xl max-h-[90vh] overflow-y-auto transform transition-transform scale-95 opacity-0 duration-300" id="modalContent">      <h3 class="text-2xl font-bold mb-4" id="modalTitle">Crea Evento</h3>
-      <input id="inputNomeEvento" type="text" placeholder="Nome Evento" class="w-full border p-2 mb-4 rounded">
-      <input id="inputDataEvento" type="date" class="w-full border p-2 mb-4 rounded">
-      <input id="inputOraEvento" type="time" class="w-full border p-2 mb-4 rounded">
-      <input id="inputNumeroPosti" type="number" placeholder="Numero Posti Totali" class="w-full border p-2 mb-4 rounded">
-      <label for="inputSvgEvento" class="block text-sm font-bold mb-1">Piantina del teatro (file SVG)</label>
-<input id="inputSvgEvento" type="file" accept=".svg" class="w-full border p-2 mb-4 rounded">
-<div id="previewSvgContainer" class="mt-2 p-2 border rounded bg-gray-50 overflow-auto max-h-32 hidden"></div>
-      <div id="zonePricesContainer"></div>
-            <label for="inputImgEvento" class="block text-sm font-bold mb-1">Immagine Spettacolo</label>
-      <input id="inputImgEvento" type="file" accept="image/*" class="w-full border p-2 mb-4 rounded">
-      <img id="previewImgEvento" src="" alt="Anteprima Immagine Spettacolo" class="w-full h-32 object-cover mt-2 rounded hidden">
-      <div class="flex justify-end space-x-4 mt-4">
-        <button onclick="chiudiModal()" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">Annulla</button>
-        <button onclick="salvaEvento()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Salva</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal Modifica Immagine -->
-<div id="modalModificaImg" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
-  <div class="bg-white p-6 rounded-lg w-96">
-    <h3 class="text-xl font-bold mb-4">Modifica Immagine Evento</h3>
-    <input type="file" id="inputNuovaImmagine" accept="image/*" class="w-full mb-4 p-2 border rounded">
-    <input type="hidden" id="eventoPerImmagine">
-    <div class="flex justify-end space-x-2">
-      <button onclick="chiudiModaleImg()" class="bg-gray-300 px-4 py-2 rounded">Annulla</button>
-      <button onclick="salvaNuovaImmagine()" class="bg-blue-600 text-white px-4 py-2 rounded">Salva</button>
-    </div>
-  </div>
+</div><div class="flex flex-col space-y-4" id="eventiContainer">
+<!-- Cards evento generate qui -->
+</div></div>
+<!-- Sezione Impostazioni -->
+<div class="hidden p-6 bg-white rounded shadow" id="impostazioniSection">
+<h2 class="text-xl font-bold mb-4">Impostazioni Evento</h2>
+<form class="space-y-4" id="formConfig">
+<div>
+<label class="block font-semibold mb-1">Nome Utente</label>
+<input class="w-full border rounded p-2" id="inputNomeUtente" type="text"/>
 </div>
-
-  <!-- Toast Container -->
-  <div id="toastContainer" class="fixed top-5 right-5 space-y-2 z-50"></div>
-
+<div>
+<label class="block font-semibold mb-1">Indirizzo Utente</label>
+<input class="w-full border rounded p-2" id="inputIndirizzoUtente" type="text"/>
+</div>
+<div>
+<label class="block font-semibold mb-1">Email Utente</label>
+<input class="w-full border rounded p-2" id="inputEmailUtente" type="email"/>
+</div>
+<div>
+<label class="block font-semibold mb-1">URL intestazione immagine</label>
+<input class="w-full border rounded p-2" id="inputImgIntest" type="text"/>
+</div>
+<button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="salvaConfig()" type="button">Salva configurazione</button><div>
+<label class="block font-semibold mb-1">Note da pubblicare su PDF/email</label>
+<textarea class="w-full border rounded p-2" id="inputNotePdf" rows="4"></textarea>
+</div>
+</form>
+</div>
+</main>
+<!-- Modal Crea/Modifica Evento -->
+<div class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50" id="modalEvento">
+<div class="bg-white p-6 rounded-lg w-[90vw] max-w-xl max-h-[90vh] overflow-y-auto transform transition-transform scale-95 opacity-0 duration-300" id="modalContent"> <h3 class="text-2xl font-bold mb-4" id="modalTitle">Crea Evento</h3>
+<input class="w-full border p-2 mb-4 rounded" id="inputNomeEvento" placeholder="Nome Evento" type="text"/>
+<input class="w-full border p-2 mb-4 rounded" id="inputDataEvento" type="date"/>
+<input class="w-full border p-2 mb-4 rounded" id="inputOraEvento" type="time"/>
+<input class="w-full border p-2 mb-4 rounded" id="inputNumeroPosti" placeholder="Numero Posti Totali" type="number"/>
+<label class="block text-sm font-bold mb-1" for="inputSvgEvento">Piantina del teatro (file SVG)</label>
+<input accept=".svg" class="w-full border p-2 mb-4 rounded" id="inputSvgEvento" type="file"/>
+<div class="mt-2 p-2 border rounded bg-gray-50 overflow-auto max-h-32 hidden" id="previewSvgContainer"></div>
+<div id="zonePricesContainer"></div>
+<label class="block text-sm font-bold mb-1" for="inputImgEvento">Immagine Spettacolo</label>
+<input accept="image/*" class="w-full border p-2 mb-4 rounded" id="inputImgEvento" type="file"/>
+<img alt="Anteprima Immagine Spettacolo" class="w-full h-32 object-cover mt-2 rounded hidden" id="previewImgEvento" src=""/>
+<div class="flex justify-end space-x-4 mt-4">
+<button class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded" onclick="chiudiModal()">Annulla</button>
+<button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onclick="salvaEvento()">Salva</button>
+</div>
+</div>
+</div>
+<!-- Modal Modifica Immagine -->
+<div class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50" id="modalModificaImg">
+<div class="bg-white p-6 rounded-lg w-96">
+<h3 class="text-xl font-bold mb-4">Modifica Immagine Evento</h3>
+<input accept="image/*" class="w-full mb-4 p-2 border rounded" id="inputNuovaImmagine" type="file"/>
+<input id="eventoPerImmagine" type="hidden"/>
+<div class="flex justify-end space-x-2">
+<button class="bg-gray-300 px-4 py-2 rounded" onclick="chiudiModaleImg()">Annulla</button>
+<button class="bg-blue-600 text-white px-4 py-2 rounded" onclick="salvaNuovaImmagine()">Salva</button>
+</div>
+</div>
+</div>
+<!-- Toast Container -->
+<div class="fixed top-5 right-5 space-y-2 z-50" id="toastContainer"></div>
 <script>
 const eventiContainer = document.getElementById('eventiContainer');
 const modalEvento = document.getElementById('modalEvento');
@@ -351,15 +365,16 @@ ${Object.entries(zonePrices).map(([zona, prezzo]) => {
 }
 
 async function eliminaEvento(nome) {
-  if (!confirm(`Sei sicuro di voler eliminare l'evento "${nome}"?`)) return;
-  const res = await fetch(`/eventi/${encodeURIComponent(nome)}/elimina`, { method: 'POST' });
-  const json = await res.json();
-  if (json.success) {
-    mostraToast('Evento eliminato.');
-    caricaEventi();
-  } else {
-    mostraToast('Errore eliminazione evento.', 'error');
-  }
+  mostraModaleConferma(`Vuoi davvero eliminare l'evento "${nome}"?`, async () => {
+    const res = await fetch(`/eventi/${encodeURIComponent(nome)}/elimina`, { method: 'POST' });
+    const json = await res.json();
+    if (json.success) {
+      mostraToast('Evento eliminato.');
+      caricaEventi();
+    } else {
+      mostraToast('Errore eliminazione evento.', 'error');
+    }
+  });
 }
 
 async function togglePrenotazioni(nome, folderName, postiTotali) {
@@ -585,25 +600,25 @@ async function salvaModificheEvento(folderName) {
 
 
 async function eliminaPrenotazione(evento, posto, nome) {
-  if (!confirm(`Eliminare prenotazione posto ${posto}?`)) return;
-
-  try {
-    const res = await fetch(`/eventi/${encodeURIComponent(evento)}/elimina-prenotazione`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ posto, nome })
-    });
-    const result = await res.json();
-    if (result.success) {
-      mostraToast('Prenotazione eliminata.');
-      location.reload();
-    } else {
+  mostraModaleConferma(`Vuoi davvero eliminare la prenotazione del posto ${posto}?`, async () => {
+    try {
+      const res = await fetch(`/eventi/${encodeURIComponent(evento)}/elimina-prenotazione`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ posto, nome })
+      });
+      const result = await res.json();
+      if (result.success) {
+        mostraToast('Prenotazione eliminata.');
+        location.reload();
+      } else {
+        mostraToast('Errore eliminazione.', 'error');
+      }
+    } catch (err) {
+      console.error('Errore eliminazione prenotazione:', err);
       mostraToast('Errore eliminazione.', 'error');
     }
-  } catch (err) {
-    console.error('Errore eliminazione prenotazione:', err);
-    mostraToast('Errore eliminazione.', 'error');
-  }
+  });
 }
 
 async function visualizzaPrenotazioni(nome) {
@@ -776,8 +791,108 @@ async function salvaNuovaImmagine() {
     mostraToast('Errore comunicazione con server.', 'error');
   }
 }
+
+let azioneConfermata = null;
+
+function mostraModaleConferma(messaggio, callbackConferma) {
+  document.getElementById('testoConferma').textContent = messaggio;
+  document.getElementById('modalConferma').classList.remove('hidden');
+  azioneConfermata = callbackConferma;
+}
+
+function nascondiModaleConferma() {
+  document.getElementById('modalConferma').classList.add('hidden');
+  azioneConfermata = null;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btnConfermaElimina').addEventListener('click', () => {
+    if (azioneConfermata) {
+      azioneConfermata();
+      nascondiModaleConferma();
+    }
+  });
+});
+
 window.addEventListener('DOMContentLoaded', caricaEventi);
 </script>
+<!-- Modale di conferma eliminazione -->
+<div class="fixed inset-0 bg-black bg-opacity-40 hidden flex justify-center items-center z-50" id="modalConferma">
+<div class="bg-red-600 text-white rounded-lg p-6 max-w-md w-[90%] text-center shadow-lg">
+<h3 class="text-xl font-bold mb-4">Conferma eliminazione</h3>
+<p class="mb-6" id="testoConferma">Sei sicuro di voler procedere?</p>
+<div class="flex justify-center gap-4">
+<button class="bg-white text-red-700 px-4 py-2 rounded hover:bg-gray-100" onclick="nascondiModaleConferma()">Annulla</button>
+<button class="bg-white text-red-700 font-bold px-4 py-2 rounded hover:bg-red-200" id="btnConfermaElimina">Sì, elimina</button>
+</div>
+</div>
+</div>
+<script>window.addEventListener('DOMContentLoaded', () => {
+  window.mostraSezione = function (sezione) {
+    const eventi = document.getElementById('eventiSection');
+    const impostazioni = document.getElementById('impostazioniSection');
+    if (!eventi || !impostazioni) return;
 
-</body>
+    eventi.classList.add('hidden');
+    impostazioni.classList.add('hidden');
+
+    if (sezione === 'eventi') {
+      eventi.classList.remove('hidden');
+    } else if (sezione === 'impostazioni') {
+      impostazioni.classList.remove('hidden');
+
+      // Carica dati solo quando visibile
+      fetch('/config-utente')
+        .then(res => res.json())
+        .then(config => {
+          document.getElementById('inputNomeUtente').value = config.nomeUtente || '';
+          document.getElementById('inputIndirizzoUtente').value = config.indirizzoUtente || '';
+          document.getElementById('inputEmailUtente').value = config.emailUtente || '';
+          document.getElementById('inputImgIntest').value = config.imgIntest || '';
+          document.getElementById('inputNotePdf').value = config.notespdf || '';
+        })
+        .catch(err => console.warn('config-utente non disponibile o errore:', err));
+    }
+  };
+
+  window.salvaConfig = function () {
+    const config = {
+      nomeUtente: document.getElementById('inputNomeUtente').value,
+      indirizzoUtente: document.getElementById('inputIndirizzoUtente').value,
+      emailUtente: document.getElementById('inputEmailUtente').value,
+      imgIntest: document.getElementById('inputImgIntest').value,
+      notespdf: document.getElementById('inputNotePdf').value
+    };
+
+    fetch('/salva-config-utente', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Configurazione salvata con successo.');
+        } else {
+          alert('Errore durante il salvataggio.');
+        }
+      })
+      .catch(err => {
+        console.error('Errore salvataggio config:', err);
+        alert('Errore di rete.');
+      });
+  };
+});
+
+window.logout = function () {
+  fetch('/logout')
+    .then(() => {
+      window.location.href = '/login.html';
+    })
+    .catch(err => {
+      alert('Errore durante il logout.');
+      console.error(err);
+    });
+};
+</script></body>
 </html>

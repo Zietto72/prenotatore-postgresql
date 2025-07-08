@@ -8,23 +8,25 @@ html, body {
   font-family: Arial, sans-serif;
 }
 
-
 #svgContainer {
-  width: 100%;
-  height: calc(95vh - 180px); /* lascia spazio al pulsante fisso in basso */
-  overflow: auto;
+  width: 100vw;
+  height: auto;
   display: flex;
-  justify-content: center;
-  align-items: flex-start; /* ⬅️ Porta l'SVG in alto */
-  padding: 0;
-  margin: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 #svgContainer svg {
-  max-width: 100%;
-  max-height: 100%;
   height: auto;
   width: auto;
+  max-height: 90vh;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 1rem;
 }
 
 .modal {
@@ -38,30 +40,6 @@ html, body {
 .modal .modal-content * {
     pointer-events: auto;
 }
-
-.modal .form-group label {
-  font-size: 14px;
-  font-weight: normal;
-  color: #333;
-}
-
-.modal .form-group input {
-  font-weight: bold;
-  font-size: 15px;
-}
-
-#riepilogoContenuto p {
-  font-size: 14px;
-  margin-bottom: 4px;
-  color: #333;
-}
-
-#riepilogoContenuto b {
-  font-weight: bold;
-  font-size: 15px;
-  color: #000;
-}
-
 
 .center-container {
     text-align: center;
