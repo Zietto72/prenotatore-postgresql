@@ -52,7 +52,7 @@
 </div>
 </main>
 <!-- Modal Crea/Modifica Evento -->
-<div class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50" id="modalEvento">
+<div class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50" id="modalEvento">
 <div class="bg-white p-6 rounded-lg w-[90vw] max-w-xl max-h-[90vh] overflow-y-auto transform transition-transform scale-95 opacity-0 duration-300" id="modalContent"> <h3 class="text-2xl font-bold mb-4" id="modalTitle">Crea Evento</h3>
 <input class="w-full border p-2 mb-4 rounded" id="inputNomeEvento" placeholder="Nome Evento" type="text"/>
 <input class="w-full border p-2 mb-4 rounded" id="inputDataEvento" type="date"/>
@@ -138,16 +138,26 @@ document.getElementById('creaEventoBtn').addEventListener('click', () => {
 inputSvgEvento.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
+
   const text = await file.text();
-  
-    const previewDiv = document.getElementById('previewSvgContainer');
+
+  const previewDiv = document.getElementById('previewSvgContainer');
   previewDiv.innerHTML = text;
   previewDiv.classList.remove('hidden');
-  
-  
+
   const parser = new DOMParser();
   const svgDoc = parser.parseFromString(text, "image/svg+xml");
-  const zones = new Set(Array.from(svgDoc.querySelectorAll('[data-zona]')).map(el => el.getAttribute('data-zona')));
+
+  // ✅ Seleziona solo le zone all'interno dell'elemento con id="PIANTINA"
+  const gruppoPiantina = svgDoc.getElementById('PIANTINA');
+  let zones = new Set();
+
+  if (gruppoPiantina) {
+    const elementiZona = gruppoPiantina.querySelectorAll('[data-zona]');
+    zones = new Set(Array.from(elementiZona).map(el => el.getAttribute('data-zona')));
+  } else {
+    mostraToast("⚠️ Il file SVG non contiene un elemento con id='PIANTINA'", 'error');
+  }
 
   zonePricesContainer.innerHTML = '';
   zones.forEach(zona => {
@@ -179,7 +189,8 @@ async function salvaEvento() {
   const imgFile = document.getElementById('inputImgEvento').files[0];
 
   const isModifica = !!eventoCorrentePerModifica;
-
+  const barra = avviaBarraCaricamento(); // Avvia la barra
+  
   // 🔍 Controllo campi obbligatori
   if (!nome || !data || !ora || !numeroPostiTotali) {
     mostraToast('Compila tutti i campi obbligatori (nome, data, ora, posti).', 'error');
@@ -224,14 +235,16 @@ async function salvaEvento() {
     const res = await fetch(url, { method: 'POST', body: formData });
     const json = await res.json();
 
-    if (json.success) {
-      mostraToast(isModifica ? 'Evento modificato con successo!' : 'Evento creato con successo!');
-      chiudiModal();
-      location.reload();
-      eventoCorrentePerModifica = null;
-    } else {
-      mostraToast('Errore nel salvataggio dell\'evento.', 'error');
-    }
+  if (json.success) {
+  barra.completa(); // ✅ Completa la barra
+  mostraToast(isModifica ? 'Evento modificato con successo!' : 'Evento creato con successo!');
+  chiudiModal();
+  await caricaEventi(); // aggiorna l'elenco eventi
+  eventoCorrentePerModifica = null;
+} else {
+  barra.stop(); // 🛑 Ferma la barra se errore
+  mostraToast('Errore nel salvataggio dell\'evento.', 'error');
+}
   } catch (error) {
     console.error(error);
     mostraToast('Errore durante la richiesta al server.', 'error');
@@ -258,7 +271,6 @@ async function caricaEventi() {
 const res = await fetch('/lista-eventi');
 const data = await res.json();
 const eventi = data.success ? data.eventi : [];
-console.log('📦 Eventi ricevuti:', eventi); // 👈 AGGIUNGI QUESTA RIGA
   eventiContainer.innerHTML = '';
   
   if (eventi.length === 0) {
@@ -298,8 +310,8 @@ card.className = 'bg-white border border-gray-300 rounded-lg overflow-hidden sha
 card.innerHTML = `
   <!-- Intestazione compatta cliccabile -->
   <div class="flex justify-between items-center bg-blue-100 px-4 py-3 hover:bg-blue-200 cursor-pointer" onclick="toggleEvento(this)">
-    <h3 class="text-lg font-bold text-blue-900">${nomeEvento}</h3>
-<span class="text-sm text-gray-700">${formattaDataCompleta(dataEvento, oraEvento)}</span>  </div>
+    <h3 class="text-lg font-bold text-blue-900" id="titolo-${folderName.replace(/\s+/g, '')}">${nomeEvento}</h3>
+<span class="text-sm text-gray-700" id="dataora-${folderName.replace(/\s+/g, '')}">${formattaDataCompleta(dataEvento, oraEvento)}</span>  </div>
 
   <!-- Contenuto espanso nascosto -->
   <div class="hidden p-4 space-y-4 border-t bg-white dettagli-evento">
@@ -469,7 +481,7 @@ async function togglePrenotazioni(nome, folderName, postiTotali) {
 }
 
 async function toggleModificaEvento(folderName, nomeEvento) {
-const id = `modifica-${(nomeEvento || 'evento').replace(/\s+/g, '')}`;
+  const id = `modifica-${(nomeEvento || 'evento').replace(/\s+/g, '')}`;
   const container = document.getElementById(id);
   if (!container) return;
 
@@ -485,7 +497,6 @@ const id = `modifica-${(nomeEvento || 'evento').replace(/\s+/g, '')}`;
   try {
     const res = await fetch(`/eventi/${encodeURIComponent(folderName)}/config`);
     const config = await res.json();
-
     const zonePrices = config.zonePrices || {};
 
     let html = `
@@ -496,17 +507,29 @@ const id = `modifica-${(nomeEvento || 'evento').replace(/\s+/g, '')}`;
         </div>
         <div>
           <label class="block text-sm font-bold">Data</label>
-          <input type="date" id="data-${folderName}" value="${config.showDate}" class="w-full border rounded p-2">
+          <input type="date" id="data-${folderName}" value="${config.showDate || ''}" class="w-full border rounded p-2">
         </div>
         <div>
           <label class="block text-sm font-bold">Ora</label>
-          <input type="time" id="ora-${folderName}" value="${config.showTime}" class="w-full border rounded p-2">
+          <input type="time" id="ora-${folderName}" value="${config.showTime || ''}" class="w-full border rounded p-2">
         </div>
         <div>
           <label class="block text-sm font-bold">Numero Posti</label>
           <input type="number" id="posti-${folderName}" value="${config.numeroPostiTotali}" class="w-full border rounded p-2">
         </div>
         <div>
+          <label class="block text-sm font-bold">Piantina attuale</label>
+          <div id="preview-svg-${folderName}" class="border rounded p-2 bg-gray-50 max-h-[200px] overflow-auto">
+            <em>Caricamento piantina...</em>
+          </div>
+        </div>
+        <div class="mt-2">
+          <label class="block text-sm font-bold">Nuova Piantina (SVG)</label>
+          <input type="file" id="svg-${folderName}" accept=".svg" class="w-full border rounded p-2">
+        </div>
+
+        <!-- 🔽 Prezzi spostati sotto la piantina -->
+        <div id="prezzi-zone-${folderName}">
           <label class="block text-sm font-bold">Prezzi per zona</label>
     `;
 
@@ -519,38 +542,77 @@ const id = `modifica-${(nomeEvento || 'evento').replace(/\s+/g, '')}`;
       `;
     }
 
-html += `
-  </div>
+    html += `
+        </div>
 
-  <div>
-    <label class="block text-sm font-bold">Piantina attuale</label>
-    <div id="preview-svg-${folderName}" class="border rounded p-2 bg-gray-50 max-h-[200px] overflow-auto">
-      <em>Caricamento piantina...</em>
-    </div>
-  </div>
-
-  <div class="mt-2">
-    <label class="block text-sm font-bold">Nuova Piantina (SVG)</label>
-    <input type="file" id="svg-${folderName}" accept=".svg" class="w-full border rounded p-2">
-  </div>
-
-  <div class="mt-4">
-    <label class="block text-sm font-bold">Immagine attuale dello spettacolo</label>
-    <img id="img-preview-${folderName}" src="/eventi/${folderName}/${config.imgEvento}" alt="Anteprima" class="w-full h-32 object-cover rounded mb-2">
-  </div>
-
-  <div>
-    <label class="block text-sm font-bold">Nuova Immagine Evento</label>
-    <input type="file" id="img-${folderName}" accept="image/*" class="w-full border rounded p-2">
-  </div>
-
-  <div class="flex justify-end mt-4">
-    <button onclick="salvaModificheEvento('${folderName}')" class="bg-blue-600 text-white px-4 py-2 rounded">Salva</button>
-  </div>
-</div>
-`;
+        <div class="mt-4">
+          <label class="block text-sm font-bold">Immagine attuale dello spettacolo</label>
+          <img id="img-preview-${folderName}" src="/eventi/${folderName}/${config.imgEvento}" alt="Anteprima" class="w-full h-32 object-cover rounded mb-2">
+        </div>
+        <div>
+          <label class="block text-sm font-bold">Nuova Immagine Evento</label>
+          <input type="file" id="img-${folderName}" accept="image/*" class="w-full border rounded p-2">
+        </div>
+        <div class="flex justify-end mt-4">
+          <button onclick="salvaModificheEvento('${folderName}')" class="bg-blue-600 text-white px-4 py-2 rounded">Salva</button>
+        </div>
+      </div>
+    `;
 
     container.innerHTML = html;
+
+    // 📥 Gestione caricamento nuova piantina
+    document.getElementById(`svg-${folderName}`).addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const text = await file.text();
+
+      const previewDiv = document.getElementById(`preview-svg-${folderName}`);
+      previewDiv.innerHTML = text;
+
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(text, "image/svg+xml");
+      const gruppoPiantina = svgDoc.getElementById('PIANTINA');
+
+      let zones = new Set();
+      if (gruppoPiantina) {
+        const elementiZona = gruppoPiantina.querySelectorAll('[data-zona]');
+        zones = new Set(Array.from(elementiZona).map(el => el.getAttribute('data-zona')));
+      } else {
+        mostraToast("⚠️ Il file SVG non contiene un elemento con id='PIANTINA'", 'error');
+        return;
+      }
+
+      // 🔄 Ricrea il blocco dei prezzi sotto la nuova piantina
+      const prezziContainer = document.getElementById(`prezzi-zone-${folderName}`);
+      prezziContainer.innerHTML = '<label class="block text-sm font-bold">Prezzi per zona</label>';
+
+      zones.forEach(zona => {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('mb-2');
+
+        const label = document.createElement('label');
+        label.textContent = zona;
+        label.className = 'text-sm';
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.id = `prezzo-${folderName}-${zona}`;
+        input.step = '0.01';
+        input.className = 'w-full border rounded p-2';
+
+        // ✅ Mantieni il valore precedente se la zona esiste
+        if (config.zonePrices && config.zonePrices[zona]) {
+          input.value = config.zonePrices[zona];
+        }
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        prezziContainer.appendChild(wrapper);
+      });
+    });
+
   } catch (err) {
     container.innerHTML = '<p class="text-red-500 text-center">Errore caricamento dati.</p>';
     console.error(err);
@@ -589,10 +651,12 @@ async function salvaModificheEvento(folderName) {
     });
 
     const json = await res.json();
-    if (json.success) {
-      mostraToast('Evento aggiornato con successo!');
-      location.reload();
-    } else {
+if (json.success) {
+  mostraToast('Evento aggiornato con successo!');
+  setTimeout(() => {
+    location.reload();  // 🔄 ricarica l'intera pagina per aggiornare tutto
+  }, 300);
+} else {
       mostraToast('Errore nel salvataggio.', 'error');
     }
   } catch (err) {
@@ -818,6 +882,33 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('DOMContentLoaded', caricaEventi);
+
+function avviaBarraCaricamento() {
+  const bar = document.getElementById('progressBar');
+  const container = document.getElementById('progressBarContainer');
+  container.classList.remove('hidden');
+  bar.style.width = '5%';
+
+  let progresso = 5;
+  const timer = setInterval(() => {
+    if (progresso < 90) {
+      progresso += Math.random() * 5;
+      bar.style.width = `${progresso}%`;
+    }
+  }, 200);
+
+  return {
+    stop: () => clearInterval(timer),
+    completa: () => {
+      bar.style.width = '100%';
+      setTimeout(() => {
+        container.classList.add('hidden');
+        bar.style.width = '0%';
+      }, 400);
+    }
+  };
+}
+
 </script>
 <!-- Modale di conferma eliminazione -->
 <div class="fixed inset-0 bg-black bg-opacity-40 hidden flex justify-center items-center z-50" id="modalConferma">
@@ -906,5 +997,13 @@ window.logout = function () {
       if (h1 && config.nomeUtente) h1.textContent = config.nomeUtente;
     })
     .catch(err => console.warn('Errore caricamento nome utente:', err));
-</script></body>
+</script>
+
+<!-- Progress Bar -->
+<div id="progressBarContainer" class="fixed top-0 left-0 w-full h-1 bg-gray-300 z-50 hidden">
+  <div id="progressBar" class="h-full bg-blue-600 transition-all duration-200" style="width: 0%"></div>
+</div>
+
+
+</body>
 </html>

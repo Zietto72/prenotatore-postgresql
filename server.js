@@ -11,19 +11,18 @@ const configDbPath = path.join(__dirname, 'config', 'config.sqlite');
 const { jsPDF } = require('jspdf');
 const QRCode = require('qrcode');
 // Import template data from public folder
-const config = require('./config/config.json');
-const { showName, showDate, imgIntest, notespdf, emailJsUserId, apiUrl, zonePrices } = config;
 const app = express();
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-app.get('config/config.json', (req, res) => {
-  res.sendFile(path.join(__dirname, 'config.json'));
-});
+
 /// --- Login
 app.use(session({
   secret: 'xxx', // Cambiala in produzione
   resave: false,
   saveUninitialized: true
 }));
+
+
+
 
 // --- Nuovo endpoint: verifica esistenza PDF ---
 // Va definito PRIMA di express.static per evitare che static restituisca 404
@@ -60,8 +59,13 @@ const dbPath = path.join(eventFolder, 'data', 'booking.sqlite');  // ✅ questa 
 
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-const config = await getEventoConfig(dbPath);                     // ✅ usa dbPath qui
-const { showName, showDate, imgIntest, imgEvento } = config;
+const config = await getEventoConfig(dbPath); // dati dell’evento
+const configUtente = await getConfigUtente(req.session.utente.email); // dati globali da config.sqlite
+
+const { showName, showDate, imgEvento } = config;
+const imgIntest = configUtente.imgIntest || '';
+const notespdf = configUtente.notespdf || '';
+
 const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}`;
     const sqlite3 = require('sqlite3').verbose();
     const db = new sqlite3.Database(dbPath);
@@ -232,7 +236,7 @@ try {
     db.close();
 
     // --- INVIO EMAIL ---
-    const templatePath = path.join(__dirname, 'email.html');
+    const templatePath = path.join(eventFolder, 'email.html');
     let template = fs.readFileSync(templatePath, 'utf8');
 
     const [firstName, ...lastParts] = prenotatore.split(' ');
@@ -268,6 +272,7 @@ const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
       .replace(/{{telefono}}/g, telefono)
       .replace(/{{pdf_links}}/g, pdfLinksHtml)
       .replace(/{{total_amount}}/g, totale.toFixed(2))
+      .replace(/{{notespdf}}/g, escapeHtml(notespdf))
       .replace(/{{booking_code}}/g, bookingCode);
 
     const nodemailer = require('nodemailer');
@@ -433,6 +438,47 @@ function getEventoConfig(dbPath) {
         config[key] = key === 'zonePrices' ? JSON.parse(value) : value;
       });
       resolve(config);
+    });
+  });
+}
+
+// 🔁 Legge dal database SQLite con retry automatico se è bloccato (SQLITE_BUSY)
+function leggiConRetry(db, query, params = [], tentativi = 3) {
+  return new Promise((resolve, reject) => {
+    const esegui = (n) => {
+      db.all(query, params, (err, rows) => {
+        if (err && err.code === 'SQLITE_BUSY' && n > 0) {
+          return setTimeout(() => esegui(n - 1), 100); // ritenta dopo 100ms
+        }
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    };
+    esegui(tentativi);
+  });
+}
+
+function escapeHtml(unsafe) {
+  return (unsafe || '').replace(/[&<>"']/g, function (m) {
+    return ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    })[m];
+  });
+}
+
+function getConfigUtente(email) {
+  return new Promise((resolve, reject) => {
+    const sqlite3 = require('sqlite3').verbose();
+    const db = new sqlite3.Database(path.join(__dirname, 'config', 'config.sqlite'));
+
+    db.get(`SELECT * FROM configurazione WHERE emailUtente = ?`, [email], (err, row) => {
+      db.close();
+      if (err || !row) return reject(err || new Error('Utente non trovato'));
+      resolve(row);
     });
   });
 }
@@ -677,8 +723,8 @@ app.post('/crea-evento', upload.fields([{ name: 'svg' }, { name: 'imgEvento' }])
       imgEventoPath = 'images/spettacolo.png';
     }
 
-    // 6. Config globale
-    const globalConfig = require('./config/config.json');
+// 6. Config utente loggato da config.sqlite
+const configUtente = await getConfigUtente(req.session.utente.email);
 
     // 7. Crea cartella PDF
     const pdfPath = path.join(dir, 'PDF');
@@ -721,8 +767,8 @@ app.post('/crea-evento', upload.fields([{ name: 'svg' }, { name: 'imgEvento' }])
       insertConfig.run('showName', nome);
       insertConfig.run('showDate', data);
       insertConfig.run('showTime', ora);
-      insertConfig.run('imgIntest', globalConfig.imgIntest);
-      insertConfig.run('notespdf', globalConfig.notespdf);
+insertConfig.run('imgIntest', configUtente.imgIntest || '');
+insertConfig.run('notespdf', configUtente.notespdf || '');
       insertConfig.run('svgFile', nomeSvg);
       insertConfig.run('imgEvento', imgEventoPath);
       insertConfig.run('numeroPostiTotali', numeroPostiTotali.toString());
@@ -938,11 +984,11 @@ app.post('/salva-config-utente', requireLogin, (req, res) => {
   const sqlite3 = require('sqlite3').verbose();
   const db = new sqlite3.Database(configDbPath);
 
-  db.run(`
-    UPDATE configurazione
-    SET nomeUtente = ?, indirizzoUtente = ?, emailUtente = ?, imgIntest = ?, notespdf = ?
-    WHERE emailUtente = ?
-  `, [nomeUtente, indirizzoUtente, emailUtente, imgIntest, notespdf, req.session.utente.email], function (err) {
+db.run(`
+  UPDATE configurazione
+  SET nomeUtente = ?, indirizzoUtente = ?, emailUtente = ?, imgIntest = ?, notespdf = ?
+  WHERE emailUtente = ?
+`, [nomeUtente, indirizzoUtente, emailUtente, imgIntest, notespdf, req.session.utente.email], function (err) {
     db.close();
     if (err) return res.status(500).json({ success: false });
     res.json({ success: true });
@@ -988,48 +1034,71 @@ app.post('/register', (req, res) => {
 });
 
 app.get('/lista-eventi', requireLogin, async (req, res) => {
-  const db = new sqlite3.Database(path.join(__dirname, 'config', 'config.sqlite'));
-
-  db.all(
-    `SELECT * FROM eventi_utenti WHERE emailUtente = ? ORDER BY data DESC`,
+  const configDb = new sqlite3.Database(configDbPath);
+  configDb.all(
+    `SELECT nomeCartella FROM eventi_utenti WHERE emailUtente = ?`,
     [req.session.utente.email],
     async (err, rows) => {
       if (err) {
-        db.close();
-        console.error('Errore lettura eventi:', err.message);
-        return res.status(500).json({ success: false });
+        console.error("Errore lettura eventi:", err.message);
+        return res.status(500).json({ success: false, eventi: [] });
       }
 
       const eventiCompleti = [];
 
       for (const row of rows) {
-        const eventoFolder = row.nomeCartella;
-        const eventoPath = path.join(__dirname, 'eventi', eventoFolder, 'data', 'booking.sqlite');
+        const nomeCartella = row.nomeCartella;
+        const dbPath = path.join(eventiDir, nomeCartella, 'data', 'booking.sqlite');
 
-        let config = {};
-        if (fs.existsSync(eventoPath)) {
-          try {
-            config = await getEventoConfig(eventoPath);
-          } catch (e) {
-            console.warn(`⚠️ Errore lettura config evento ${eventoFolder}:`, e.message);
-          }
+        try {
+          const db = new sqlite3.Database(dbPath);
+
+          // SERIALIZZA tutte le operazioni sul singolo db
+          await new Promise((resolve, reject) => {
+            db.serialize(async () => {
+              try {
+                // 🔍 1. Verifica che esista la tabella "config"
+                const tables = await leggiConRetry(db, `SELECT name FROM sqlite_master WHERE type='table' AND name='config'`);
+                if (!tables.length) {
+                  console.warn(`⚠️ Database ${nomeCartella} non ha tabella 'config'. Salto...`);
+                  db.close();
+                  return resolve(); // vai avanti col prossimo
+                }
+
+                // 🔄 2. Leggi contenuto tabella config
+                const configRows = await leggiConRetry(db, `SELECT key, value FROM config`);
+
+                const config = {};
+                configRows.forEach(({ key, value }) => {
+                  config[key] = key === 'zonePrices' ? JSON.parse(value) : value;
+                });
+
+                eventiCompleti.push({
+                  nomeCartella,
+                  showName: config.showName || '',
+                  showDate: config.showDate || '',
+                  showTime: config.showTime || '',
+                  numeroPostiTotali: parseInt(config.numeroPostiTotali || '0'),
+                  svgFile: config.svgFile || '',
+                  imgEvento: config.imgEvento || '',
+                  imgIntest: config.imgIntest || '',
+                  notespdf: config.notespdf || '',
+                  zonePrices: config.zonePrices || {}
+                });
+
+                db.close();
+                resolve();
+              } catch (erroreInterno) {
+                db.close();
+                reject(erroreInterno);
+              }
+            });
+          });
+        } catch (err) {
+          console.error(`⚠️ Errore lettura config evento ${nomeCartella}:`, err.message);
         }
-
-        eventiCompleti.push({
-          id: row.id,
-          nomeCartella: eventoFolder,
-          titolo: row.titolo || config.showName || eventoFolder,
-          data: row.data || config.showDate || '',
-          ora: config.showTime || '',
-          emailUtente: row.emailUtente,
-          numeroPostiTotali: parseInt(config.numeroPostiTotali || 0),
-          imgEvento: config.imgEvento || '',
-          imgIntest: config.imgIntest || '',
-          zonePrices: config.zonePrices || {}
-        });
       }
 
-      db.close();
       res.json({ success: true, eventi: eventiCompleti });
     }
   );

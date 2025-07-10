@@ -1,0 +1,168 @@
+<!-- index.html aggiornato con calcolo dinamico prezzi -->
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teatro Booking con Modali</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header id="intestazioneSpettacolo" style="text-align: center; font-size: 25px; margin-bottom: 0px;"></header>
+  <div id="svgContainer">
+    <!-- L'SVG verrà caricato dinamicamente -->
+  </div>
+
+<!-- INFO POSTI SELEZIONATI E PULSANTE PRENOTA -->
+<div id="infoPrenotazione" style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  padding: 12px 0;
+  border-top: 1px solid #ccc;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+">
+  <button id="bookButton" onclick="apriModalePrenotatore()" disabled style="
+    padding: 10px 24px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    max-width: 100%;
+  ">
+    Prenota – <span id="selectedSeats">0</span> posti (€ <span id="totalAmountModal">0.00</span>)
+  </button>
+</div>
+
+  <!-- MODALI QUI (prenotatore, spettatori, riepilogo, messaggio) -->
+  <!-- ...omessi per brevità, nessuna modifica necessaria in questi -->
+
+
+  <!-- Moduli JS -->
+  <script type="module" src="script.js"></script>
+
+  <!-- Script per aggiornare il prezzo dinamicamente nel box iniziale -->
+
+
+
+  <!-- MODALE: Riepilogo -->
+<div id="riepilogoModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <button class="modal-close" onclick="chiudiModale()">×</button>
+    <h2>Riepilogo Prenotazione</h2>
+    <div id="riepilogoContenuto"></div>
+    <div class="button-group">
+      <button onclick="procediPagamento()">Conferma e Invia</button>
+    </div>
+  </div>
+</div>
+
+  <!-- MODALE: Spettatori -->
+<div id="spettatoriModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <button class="modal-close" onclick="chiudiModale()">×</button>
+    <h2>Nome degli Spettatori</h2>
+    <div id="spettatoriInput" class="form-group"></div>
+    <div class="button-group">
+      <button onclick="apriRiepilogo()">Riepilogo</button>
+    </div>
+  </div>
+</div>
+
+  <!-- MODALE: Prenotatore -->
+<div id="prenotatoreModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <button class="modal-close" onclick="chiudiModale()">×</button>
+    <h2>Dati di chi sta prenotando</h2>
+    <form>
+      <div class="form-group">
+        <label for="prenotatoreNome">Nome e Cognome</label>
+        <input type="text" id="prenotatoreNome" required>
+      </div>
+      <div class="form-group">
+<label for="prenotatoreEmail">Email</label>
+<input type="email" id="prenotatoreEmail" required>
+
+<label for="prenotatoreEmailConferma" style="margin-top: 10px;">Ripeti Email</label>
+<input type="email" id="prenotatoreEmailConferma" required>
+      </div>
+      <div class="form-group">
+        <label for="prenotatoreTelefono">Telefono</label>
+        <input type="tel" id="prenotatoreTelefono" required>
+      </div>
+      <div class="button-group">
+        <button type="button" onclick="controllaPrenotatore()">Continua</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="barraAttesa" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  text-align: center;
+  padding: 20px;
+  z-index: 999;
+">
+  <p style="margin-bottom: 10px; font-size: 16px;">Sto inviando la tua prenotazione…</p>
+  <div style="width: 100%; background-color: #ddd; border-radius: 8px;">
+    <div id="barraInterna" style="
+      width: 0%;
+      height: 12px;
+      background-color: #007bff;
+      border-radius: 8px;
+      transition: width 1s ease-in-out;
+    "></div>
+  </div>
+</div>
+
+
+
+<div id="messaggioConferma" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #28a745;
+  color: white;
+  padding: 30px 40px;
+  border-radius: 16px;
+  font-size: 22px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  text-align: center;
+  z-index: 1000;
+">
+  <p style="margin-bottom: 20px;">
+    ✅ Prenotazione confermata!<br>Controlla tua email per verificare se hai ricevuto i PDF della tua prenotazione.<br>Se non la trovi controlla nella SPAM.
+  </p>
+  <button onclick="chiudiMessaggioConferma()" style="
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: white;
+    color: #28a745;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  ">
+    OK
+  </button>
+</div>
+
+
+</body>
+</html>

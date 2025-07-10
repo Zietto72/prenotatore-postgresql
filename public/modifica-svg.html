@@ -22,37 +22,41 @@
         const parser = new DOMParser();
         const svgDoc = parser.parseFromString(e.target.result, "image/svg+xml");
 
-        const rects = svgDoc.querySelectorAll('rect[class]');
-        let sostituiti = 0;
+// 🔍 Prendi solo i rettangoli dentro il gruppo PIANTINA
+const gruppoPiantina = svgDoc.getElementById('PIANTINA');
+const rects = gruppoPiantina ? gruppoPiantina.querySelectorAll('rect[class]') : [];
 
-        rects.forEach(rect => {
-          let g = rect.parentElement;
-          while (g && !g.hasAttribute('id')) {
-            g = g.parentElement;
-          }
-          if (!g) return;
+let sostituiti = 0;
 
-          const id = g.getAttribute('id');
-          const zona = id ? id.split('_')[0] : '';
-          const parent = rect.parentNode;
-          const originalClass = rect.getAttribute("class").trim();
+rects.forEach(rect => {
+  let g = rect.parentElement;
+  while (g && !g.hasAttribute('id')) {
+    g = g.parentElement;
+  }
+  if (!g) return;
 
-          const newRect = svgDoc.createElementNS("http://www.w3.org/2000/svg", "rect");
-          newRect.setAttribute("class", `posto ${originalClass}`);
-          newRect.setAttribute("data-posto", id);
-          if (zona) {
-            newRect.setAttribute("data-zona", zona);
-          }
+  const id = g.getAttribute('id');
+  const zona = id ? id.split('_')[0] : '';
+  const parent = rect.parentNode;
+  const originalClass = rect.getAttribute("class").trim();
 
-          Array.from(rect.attributes).forEach(attr => {
-            if (attr.name !== 'class') {
-              newRect.setAttribute(attr.name, attr.value);
-            }
-          });
+  const newRect = svgDoc.createElementNS("http://www.w3.org/2000/svg", "rect");
+  newRect.setAttribute("class", `posto ${originalClass}`);
+  newRect.setAttribute("data-posto", id);
+  if (zona) {
+    newRect.setAttribute("data-zona", zona);
+  }
 
-          parent.replaceChild(newRect, rect);
-          sostituiti++;
-        });
+  // Copia tutti gli altri attributi
+  Array.from(rect.attributes).forEach(attr => {
+    if (attr.name !== 'class') {
+      newRect.setAttribute(attr.name, attr.value);
+    }
+  });
+
+  parent.replaceChild(newRect, rect);
+  sostituiti++;
+});
 
         const flattenRepeatedGroups = () => {
           const allGroups = svgDoc.querySelectorAll('g[class]');

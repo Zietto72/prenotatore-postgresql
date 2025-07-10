@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Eventi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+<!-- Sidebar -->
+<aside class="w-64 bg-blue-700 text-white flex flex-col p-4">
+<h1 class="text-2xl font-bold mb-8">La mia Associazione</h1>
+<nav class="flex flex-col space-y-4"><button class="hover:bg-blue-500 rounded p-2 text-left" onclick="mostraSezione('eventi')">Eventi</button><button class="hover:bg-blue-500 rounded p-2 text-left" onclick="mostraSezione('impostazioni')">Impostazioni</button></nav>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-8"><div id="eventiSection">
+<h2 class="text-xl font-bold mb-4">Elenco Eventi</h2>
+<div class="flex justify-between items-center mb-8">
+<h2 class="text-3xl font-bold">Eventi</h2>
+<button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center" id="creaEventoBtn">
+<span class="text-xl mr-2">+</span> Crea Evento
+      </button>
+</div><div class="flex flex-col space-y-4" id="eventiContainer">
+<!-- Cards evento generate qui -->
+</div></div>
+<!-- Sezione Impostazioni -->
+<div class="hidden p-6 bg-white rounded shadow" id="impostazioniSection">
+<h2 class="text-xl font-bold mb-4">Impostazioni Evento</h2>
+<form class="space-y-4" id="formConfig">
+
+
+<div>
+<label class="block font-semibold mb-1">URL intestazione immagine</label>
+<input class="w-full border rounded p-2" id="inputImgIntest" type="text"/>
+</div>
+<button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="salvaConfig()" type="button">Salva configurazione</button><div>
+<label class="block font-semibold mb-1">Note da pubblicare su PDF/email</label>
+<textarea class="w-full border rounded p-2" id="inputNotePdf" rows="4"></textarea>
+</div>
+</form>
+</div>
+</main>
+<!-- Modal Crea/Modifica Evento -->
+<div class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50" id="modalEvento">
+<div class="bg-white p-6 rounded-lg w-[90vw] max-w-xl max-h-[90vh] overflow-y-auto transform transition-transform scale-95 opacity-0 duration-300" id="modalContent"> <h3 class="text-2xl font-bold mb-4" id="modalTitle">Crea Evento</h3>
+<input class="w-full border p-2 mb-4 rounded" id="inputNomeEvento" placeholder="Nome Evento" type="text"/>
+<input class="w-full border p-2 mb-4 rounded" id="inputDataEvento" type="date"/>
+<input class="w-full border p-2 mb-4 rounded" id="inputOraEvento" type="time"/>
+<input class="w-full border p-2 mb-4 rounded" id="inputNumeroPosti" placeholder="Numero Posti Totali" type="number"/>
+<label class="block text-sm font-bold mb-1" for="inputSvgEvento">Piantina del teatro (file SVG)</label>
+<input accept=".svg" class="w-full border p-2 mb-4 rounded" id="inputSvgEvento" type="file"/>
+<div class="mt-2 p-2 border rounded bg-gray-50 overflow-auto max-h-32 hidden" id="previewSvgContainer"></div>
+<div id="zonePricesContainer"></div>
+<label class="block text-sm font-bold mb-1" for="inputImgEvento">Immagine Spettacolo</label>
+<input accept="image/*" class="w-full border p-2 mb-4 rounded" id="inputImgEvento" type="file"/>
+<img alt="Anteprima Immagine Spettacolo" class="w-full h-32 object-cover mt-2 rounded hidden" id="previewImgEvento" src=""/>
+<div class="flex justify-end space-x-4 mt-4">
+<button class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded" onclick="chiudiModal()">Annulla</button>
+<button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onclick="salvaEvento()">Salva</button>
+</div>
+</div>
+</div>
+<!-- Modal Modifica Immagine -->
+<div class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50" id="modalModificaImg">
+<div class="bg-white p-6 rounded-lg w-96">
+<h3 class="text-xl font-bold mb-4">Modifica Immagine Evento</h3>
+<input accept="image/*" class="w-full mb-4 p-2 border rounded" id="inputNuovaImmagine" type="file"/>
+<input id="eventoPerImmagine" type="hidden"/>
+<div class="flex justify-end space-x-2">
+<button class="bg-gray-300 px-4 py-2 rounded" onclick="chiudiModaleImg()">Annulla</button>
+<button class="bg-blue-600 text-white px-4 py-2 rounded" onclick="salvaNuovaImmagine()">Salva</button>
+</div>
+</div>
+</div>
+<!-- Toast Container -->
+<div class="fixed top-5 right-5 space-y-2 z-50" id="toastContainer"></div>
+<script>
+const eventiContainer = document.getElementById('eventiContainer');
+const modalEvento = document.getElementById('modalEvento');
+const modalContent = document.getElementById('modalContent');
+const inputNomeEvento = document.getElementById('inputNomeEvento');
+const inputDataEvento = document.getElementById('inputDataEvento');
+const inputSvgEvento = document.getElementById('inputSvgEvento');
+const zonePricesContainer = document.getElementById('zonePricesContainer');
+
+
+
+function mostraToast(messaggio, tipo = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `px-4 py-2 rounded shadow text-white ${tipo === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+  toast.textContent = messaggio;
+  document.getElementById('toastContainer').appendChild(toast);
+  setTimeout(() => { toast.remove(); }, 3000);
+}
+
+document.getElementById('creaEventoBtn').addEventListener('click', () => {
+  // Reset dei campi input
+  inputNomeEvento.value = '';
+  inputDataEvento.value = '';
+  inputSvgEvento.value = '';
+  document.getElementById('inputNumeroPosti').value = '';
+  document.getElementById('inputImgEvento').value = '';
+  zonePricesContainer.innerHTML = '';
+  eventoCorrentePerModifica = null;
+
+  // ✅ Pulizia anteprime visive (cache)
+  const previewImg = document.getElementById('previewImgEvento');
+  if (previewImg) {
+    previewImg.src = '';
+    previewImg.classList.add('hidden');
+  }
+  const previewSvg = document.getElementById('previewSvgContainer');
+  if (previewSvg) {
+    previewSvg.innerHTML = '';
+    previewSvg.classList.add('hidden');
+  }
+
+  // Mostra la modale
+  document.getElementById('modalTitle').textContent = 'Crea Evento';
+  modalEvento.classList.remove('hidden');
+  setTimeout(() => {
+    modalContent.classList.remove('scale-95', 'opacity-0');
+    modalContent.classList.add('scale-100', 'opacity-100');
+  }, 10);
+});
+
+inputSvgEvento.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  
+    const previewDiv = document.getElementById('previewSvgContainer');
+  previewDiv.innerHTML = text;
+  previewDiv.classList.remove('hidden');
+  
+  
+  const parser = new DOMParser();
+  const svgDoc = parser.parseFromString(text, "image/svg+xml");
+  const zones = new Set(Array.from(svgDoc.querySelectorAll('[data-zona]')).map(el => el.getAttribute('data-zona')));
+
+  zonePricesContainer.innerHTML = '';
+  zones.forEach(zona => {
+    const label = document.createElement('label');
+    label.textContent = `Prezzo per zona ${zona}`;
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.name = zona;
+    input.step = '0.01';
+    input.required = true;
+    input.className = 'w-full border p-2 mb-2 rounded';
+    zonePricesContainer.appendChild(label);
+    zonePricesContainer.appendChild(input);
+  });
+});
+
+function chiudiModal() {
+  modalContent.classList.remove('scale-100', 'opacity-100');
+  modalContent.classList.add('scale-95', 'opacity-0');
+  setTimeout(() => { modalEvento.classList.add('hidden'); }, 300);
+}
+
+async function salvaEvento() {
+  const nome = inputNomeEvento.value.trim();
+  const data = inputDataEvento.value;
+  const ora = document.getElementById('inputOraEvento').value;
+  const numeroPostiTotali = document.getElementById('inputNumeroPosti').value.trim();
+  const svgFile = inputSvgEvento.files[0];
+  const imgFile = document.getElementById('inputImgEvento').files[0];
+
+  const isModifica = !!eventoCorrentePerModifica;
+
+  // 🔍 Controllo campi obbligatori
+  if (!nome || !data || !ora || !numeroPostiTotali) {
+    mostraToast('Compila tutti i campi obbligatori (nome, data, ora, posti).', 'error');
+    return;
+  }
+
+  // 🔍 Se è una nuova creazione, SVG e Immagine sono obbligatori
+  if (!isModifica && (!svgFile || !imgFile)) {
+    mostraToast('Carica sia la piantina SVG sia l\'immagine dello spettacolo.', 'error');
+    return;
+  }
+
+  // 🔍 Controllo prezzi per zona (devono essere tutti numeri validi)
+  const zonePrices = {};
+  let prezziValidi = true;
+  document.querySelectorAll('#zonePricesContainer input').forEach(input => {
+    const val = parseFloat(input.value);
+    if (isNaN(val)) prezziValidi = false;
+    else zonePrices[input.name] = val;
+  });
+
+  if (!prezziValidi) {
+    mostraToast('Inserisci un prezzo valido per ogni zona.', 'error');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('nome', nome);
+  formData.append('data', data);
+  formData.append('ora', ora);
+  formData.append('numeroPostiTotali', numeroPostiTotali);
+  formData.append('zonePrices', JSON.stringify(zonePrices));
+
+  if (svgFile) formData.append('svg', svgFile);
+  if (imgFile) formData.append('imgEvento', imgFile);
+
+  try {
+    const url = isModifica
+      ? `/eventi/${encodeURIComponent(eventoCorrentePerModifica)}/modifica`
+      : '/crea-evento';
+
+    const res = await fetch(url, { method: 'POST', body: formData });
+    const json = await res.json();
+
+    if (json.success) {
+      mostraToast(isModifica ? 'Evento modificato con successo!' : 'Evento creato con successo!');
+      chiudiModal();
+      location.reload();
+      eventoCorrentePerModifica = null;
+    } else {
+      mostraToast('Errore nel salvataggio dell\'evento.', 'error');
+    }
+  } catch (error) {
+    console.error(error);
+    mostraToast('Errore durante la richiesta al server.', 'error');
+  }
+}
+
+function apriPreview(folderName) {
+  const url = `/eventi/${encodeURIComponent(folderName)}/index.html`;
+  window.open(url, '_blank');
+}
+
+function formattaDataCompleta(data, ora) {
+  if (!data) return '';
+  const [anno, mese, giorno] = data.split('-');
+  const date = new Date(`${anno}-${mese}-${giorno}`);
+  const giorniSettimana = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+  const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+  const giornoSettimana = giorniSettimana[date.getDay()];
+  const dataFormattata = `${giornoSettimana} ${giorno} ${mesi[+mese - 1]} ${anno}`;
+  return ora ? `${dataFormattata} – ${ora}` : dataFormattata;
+}
+
+async function caricaEventi() {
+  const res = await fetch('/eventi-list');
+  const eventi = await res.json();
+  eventiContainer.innerHTML = '';
+
+eventi.forEach(evento => {
+  const nomeEvento = typeof evento === 'string' ? evento : evento.nome;
+  const dataEvento = evento.data || '';
+  const oraEvento = evento.ora || evento.showTime || '';
+  const postiTotali = evento.numeroPostiTotali || 0;
+  const folderName = evento.folderName || nomeEvento;
+  const imgIntest = evento.imgIntest || '';
+  const zonePrices = evento.zonePrices || {};
+  const imgEvento = evento.imgEvento ? `/eventi/${folderName}/${evento.imgEvento}` : '';
+
+  const card = document.createElement('div');
+  card.setAttribute('data-expanded', 'false');
+  card.className = 'bg-white border border-gray-300 rounded-lg overflow-hidden shadow transition-all mb-2';
+
+  // 🔵 Formatta data + ora
+  const dataObj = new Date(dataEvento);
+  const giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+  const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+  const dataFormattata = isNaN(dataObj.getTime()) ? '' :
+    `${giorni[dataObj.getDay()]} ${String(dataObj.getDate()).padStart(2, '0')} ${mesi[dataObj.getMonth()]} ${dataObj.getFullYear()}`;
+  const dataEOra = oraEvento ? `${dataFormattata} – ${oraEvento}` : dataFormattata;
+  
+  
+
+card.setAttribute('data-expanded', 'false');
+card.className = 'bg-white border border-gray-300 rounded-lg overflow-hidden shadow transition-all mb-2';
+
+card.innerHTML = `
+  <!-- Intestazione compatta cliccabile -->
+  <div class="flex justify-between items-center bg-blue-100 px-4 py-3 hover:bg-blue-200 cursor-pointer" onclick="toggleEvento(this)">
+    <h3 class="text-lg font-bold text-blue-900">${nomeEvento}</h3>
+<span class="text-sm text-gray-700">${formattaDataCompleta(dataEvento, oraEvento)}</span>  </div>
+
+  <!-- Contenuto espanso nascosto -->
+  <div class="hidden p-4 space-y-4 border-t bg-white dettagli-evento">
+    ${imgIntest ? `<img src="${imgIntest}" alt="Logo Evento" class="w-24 h-auto mb-2 rounded-md">` : ''}
+    ${imgEvento ? `<img src="${imgEvento}" alt="Immagine Spettacolo" class="w-full h-48 object-cover rounded-lg mb-4">` : ''}
+
+    <p class="flex items-center text-sm text-gray-600">
+      <i data-lucide="ticket" class="w-4 h-4 mr-2"></i>Totali: <span class="text-lg font-bold">${postiTotali}</span>
+    </p>
+    <p class="flex items-center text-sm text-gray-600" id="disponibili-${nomeEvento.replace(/\s+/g, '')}">
+      <i data-lucide="ticket-check" class="w-4 h-4 mr-2"></i>Disponibili: <span class="text-lg font-bold">-</span>
+    </p>
+    
+    ${Object.keys(zonePrices).length > 0 ? `
+  <div class="mt-2">
+    <h4 class="text-sm font-semibold">Prezzi per zona:</h4>
+    <ul class="list-disc list-inside text-sm text-gray-700">
+${Object.entries(zonePrices).map(([zona, prezzo]) => {
+  const val = parseFloat(prezzo);
+  const prezzoFormatted = isNaN(val) ? '—' : `€ ${val.toFixed(2)}`;
+  return `<li>Zona ${zona}: ${prezzoFormatted}</li>`;
+}).join('')}
+    </ul>
+  </div>
+` : ''}
+
+    <div class="flex space-x-2 mt-4">
+      <button class="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded" onclick="togglePrenotazioni('${nomeEvento.replace(/'/g, "\\'")}', '${folderName}', ${postiTotali})">
+        Prenotazioni
+      </button>
+      <button class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" onclick="apriPreview('${folderName}')">
+        Piantina
+      </button>
+<button class="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+        onclick="toggleModificaEvento('${folderName}', '${nomeEvento.replace(/'/g, "\\'")}')">
+  Modifica Dati
+</button>
+
+      <button class="flex-1 bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded" onclick="eliminaEvento('${folderName}')">
+        Elimina
+      </button>
+    </div>
+
+<div id="prenotazioni-${nomeEvento.replace(/\s+/g, '')}" class="hidden bg-white rounded-lg shadow-md mt-4 overflow-auto max-h-[500px] p-4"></div>
+
+<div id="modifica-${nomeEvento.replace(/\s+/g, '')}" class="hidden bg-white rounded-lg shadow-md mt-4 p-4 overflow-auto max-h-[500px]">
+
+    <div id="previewArea-${folderName.replace(/\s+/g, '')}" class="hidden bg-gray-100 rounded-lg shadow-md overflow-hidden h-250 mt-2">
+      <iframe id="previewIframe-${folderName.replace(/\s+/g, '')}" src="" class="w-full h-full border-0"></iframe>
+    </div>
+  </div>
+`;
+
+    eventiContainer.appendChild(card);
+    lucide.createIcons();
+
+    // Carica subito le prenotazioni per aggiornare i disponibili
+    fetch(`/eventi/${encodeURIComponent(folderName)}/prenotazioni`)
+      .then(res => res.json())
+      .then(prenotazioni => {
+        const disponibili = postiTotali - (prenotazioni.length || 0);
+        const disponibiliEl = document.getElementById(`disponibili-${nomeEvento.replace(/\s+/g, '')}`);
+        if (disponibiliEl) {
+          disponibiliEl.innerHTML = `<i data-lucide="ticket-check" class="w-4 h-4 mr-2"></i>Disponibili: <span class="text-lg font-bold">${disponibili}</span>`;
+          lucide.createIcons();
+        }
+      })
+      .catch(err => {
+        console.error('Errore caricamento prenotazioni per evento', nomeEvento, err);
+      });
+  });
+}
+
+async function eliminaEvento(nome) {
+  mostraModaleConferma(`Vuoi davvero eliminare l'evento "${nome}"?`, async () => {
+    const res = await fetch(`/eventi/${encodeURIComponent(nome)}/elimina`, { method: 'POST' });
+    const json = await res.json();
+    if (json.success) {
+      mostraToast('Evento eliminato.');
+      caricaEventi();
+    } else {
+      mostraToast('Errore eliminazione evento.', 'error');
+    }
+  });
+}
+
+async function togglePrenotazioni(nome, folderName, postiTotali) {
+  const containerId = `prenotazioni-${nome.replace(/\s+/g, '')}`;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!container.classList.contains('hidden')) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = '<p class="text-gray-500 text-center p-4">Caricamento prenotazioni...</p>';
+
+  try {
+    const resPrenotazioni = await fetch(`/eventi/${encodeURIComponent(folderName)}/prenotazioni`);
+    const prenotazioni = await resPrenotazioni.json();
+
+    const resPdf = await fetch(`/eventi/${encodeURIComponent(folderName)}/pdf-list`);
+    const pdfFiles = await resPdf.json();
+
+    const disponibili = postiTotali - prenotazioni.length;
+    const idDisponibili = `disponibili-${nome.replace(/\s+/g, '')}`;
+    const disponibiliEl = document.getElementById(idDisponibili);
+    if (disponibiliEl) {
+      disponibiliEl.innerHTML = `<i data-lucide="ticket-check" class="w-4 h-4 mr-2"></i>Disponibili: <span class="text-lg font-bold">${disponibili}</span>`;
+      lucide.createIcons();
+    }
+
+    if (!Array.isArray(prenotazioni) || prenotazioni.length === 0) {
+      container.innerHTML = '<p class="text-gray-500 text-center p-4">Nessuna prenotazione trovata.</p>';
+      return;
+    }
+
+    let html = `
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="bg-gray-100 text-gray-700 uppercase text-xs">
+            <th class="border-b p-2 text-left">Posto</th>
+            <th class="border-b p-2 text-left">Nome</th>
+            <th class="border-b p-2 text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const p of prenotazioni) {
+      const safeNome = (p.nome || '').trim().replace(/\s+/g, '_');
+      const fileName = `${p.posto}_${safeNome}.pdf`;
+      const idDettagli = `dettagli-${p.posto.replace(/\s+/g, '')}`;
+
+      let rowClass = "cursor-pointer hover:bg-gray-100";
+      if (!pdfFiles.includes(fileName)) {
+        rowClass += " bg-orange-200"; // Se manca il PDF, coloro la riga
+      }
+
+      html += `
+        <tr class="${rowClass}" onclick="toggleDettagli('${idDettagli}')">
+          <td class="border-b p-2">${p.posto || ''}</td>
+          <td class="border-b p-2">${p.nome || ''}</td>
+          <td class="border-b p-2 text-center">
+            <button onclick="event.stopPropagation(); eliminaPrenotazione('${folderName}', '${p.posto.replace(/'/g, "\\'")}', '${p.nome.replace(/'/g, "\\'")}')" class="bg-red-500 hover:bg-red-700 text-white rounded-lg w-6 h-6 flex items-center justify-center text-xs">
+              ❌
+            </button>
+          </td>
+        </tr>
+        <tr id="${idDettagli}" class="hidden bg-gray-50">
+          <td colspan="3" class="p-2 text-sm">
+            <i data-lucide="at-sign" class="w-4 h-4 mr-2"></i>Email: ${p.email || '---'}<br>
+            📞 Telefono: ${p.telefono || '---'}<br>
+            🧑 Prenotatore: ${p.prenotatore || '---'}<br>
+            🔒 Codice: ${p.bookingCode || '---'}
+          </td>
+        </tr>
+      `;
+    }
+
+    html += `</tbody></table>`;
+
+    container.innerHTML = html;
+    lucide.createIcons();
+
+  } catch (err) {
+    console.error('Errore caricamento prenotazioni:', err);
+    container.innerHTML = '<p class="text-red-500 text-center p-4">Errore caricamento prenotazioni.</p>';
+  }
+}
+
+async function toggleModificaEvento(folderName, nomeEvento) {
+  const id = `modifica-${nomeEvento.replace(/\s+/g, '')}`;
+  const container = document.getElementById(id);
+  if (!container) return;
+
+  if (!container.classList.contains('hidden')) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = '<p class="text-gray-500 text-center">Caricamento dati evento...</p>';
+
+  try {
+    const res = await fetch(`/eventi/${encodeURIComponent(folderName)}/config`);
+    const config = await res.json();
+
+    const zonePrices = config.zonePrices || {};
+
+    let html = `
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold">Nome</label>
+          <input type="text" id="nome-${folderName}" value="${config.showName}" class="w-full border rounded p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-bold">Data</label>
+          <input type="date" id="data-${folderName}" value="${config.showDate}" class="w-full border rounded p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-bold">Ora</label>
+          <input type="time" id="ora-${folderName}" value="${config.showTime}" class="w-full border rounded p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-bold">Numero Posti</label>
+          <input type="number" id="posti-${folderName}" value="${config.numeroPostiTotali}" class="w-full border rounded p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-bold">Prezzi per zona</label>
+    `;
+
+    for (const zona in zonePrices) {
+      html += `
+        <div class="mb-2">
+          <label class="text-sm">${zona}</label>
+          <input type="number" id="prezzo-${folderName}-${zona}" value="${zonePrices[zona]}" step="0.01" class="w-full border rounded p-2">
+        </div>
+      `;
+    }
+
+html += `
+  </div>
+
+  <div>
+    <label class="block text-sm font-bold">Piantina attuale</label>
+    <div id="preview-svg-${folderName}" class="border rounded p-2 bg-gray-50 max-h-[200px] overflow-auto">
+      <em>Caricamento piantina...</em>
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <label class="block text-sm font-bold">Nuova Piantina (SVG)</label>
+    <input type="file" id="svg-${folderName}" accept=".svg" class="w-full border rounded p-2">
+  </div>
+
+  <div class="mt-4">
+    <label class="block text-sm font-bold">Immagine attuale dello spettacolo</label>
+    <img id="img-preview-${folderName}" src="/eventi/${folderName}/${config.imgEvento}" alt="Anteprima" class="w-full h-32 object-cover rounded mb-2">
+  </div>
+
+  <div>
+    <label class="block text-sm font-bold">Nuova Immagine Evento</label>
+    <input type="file" id="img-${folderName}" accept="image/*" class="w-full border rounded p-2">
+  </div>
+
+  <div class="flex justify-end mt-4">
+    <button onclick="salvaModificheEvento('${folderName}')" class="bg-blue-600 text-white px-4 py-2 rounded">Salva</button>
+  </div>
+</div>
+`;
+
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = '<p class="text-red-500 text-center">Errore caricamento dati.</p>';
+    console.error(err);
+  }
+}
+
+async function salvaModificheEvento(folderName) {
+  const nome = document.getElementById(`nome-${folderName}`).value;
+  const data = document.getElementById(`data-${folderName}`).value;
+  const ora = document.getElementById(`ora-${folderName}`).value;
+  const posti = document.getElementById(`posti-${folderName}`).value;
+
+  const svgFile = document.getElementById(`svg-${folderName}`).files[0];
+  const imgFile = document.getElementById(`img-${folderName}`).files[0];
+
+  const prezziInputs = document.querySelectorAll(`[id^="prezzo-${folderName}-"]`);
+  const zonePrices = {};
+  prezziInputs.forEach(input => {
+    const zona = input.id.split(`prezzo-${folderName}-`)[1];
+    zonePrices[zona] = parseFloat(input.value);
+  });
+
+  const formData = new FormData();
+  formData.append('nome', nome);
+  formData.append('data', data);
+  formData.append('ora', ora);
+  formData.append('numeroPostiTotali', posti);
+  formData.append('zonePrices', JSON.stringify(zonePrices));
+  if (svgFile) formData.append('svg', svgFile);
+  if (imgFile) formData.append('imgEvento', imgFile);
+
+  try {
+    const res = await fetch(`/eventi/${encodeURIComponent(folderName)}/modifica`, {
+      method: 'POST',
+      body: formData
+    });
+
+    const json = await res.json();
+    if (json.success) {
+      mostraToast('Evento aggiornato con successo!');
+      location.reload();
+    } else {
+      mostraToast('Errore nel salvataggio.', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    mostraToast('Errore durante la richiesta.', 'error');
+  }
+}
+
+
+async function eliminaPrenotazione(evento, posto, nome) {
+  mostraModaleConferma(`Vuoi davvero eliminare la prenotazione del posto ${posto}?`, async () => {
+    try {
+      const res = await fetch(`/eventi/${encodeURIComponent(evento)}/elimina-prenotazione`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ posto, nome })
+      });
+      const result = await res.json();
+      if (result.success) {
+        mostraToast('Prenotazione eliminata.');
+        location.reload();
+      } else {
+        mostraToast('Errore eliminazione.', 'error');
+      }
+    } catch (err) {
+      console.error('Errore eliminazione prenotazione:', err);
+      mostraToast('Errore eliminazione.', 'error');
+    }
+  });
+}
+
+async function visualizzaPrenotazioni(nome) {
+  mostraToast(`Visualizzazione prenotazioni per "${nome}" ancora da implementare.`, 'success');
+}
+
+function toggleDettagli(id) {
+  const riga = document.getElementById(id);
+  if (riga) {
+    riga.classList.toggle('hidden');
+  }
+}
+
+//sostituzione dati spettacolo
+
+let eventoCorrentePerModifica = null;
+
+async function apriModificaEvento(folderName) {
+  try {
+    const res = await fetch(`/eventi/${encodeURIComponent(folderName)}/config`);
+    const config = await res.json();
+
+// Reset preview immagine e svg
+const previewImg = document.getElementById('previewImgEvento');
+if (previewImg) {
+  previewImg.src = '';
+  previewImg.classList.add('hidden');
+}
+const previewSvg = document.getElementById('previewSvgContainer');
+if (previewSvg) {
+  previewSvg.innerHTML = '';
+  previewSvg.classList.add('hidden');
+}
+
+    eventoCorrentePerModifica = folderName;
+
+    document.getElementById('modalTitle').textContent = 'Modifica Evento';
+    inputNomeEvento.value = config.showName || '';
+    inputDataEvento.value = config.showDate || '';
+    document.getElementById('inputOraEvento').value = config.showTime || '';
+    document.getElementById('inputNumeroPosti').value = config.numeroPostiTotali || '';
+
+    // Reset input file
+    inputSvgEvento.value = '';
+    document.getElementById('inputImgEvento').value = '';
+
+    // Mostra anteprima immagine spettacolo (se presente)
+    if (config.imgEvento) {
+      const imgEventoUrl = `/eventi/${folderName}/${config.imgEvento}`;
+      const previewImg = document.getElementById('previewImgEvento');
+      if (previewImg) {
+        previewImg.src = imgEventoUrl;
+        previewImg.classList.remove('hidden');
+      }
+    }
+
+    // Mostra anteprima SVG (se presente)
+    if (config.svgFile) {
+      const svgUrl = `/eventi/${folderName}/svg/${config.svgFile}`;
+      try {
+        const svgResponse = await fetch(svgUrl);
+        const svgText = await svgResponse.text();
+        const previewSvg = document.getElementById('previewSvgContainer');
+        if (previewSvg) {
+          previewSvg.innerHTML = svgText;
+          previewSvg.classList.remove('hidden');
+        }
+      } catch (svgErr) {
+        console.warn('⚠️ Impossibile caricare anteprima SVG:', svgErr);
+      }
+    }
+
+    // Ricrea input per prezzi zone
+    const zonePrices = config.zonePrices || {};
+    zonePricesContainer.innerHTML = '';
+    for (const zona in zonePrices) {
+      const label = document.createElement('label');
+      label.textContent = `Prezzo per zona ${zona}`;
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.name = zona;
+      input.step = '0.01';
+      input.required = true;
+      input.className = 'w-full border p-2 mb-2 rounded';
+      input.value = zonePrices[zona];
+      zonePricesContainer.appendChild(label);
+      zonePricesContainer.appendChild(input);
+    }
+
+    // Mostra la modale con animazione
+    modalEvento.classList.remove('hidden');
+    setTimeout(() => {
+      modalContent.classList.remove('scale-95', 'opacity-0');
+      modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+
+  } catch (err) {
+    mostraToast('Errore caricamento dati evento', 'error');
+    console.error(err);
+  }
+}
+
+//sostituzione immagine spettacolo
+function apriModificaImmagine(folderName) {
+  document.getElementById('eventoPerImmagine').value = folderName;
+  document.getElementById('inputNuovaImmagine').value = '';
+  document.getElementById('modalModificaImg').classList.remove('hidden');
+}
+
+function chiudiModaleImg() {
+  document.getElementById('modalModificaImg').classList.add('hidden');
+}
+
+// --- Vista miniatura spettacolo
+document.getElementById('inputImgEvento').addEventListener('change', function () {
+  const file = this.files[0];
+  const preview = document.getElementById('previewImgEvento');
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.classList.add('hidden');
+  }
+});
+
+
+// --- accordion dell'evento
+function toggleEvento(headerEl) {
+  const card = headerEl.closest('[data-expanded]');
+  const isExpanded = card.getAttribute('data-expanded') === 'true';
+
+  card.setAttribute('data-expanded', String(!isExpanded));
+  const dettagli = card.querySelector('.dettagli-evento');
+  if (dettagli) {
+    dettagli.classList.toggle('hidden');
+  }
+}
+
+async function salvaNuovaImmagine() {
+  const folderName = document.getElementById('eventoPerImmagine').value;
+  const nuovaImg = document.getElementById('inputNuovaImmagine').files[0];
+  if (!nuovaImg) {
+    mostraToast('Seleziona un\'immagine', 'error');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('imgEvento', nuovaImg);
+
+  try {
+    const res = await fetch(`/eventi/${folderName}/modifica-immagine`, {
+      method: 'POST',
+      body: formData
+    });
+    const json = await res.json();
+
+    if (json.success) {
+      mostraToast('Immagine aggiornata!');
+      chiudiModaleImg();
+      location.reload(); // Ricarica eventi per vedere immagine aggiornata
+    } else {
+      mostraToast('Errore aggiornamento immagine.', 'error');
+    }
+  } catch (err) {
+    console.error('Errore upload immagine:', err);
+    mostraToast('Errore comunicazione con server.', 'error');
+  }
+}
+
+let azioneConfermata = null;
+
+function mostraModaleConferma(messaggio, callbackConferma) {
+  document.getElementById('testoConferma').textContent = messaggio;
+  document.getElementById('modalConferma').classList.remove('hidden');
+  azioneConfermata = callbackConferma;
+}
+
+function nascondiModaleConferma() {
+  document.getElementById('modalConferma').classList.add('hidden');
+  azioneConfermata = null;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btnConfermaElimina').addEventListener('click', () => {
+    if (azioneConfermata) {
+      azioneConfermata();
+      nascondiModaleConferma();
+    }
+  });
+});
+
+window.addEventListener('DOMContentLoaded', caricaEventi);
+</script>
+<!-- Modale di conferma eliminazione -->
+<div class="fixed inset-0 bg-black bg-opacity-40 hidden flex justify-center items-center z-50" id="modalConferma">
+<div class="bg-red-600 text-white rounded-lg p-6 max-w-md w-[90%] text-center shadow-lg">
+<h3 class="text-xl font-bold mb-4">Conferma eliminazione</h3>
+<p class="mb-6" id="testoConferma">Sei sicuro di voler procedere?</p>
+<div class="flex justify-center gap-4">
+<button class="bg-white text-red-700 px-4 py-2 rounded hover:bg-gray-100" onclick="nascondiModaleConferma()">Annulla</button>
+<button class="bg-white text-red-700 font-bold px-4 py-2 rounded hover:bg-red-200" id="btnConfermaElimina">Sì, elimina</button>
+</div>
+</div>
+</div>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('eventiSection')?.classList.remove('hidden');
+  document.getElementById('impostazioniSection')?.classList.add('hidden');
+
+  window.mostraSezione = function(sezione) {
+    const eventi = document.getElementById('eventiSection');
+    const impostazioni = document.getElementById('impostazioniSection');
+    if (!eventi || !impostazioni) return;
+
+    eventi.classList.add('hidden');
+    impostazioni.classList.add('hidden');
+
+    if (sezione === 'eventi') eventi.classList.remove('hidden');
+    if (sezione === 'impostazioni') impostazioni.classList.remove('hidden');
+  };
+
+  window.salvaConfig = function () {
+    const config = {
+      showName: document.getElementById('inputShowName').value,
+      showDate: document.getElementById('inputShowDate').value,
+      imgIntest: document.getElementById('inputImgIntest').value,
+      notespdf: document.getElementById('inputNotePdf').value
+    };
+
+    fetch('/salva-config-generale', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Configurazione salvata con successo.');
+        } else {
+          alert('Errore durante il salvataggio.');
+        }
+      })
+      .catch(err => {
+        console.error('Errore salvataggio config:', err);
+        alert('Errore di rete.');
+      
+  // Carica dati da config.json
+  fetch('/config.json')
+    .then(res => res.json())
+    .then(config => {
+      document.getElementById('inputShowName').value = config.showName || '';
+      document.getElementById('inputShowDate').value = config.showDate || '';
+      document.getElementById('inputImgIntest').value = config.imgIntest || '';
+      document.getElementById('inputNotePdf').value = config.notespdf || '';
+    })
+    .catch(err => console.warn('config.json non trovato o invalido:', err));
+
+});
+  };
+
+  // Carica dati da config.json
+  fetch('/config.json')
+    .then(res => res.json())
+    .then(config => {
+      document.getElementById('inputShowName').value = config.showName || '';
+      document.getElementById('inputShowDate').value = config.showDate || '';
+      document.getElementById('inputImgIntest').value = config.imgIntest || '';
+      document.getElementById('inputNotePdf').value = config.notespdf || '';
+    })
+    .catch(err => console.warn('config.json non trovato o invalido:', err));
+
+});
+</script></body>
+</html>
