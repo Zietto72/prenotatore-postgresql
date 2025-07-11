@@ -10,17 +10,19 @@ const path = require('path');
 const configDbPath = path.join(__dirname, 'config', 'config.sqlite');
 const { jsPDF } = require('jspdf');
 const QRCode = require('qrcode');
+const SQLiteStore = require('connect-sqlite3')(session);
 // Import template data from public folder
 const app = express();
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
 /// --- Login
 app.use(session({
-  secret: 'xxx', // Cambiala in produzione
+  store: new SQLiteStore({ db: 'sessions.sqlite', dir: './config' }),
+  secret: 'una-chiave-super-segreta',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 giorno
 }));
-
 
 
 

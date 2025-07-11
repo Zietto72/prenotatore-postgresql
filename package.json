@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "connect-sqlite3": "^0.9.16",
     "dotenv": "^17.1.0",
     "emailjs": "^4.0.3",
     "express": "^5.1.0",
