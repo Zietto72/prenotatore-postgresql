@@ -840,26 +840,44 @@ app.get('/verifica-codice', (req, res) => {
 // --- Verifica QRCODE con dati completi (via POST) ---
 app.post('/verifica-codice-qr', (req, res) => {
   try {
-    const { codice, posto, spettatore, cartella } = req.body;
+    const { codice, spettacolo, data, posto, spettatore, prenotatoDa, cartella } = req.body;
 
-    if (!codice || !data) return res.status(400).json({ valido: false });
+    if (!codice || !posto || !spettatore || !prenotatoDa || !cartella)
+      return res.status(400).json({ valido: false, motivo: 'Dati mancanti' });
 
-const dbPath = path.join(__dirname, 'eventi', cartella, 'data', 'booking.sqlite');
-
-    if (!fs.existsSync(dbPath)) return res.status(404).json({ valido: false });
+    const dbPath = path.join(__dirname, 'eventi', cartella, 'data', 'booking.sqlite');
+    if (!fs.existsSync(dbPath))
+      return res.status(404).json({ valido: false, motivo: 'Evento non trovato' });
 
     const db = new sqlite3.Database(dbPath);
 
-    db.get(`SELECT * FROM prenotazioni WHERE bookingCode = ? AND posto = ? AND nome = ?`,
-      [codice, posto, spettatore],
+    db.get(
+      `SELECT * FROM prenotazioni WHERE bookingCode = ? AND posto = ? AND nome = ? AND prenotatore = ?`,
+      [codice, posto, spettatore, prenotatoDa],
       (err, row) => {
+        if (err || !row) {
+          db.close();
+          return res.json({ valido: false, motivo: 'Dati non corrispondenti' });
+        }
+
+        // Verifica se la data corrisponde ad oggi
+        const oggi = new Date().toISOString().slice(0, 10);
+        const dataCorrisponde = data === oggi;
+
         db.close();
-        if (err || !row) return res.json({ valido: false });
-        return res.json({ valido: true, nome: row.nome, posto: row.posto });
-      });
+        return res.json({
+          valido: true,
+          giaControllato: false,  // Potrai gestirlo se aggiungi un campo 'controllato' nel DB
+          dataCorrisponde,
+          spettacolo: spettacolo,
+          nome: row.nome,
+          posto: row.posto
+        });
+      }
+    );
   } catch (e) {
     console.error('Errore verifica QR:', e);
-    return res.status(500).json({ valido: false });
+    return res.status(500).json({ valido: false, motivo: 'Errore server' });
   }
 });
 
