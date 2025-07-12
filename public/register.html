@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -6,85 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Registrazione</title>
   <style>
-    body {
-      background-color: #f5f5f5;
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .form-container {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      max-width: 400px;
-      width: 100%;
-    }
-    input {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      padding: 10px;
-      width: 100%;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    .error, .success {
-      margin-bottom: 10px;
-      display: none;
-    }
-    .error {
-      color: red;
-    }
-    .success {
-      color: green;
-    }
+    body { background: #f5f5f5; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .box { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 400px; width: 100%; }
+input, button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+label {
+  margin-top: 12px;
+  display: block;
+  font-size: 14px;
+}
+input {
+  border: 1px solid #ccc;
+}
+button {
+  border: none;
+  cursor: pointer;
+}     button { background: #007bff; color: white; border: none; font-size: 16px; cursor: pointer; }
+    .message { margin-top: 10px; text-align: center; }
+    .back-link { text-align: center; margin-top: 20px; font-size: 14px; }
+    .back-link a { color: #007bff; text-decoration: none; }
+    .back-link a:hover { text-decoration: underline; }
+    .error { color: red; display: none; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <div class="form-container">
-    <h2>Crea un nuovo account</h2>
-    <div id="messaggioErrore" class="error">Errore durante la registrazione</div>
-    <div id="messaggioSuccesso" class="success">Registrazione completata! Ora puoi effettuare il login.</div>
-    <form id="registerForm">
-      <label for="email">Email</label>
-      <input type="email" id="email" required />
-      <label for="password">Password</label>
-      <input type="password" id="password" required />
-      <button type="submit">Registrati</button>
-    </form>
-  </div>
+  <div class="box">
+    <h2>Registrati</h2>
+    <div id="errore" class="error">Errore registrazione</div>
+<form id="registerForm">
+  <label for="email">Email</label>
+  <input type="email" id="email" required />
+
+  <label for="emailConferma">Conferma Email</label>
+  <input type="email" id="emailConferma" required />
+
+  <label for="password">Password</label>
+  <input type="password" id="password" required />
+
+  <button type="submit">Crea Account</button>
+</form>
+     <div id="msg" class="message"></div>
+    <div class="back-link">
+      <a href="login.html">← Torna al login</a>
+    </div>
+  </div> </div>
+  
+  
 
   <script>
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    // Funzione Levenshtein
+    function distanzaLevenshtein(a, b) {
+      const matrix = Array.from({ length: a.length + 1 }, (_, i) =>
+        Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+      );
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          matrix[i][j] = a[i - 1] === b[j - 1]
+            ? matrix[i - 1][j - 1]
+            : Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + 1);
+        }
+      }
+      return matrix[a.length][b.length];
+    }
 
-      const res = await fetch("/register", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ email, password })
+    // Blocca copia/incolla in campo conferma
+    const emailConferma = document.getElementById("emailConferma");
+    if (emailConferma) {
+      emailConferma.addEventListener("paste", e => {
+        e.preventDefault();
+        alert("Per favore, digita manualmente l'indirizzo email.");
+      });
+      emailConferma.addEventListener("copy", e => e.preventDefault());
+      emailConferma.addEventListener("cut", e => e.preventDefault());
+      emailConferma.addEventListener("contextmenu", e => e.preventDefault());
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const email2 = document.getElementById('emailConferma').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const erroreBox = document.getElementById('errore');
+      erroreBox.style.display = "none";
+
+      // Controlli di base
+      if (!email || !email2 || !password) {
+        erroreBox.textContent = "Compila tutti i campi.";
+        erroreBox.style.display = "block";
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        erroreBox.textContent = "Inserisci un indirizzo email valido.";
+        erroreBox.style.display = "block";
+        return;
+      }
+
+      if (email !== email2) {
+        erroreBox.textContent = "Le due email non coincidono.";
+        erroreBox.style.display = "block";
+        return;
+      }
+
+      // Suggerimento dominio
+      const dominioInserito = email.split('@')[1]?.toLowerCase();
+      const dominiComuni = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'libero.it', 'fastwebnet.it'];
+
+      if (dominioInserito && !dominiComuni.includes(dominioInserito)) {
+        const suggerito = dominiComuni.find(d => distanzaLevenshtein(d, dominioInserito) <= 2);
+        if (suggerito) {
+          const conferma = confirm(
+            `Hai scritto "${dominioInserito}". Forse intendevi "${suggerito}"?\n\nPremi OK per CONTINUARE in ogni caso oppure ANNULLA per CORREGGERE.`
+          );
+          if (!conferma) return;
+        }
+      }
+
+      // Invia richiesta
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
       if (data.success) {
-        document.getElementById("messaggioSuccesso").style.display = "block";
-        document.getElementById("messaggioErrore").style.display = "none";
+        alert('Registrazione completata. Ora puoi accedere.');
+        window.location.href = '/login.html';
       } else {
-        document.getElementById("messaggioErrore").style.display = "block";
-        document.getElementById("messaggioSuccesso").style.display = "none";
+        erroreBox.innerText = data.message || 'Errore registrazione';
+        erroreBox.style.display = 'block';
       }
     });
   </script>

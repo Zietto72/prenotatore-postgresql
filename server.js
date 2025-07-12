@@ -940,10 +940,8 @@ app.post('/eventi/:evento/modifica-immagine', upload.single('imgEvento'), (req, 
 
 /// --- login
 
-
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-
   const sqlite3 = require('sqlite3').verbose();
   const db = new sqlite3.Database(configDbPath);
 
@@ -951,16 +949,21 @@ app.post('/login', (req, res) => {
     db.close();
     if (err || !row) return res.status(401).json({ success: false, message: 'Credenziali non valide' });
 
-    // Se vuoi gestire la password, puoi aggiungerla nella tabella configurazione
-    // Qui la saltiamo per semplicità
-    req.session.utente = {
-      nome: row.nomeUtente,
-      email: row.emailUtente,
-    };
-    res.json({ success: true });
+    // ✅ Verifica la password usando bcrypt
+    bcrypt.compare(password, row.passwordUtente, (err, isMatch) => {
+      if (err || !isMatch) {
+        return res.status(401).json({ success: false, message: 'Credenziali non valide' });
+      }
+
+      // Password corretta → salva sessione
+      req.session.utente = {
+        nome: row.nomeUtente,
+        email: row.emailUtente,
+      };
+      res.json({ success: true });
+    });
   });
 });
-
 
 function requireLogin(req, res, next) {
   if (!req.session.utente) {
@@ -1001,7 +1004,6 @@ db.run(`
 
 app.post('/register', (req, res) => {
   const { email, password } = req.body;
-  const sqlite3 = require('sqlite3').verbose();
   const db = new sqlite3.Database(configDbPath);
 
   db.get('SELECT * FROM configurazione WHERE emailUtente = ?', [email], (err, row) => {
@@ -1012,9 +1014,10 @@ app.post('/register', (req, res) => {
 
     if (row) {
       db.close();
-      return res.status(400).json({ success: false, message: 'Email già registrata' });
+      return res.status(400).json({ success: false, message: 'Questa email è già stata registrata' }); // ✅ Questo messaggio
     }
 
+    // Se tutto ok, crea il nuovo utente
     bcrypt.hash(password, SALT_ROUNDS, (err, hash) => {
       if (err) {
         db.close();
@@ -1027,13 +1030,49 @@ app.post('/register', (req, res) => {
       `, [email, hash], function (err) {
         db.close();
         if (err) {
-          return res.status(500).json({ success: false });
+          return res.status(500).json({ success: false, message: 'Errore salvataggio' });
         }
         res.json({ success: true });
       });
     });
   });
 });
+
+
+app.post('/modifica-password-email', (req, res) => {
+  const { email, nuovaPassword } = req.body;
+
+  if (!email || !nuovaPassword) {
+    return res.status(400).json({ success: false, message: 'Email e nuova password richieste' });
+  }
+
+  const sqlite3 = require('sqlite3').verbose();
+  const db = new sqlite3.Database(configDbPath);
+
+  db.get('SELECT * FROM configurazione WHERE emailUtente = ?', [email], (err, row) => {
+    if (err || !row) {
+      db.close();
+      return res.status(404).json({ success: false, message: 'Email non trovata' });
+    }
+
+    // email esistente → aggiorna password
+    bcrypt.hash(nuovaPassword, SALT_ROUNDS, (errHash, hash) => {
+      if (errHash) {
+        db.close();
+        return res.status(500).json({ success: false, message: 'Errore aggiornamento' });
+      }
+
+      db.run('UPDATE configurazione SET passwordUtente = ? WHERE emailUtente = ?', [hash, email], function (err2) {
+        db.close();
+        if (err2) {
+          return res.status(500).json({ success: false, message: 'Errore database' });
+        }
+        res.json({ success: true });
+      });
+    });
+  });
+});
+
 
 app.get('/lista-eventi', requireLogin, async (req, res) => {
   const configDb = new sqlite3.Database(configDbPath);
