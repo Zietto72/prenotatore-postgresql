@@ -8,6 +8,8 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const configDbPath = path.join(__dirname, 'config', 'config.sqlite');
+console.log('📂 configDir esiste:', fs.existsSync(configDir));
+console.log('📄 config.sqlite esiste:', fs.existsSync(configDbPath));
 const { jsPDF } = require('jspdf');
 const QRCode = require('qrcode');
 const SQLiteStore = require('connect-sqlite3')(session);
