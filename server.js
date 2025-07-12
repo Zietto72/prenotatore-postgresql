@@ -203,7 +203,8 @@ const codice = JSON.stringify({
   spettacolo: showName,
   posto: s.posto,
   spettatore: s.nome,
-  cartella: evento // << nuovo campo!
+  cartella: evento,
+  prenotatoDa: `${prenotatore} (${email})`  // ✅ CORRETTO, UNA SOLA VOLTA
 });
 
   const qr = await QRCode.toDataURL(codice);

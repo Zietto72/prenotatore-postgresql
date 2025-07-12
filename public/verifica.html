@@ -31,17 +31,32 @@
         pointer-events: none;
         transition: border-color 0.3s;
       }
-      .footer-message {
-        position: fixed;
-        bottom: 0; width: 100%;
-        background: #333; color: #fff;
-        padding: 30px 20px;
-        font-size: 22px; font-weight: bold;
-        text-transform: uppercase;
-        transition: background-color 0.3s;
-        line-height: 1.4;
-        white-space: pre-line;
-      }
+.footer-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: white;
+  background: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  flex-direction: column;
+  padding: 20px;
+  transition: background-color 0.3s;
+  line-height: 1.4;
+  z-index: 999;
+}
+.footer-message .dettagli {
+  font-size: 18px;
+  font-weight: normal;
+  margin-top: 20px;
+  white-space: pre-line;
+}
       .dettagli {
         display: block;
         margin-top: 5px;
@@ -69,7 +84,6 @@
     <button id="toggleSound">🔈 Suoni ON</button>
     <video id="video" autoplay muted playsinline></video>
     <canvas id="canvas"></canvas>
-    <div id="overlay" class="overlay"></div>
     <div id="footerMessage" class="footer-message">&nbsp;</div>
 
     <audio id="beepSuccess" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
@@ -133,17 +147,21 @@
 
         const oggi = new Date().toISOString().slice(0, 10);
         const dataBiglietto = (dati.data || dati.date || '').slice(0, 10);
-        const key = `${dati.codice}_${dati.posto}_${dati.nome}`;
+        const key = `${dati.codice}_${dati.posto}_${dati.spettatore}`;
 
         if (controllati.has(key)) {
           return esito(false, 'orange', 'BIGLIETTO GIÀ CONTROLLATO', dati, beepAlready);
         }
 
-        fetch('/verifica-codice-qr', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dati)
-        })
+if (!dati.prenotatoDa) {
+  return esito(false, 'red', 'QR INCOMPLETO (manca prenotatoDa)', dati, beepKO);
+}
+
+fetch('/verifica-codice-qr', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(dati)
+})
           .then(r => r.json())
           .then(res => {
             if (!res.valido) {
@@ -161,19 +179,15 @@
 
       function esito(ok, colore, messaggio, dati = {}, suono) {
         let dettagli = '';
-        if (dati.nome || dati.posto || dati.codice || dati.data || dati.spettacolo) {
-          dettagli = `\n${dati.nome || ''} • Posto: ${dati.posto || '?'}\nCodice: ${dati.codice || ''} • Data: ${dati.data || dati.date || ''}`;
-          if (dati.spettacolo) dettagli += `\n${dati.spettacolo}`;
-        }
+if (dati.spettatore || dati.posto || dati.codice || dati.data || dati.spettacolo) {
+  dettagli = `\n${dati.spettatore || ''} • Posto: ${dati.posto || '?'}\nCodice: ${dati.codice || ''} • Data: ${dati.data || dati.date || ''}`;
+  if (dati.spettacolo) dettagli += `\n${dati.spettacolo}`;
+  if (dati.prenotatoDa) dettagli += `\nPrenotato da: ${dati.prenotatoDa}`;
+}
 
         footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g, '<br>')}</span>`;
         footer.style.backgroundColor = colore;
-        document.body.style.backgroundColor =
-          colore === 'green' ? '#d4edda' :
-          colore === 'red' ? '#f8d7da' :
-          colore === 'deepskyblue' ? '#d0ebff' :
-          '#fff3cd';
-        overlay.style.borderColor = colore;
+document.body.style.backgroundColor = colore;
 
         try { if (audioEnabled && suono) suono.play(); } catch (e) {}
 
