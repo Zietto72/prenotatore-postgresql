@@ -840,11 +840,10 @@ app.get('/verifica-codice', (req, res) => {
 // --- Verifica QRCODE con dati completi (via POST) ---
 app.post('/verifica-codice-qr', (req, res) => {
   try {
-    const { codice, spettacolo, data, posto, spettatore } = req.body;
+    const { codice, posto, spettatore, cartella } = req.body;
 
     if (!codice || !data) return res.status(400).json({ valido: false });
 
-const { codice, posto, spettatore, cartella } = req.body;
 const dbPath = path.join(__dirname, 'eventi', cartella, 'data', 'booking.sqlite');
 
     if (!fs.existsSync(dbPath)) return res.status(404).json({ valido: false });
