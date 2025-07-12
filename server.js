@@ -226,14 +226,14 @@ const codice = JSON.stringify({
         VALUES (?, ?, ?, ?, ?, ?)
       `);
       spettatori.forEach(s => {
-        stmtP.run(
-          s.posto,
-          s.nome,
-          email,
-          telefono,
-          prenotatore,
-          bookingCode
-        );
+stmtP.run(
+  s.posto,
+  s.nome,
+  email,
+  telefono,
+  `${prenotatore} (${email})`,
+  bookingCode
+);
       });
       stmtP.finalize();
 
