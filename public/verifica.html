@@ -209,9 +209,9 @@ fetch('/verifica-codice-qr', {
     
 function esito(ok, colore, messaggio, dati = {}, suono) {
   let dettagli = '';
-  if (dati.spettacolo) dettagli += `🎭 Spettacolo: ${dati.spettacolo}\n`;
-  if (dati.data || dati.date) dettagli += `📅 Data: ${dati.data || dati.date}\n`;
-  if (dati.posto) dettagli += `🎟️ Posto: ${dati.posto}\n`;
+  if (dati.posto) dettagli += `<span style="font-size: 40px; font-weight: bold;">🎟️ ${dati.posto}</span>\n`;
+  if (dati.spettacolo) dettagli += `🎭 ${dati.spettacolo}\n`;
+  if (dati.data || dati.date) dettagli += `📅 ${dati.data || dati.date}\n`;
   if (dati.spettatore) dettagli += `🧍‍♂️ Spettatore: ${dati.spettatore}\n`;
   if (dati.prenotatoDa) dettagli += `👤 Prenotato da: ${dati.prenotatoDa}\n`;
 
