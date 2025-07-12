@@ -240,8 +240,10 @@ fetch('/verifica-codice-qr', {
 
     
 function esito(ok, colore, messaggio, dati = {}, suono) {
+  footer.style.display = 'flex'; // Mostra solo se serve
+
   let dettagli = '';
-  if (dati.posto) dettagli += `<span style="font-size: 40px; font-weight: bold;">🎟️ ${dati.posto}</span>\n`;
+  if (dati.posto) dettagli += `<span style="font-size: 36px; font-weight: bold;">🎟️ ${dati.posto}</span>\n`;
   if (dati.spettacolo) dettagli += `🎭 ${dati.spettacolo}\n`;
   if (dati.data || dati.date) dettagli += `📅 ${dati.data || dati.date}\n`;
   if (dati.spettatore) dettagli += `🧍‍♂️ Spettatore: ${dati.spettatore}\n`;
@@ -249,22 +251,23 @@ function esito(ok, colore, messaggio, dati = {}, suono) {
 
   footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g, '<br>')}</span>`;
   footer.style.backgroundColor = colore;
-  const coloriEsadecimali = {
-  green: '#00FF00CC',
-  red: '#FF0000CC',
-  orange: '#FFA500CC',
-  deepskyblue: '#00BFFFCC'
-};
 
-document.getElementById('overlayColor').style.backgroundColor = coloriEsadecimali[colore] || '#000000CC';
+  const coloriEsadecimali = {
+    green: '#00FF00CC',
+    red: '#FF0000CC',
+    orange: '#FFA500CC',
+    deepskyblue: '#00BFFFCC'
+  };
+
+  document.getElementById('overlayColor').style.backgroundColor = coloriEsadecimali[colore] || '#000000CC';
   document.body.style.backgroundColor = 'transparent';
 
   try { if (audioEnabled && suono) suono.play(); } catch (e) {}
 
   const reset = () => {
     if (!holdActive) {
-      footer.innerHTML = '&nbsp;';
-      footer.style.backgroundColor = '#333';
+      footer.style.display = 'none'; // ✅ NASCONDIAMO IL FOOTER
+      footer.innerHTML = '';         // ✅ E LO SVUOTIAMO
       document.getElementById('overlayColor').style.backgroundColor = 'transparent';
       document.body.style.backgroundColor = 'transparent';
       processing = false;
