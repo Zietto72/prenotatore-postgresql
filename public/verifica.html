@@ -42,81 +42,89 @@ function esito(ok, colore, messaggio, dati = {}, suono) {
 </script>
 
     <style>
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: sans-serif;
-        text-align: center;
-        padding: 0;
-        background-color: transparent;
-        transition: background-color 0.3s;
-      }
-      h1 { display: none; }
-video {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  z-index: 1;
+  * {
+    box-sizing: border-box;
+  }
 
-  width: 100%;
-  height: auto;
-  position: fixed;
-  top: 0;
-  left: 0;
-  object-fit: cover;
-  z-index: 1;
-}
-      canvas { display: none; }
-.footer-message {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  max-height: 40%;
-  color: white;
-  background: #333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-  flex-direction: column;
-  padding: 20px;
-  transition: background-color 0.3s;
-  line-height: 1.4;
-  z-index: 999;
-}
-.footer-message .dettagli {
-  font-size: 18px;
-  font-weight: normal;
-  margin-top: 20px;
-  white-space: pre-line;
-}
-      .dettagli {
-        display: block;
-        margin-top: 5px;
-        font-size: 14px;
-        font-weight: normal;
-        text-transform: none;
-      }
-      #toggleSound {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        background-color: #444;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        font-size: 12px;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 999;
-      }
-    
+  html, body {
+    background-color: transparent !important;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+    text-align: center;
+    transition: background-color 0.3s;
+  }
+
+  h1 {
+    display: none;
+  }
+
+  video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  canvas {
+    display: none;
+  }
+
+  .footer-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 90%;
+    color: white;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    flex-direction: column;
+    padding: 20px;
+    z-index: 999;
+    line-height: 1.4;
+  }
+
+  .footer-message .dettagli {
+    font-size: 18px;
+    font-weight: normal;
+    margin-top: 20px;
+    white-space: pre-line;
+  }
+
+  .dettagli {
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+    font-weight: normal;
+    text-transform: none;
+  }
+
+  #toggleSound {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 999;
+  }
+
   #overlayColor {
     position: fixed;
     top: 0;
@@ -128,7 +136,6 @@ video {
     pointer-events: none;
     transition: background-color 0.3s;
   }
-
 </style>
   </head>
   <body>
@@ -241,7 +248,14 @@ function esito(ok, colore, messaggio, dati = {}, suono) {
 
   footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g, '<br>')}</span>`;
   footer.style.backgroundColor = colore;
-  document.getElementById('overlayColor').style.backgroundColor = colore + 'E6';
+  const coloriEsadecimali = {
+  green: '#00FF00CC',
+  red: '#FF0000CC',
+  orange: '#FFA500CC',
+  deepskyblue: '#00BFFFCC'
+};
+
+document.getElementById('overlayColor').style.backgroundColor = coloriEsadecimali[colore] || '#000000CC';
   document.body.style.backgroundColor = 'transparent';
 
   try { if (audioEnabled && suono) suono.play(); } catch (e) {}
