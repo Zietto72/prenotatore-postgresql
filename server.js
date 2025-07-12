@@ -197,13 +197,14 @@ doc.line(x, y, 200, y);
 
 // ✅ QR Code con dati completi
 try {
-  const codice = JSON.stringify({
-    codice: bookingCode,
-    spettacolo: showName,
-    data: showDate,
-    posto: s.posto,
-    spettatore: s.nome
-  });
+const codice = JSON.stringify({
+  codice: bookingCode,
+  data: showDate,
+  spettacolo: showName,
+  posto: s.posto,
+  spettatore: s.nome,
+  cartella: evento // << nuovo campo!
+});
 
   const qr = await QRCode.toDataURL(codice);
   doc.addImage(qr, 'PNG', 150, 20, 40, 40);
@@ -843,8 +844,8 @@ app.post('/verifica-codice-qr', (req, res) => {
 
     if (!codice || !data) return res.status(400).json({ valido: false });
 
-    const eventoFolder = `${data}_${spettacolo.replace(/\s+/g, '_')}`;
-    const dbPath = path.join(__dirname, 'eventi', eventoFolder, 'data', 'booking.sqlite');
+const { codice, posto, spettatore, cartella } = req.body;
+const dbPath = path.join(__dirname, 'eventi', cartella, 'data', 'booking.sqlite');
 
     if (!fs.existsSync(dbPath)) return res.status(404).json({ valido: false });
 
