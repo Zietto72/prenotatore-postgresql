@@ -1079,75 +1079,90 @@ app.post('/modifica-password-email', (req, res) => {
 });
 
 
+
 app.get('/lista-eventi', requireLogin, async (req, res) => {
-  const configDb = new sqlite3.Database(configDbPath);
-  configDb.all(
-    `SELECT nomeCartella FROM eventi_utenti WHERE emailUtente = ?`,
-    [req.session.utente.email],
-    async (err, rows) => {
-      if (err) {
-        console.error("Errore lettura eventi:", err.message);
-        return res.status(500).json({ success: false, eventi: [] });
-      }
-
-      const eventiCompleti = [];
-
-      for (const row of rows) {
-        const nomeCartella = row.nomeCartella;
-        const dbPath = path.join(eventiDir, nomeCartella, 'data', 'booking.sqlite');
-
-        try {
-          const db = new sqlite3.Database(dbPath);
-
-          // SERIALIZZA tutte le operazioni sul singolo db
-          await new Promise((resolve, reject) => {
-            db.serialize(async () => {
-              try {
-                // 🔍 1. Verifica che esista la tabella "config"
-                const tables = await leggiConRetry(db, `SELECT name FROM sqlite_master WHERE type='table' AND name='config'`);
-                if (!tables.length) {
-                  console.warn(`⚠️ Database ${nomeCartella} non ha tabella 'config'. Salto...`);
-                  db.close();
-                  return resolve(); // vai avanti col prossimo
-                }
-
-                // 🔄 2. Leggi contenuto tabella config
-                const configRows = await leggiConRetry(db, `SELECT key, value FROM config`);
-
-                const config = {};
-                configRows.forEach(({ key, value }) => {
-                  config[key] = key === 'zonePrices' ? JSON.parse(value) : value;
-                });
-
-                eventiCompleti.push({
-                  nomeCartella,
-                  showName: config.showName || '',
-                  showDate: config.showDate || '',
-                  showTime: config.showTime || '',
-                  numeroPostiTotali: parseInt(config.numeroPostiTotali || '0'),
-                  svgFile: config.svgFile || '',
-                  imgEvento: config.imgEvento || '',
-                  imgIntest: config.imgIntest || '',
-                  notespdf: config.notespdf || '',
-                  zonePrices: config.zonePrices || {}
-                });
-
-                db.close();
-                resolve();
-              } catch (erroreInterno) {
-                db.close();
-                reject(erroreInterno);
-              }
-            });
-          });
-        } catch (err) {
-          console.error(`⚠️ Errore lettura config evento ${nomeCartella}:`, err.message);
-        }
-      }
-
-      res.json({ success: true, eventi: eventiCompleti });
+  try {
+    // Verifica esistenza file config.sqlite
+    if (!fs.existsSync(configDbPath)) {
+      console.error('❌ config.sqlite non trovato:', configDbPath);
+      return res.status(500).json({ success: false, eventi: [] });
     }
-  );
+
+    const configDb = new sqlite3.Database(configDbPath);
+
+    configDb.all(
+      `SELECT nomeCartella FROM eventi_utenti WHERE emailUtente = ?`,
+      [req.session.utente.email],
+      async (err, rows) => {
+        if (err) {
+          console.error("❌ Errore lettura eventi:", err.message);
+          return res.status(500).json({ success: false, eventi: [] });
+        }
+
+        const eventiCompleti = [];
+
+        for (const row of rows) {
+          const nomeCartella = row.nomeCartella;
+          const dbPath = path.join(eventiDir, nomeCartella, 'data', 'booking.sqlite');
+
+          if (!fs.existsSync(dbPath)) {
+            console.warn(`⚠️ Database evento mancante: ${dbPath}`);
+            continue;
+          }
+
+          try {
+            const db = new sqlite3.Database(dbPath);
+
+            await new Promise((resolve, reject) => {
+              db.serialize(async () => {
+                try {
+                  const tables = await leggiConRetry(db, `SELECT name FROM sqlite_master WHERE type='table' AND name='config'`);
+                  if (!tables.length) {
+                    console.warn(`⚠️ ${nomeCartella} non ha tabella 'config'.`);
+                    db.close();
+                    return resolve();
+                  }
+
+                  const configRows = await leggiConRetry(db, `SELECT key, value FROM config`);
+                  const config = {};
+                  configRows.forEach(({ key, value }) => {
+                    config[key] = key === 'zonePrices' ? JSON.parse(value) : value;
+                  });
+
+                  eventiCompleti.push({
+                    nomeCartella,
+                    showName: config.showName || '',
+                    showDate: config.showDate || '',
+                    showTime: config.showTime || '',
+                    numeroPostiTotali: parseInt(config.numeroPostiTotali || '0'),
+                    svgFile: config.svgFile || '',
+                    imgEvento: config.imgEvento || '',
+                    imgIntest: config.imgIntest || '',
+                    notespdf: config.notespdf || '',
+                    zonePrices: config.zonePrices || {}
+                  });
+
+                  db.close();
+                  resolve();
+                } catch (e) {
+                  db.close();
+                  console.error(`❌ Errore interno su ${nomeCartella}:`, e.message);
+                  resolve(); // non bloccare tutto
+                }
+              });
+            });
+          } catch (err) {
+            console.error(`❌ Errore apertura db evento ${nomeCartella}:`, err.message);
+          }
+        }
+
+        res.json({ success: true, eventi: eventiCompleti });
+      }
+    );
+  } catch (outerError) {
+    console.error('❌ Errore generale in /lista-eventi:', outerError.message);
+    res.status(500).json({ success: false, eventi: [] });
+  }
 });
 
 app.get('/home.html', requireLogin, (req, res) => {
