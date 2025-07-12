@@ -20,6 +20,7 @@ function esito(ok, colore, messaggio, dati = {}, suono) {
 
   footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g, '<br>')}</span>`;
   footer.style.backgroundColor = colore;
+  document.getElementById('overlayColor').style.backgroundColor = colore + 'E6';
   document.body.style.backgroundColor = 'transparent';
 
   try { if (audioEnabled && suono) suono.play(); } catch (e) {}
@@ -28,6 +29,7 @@ function esito(ok, colore, messaggio, dati = {}, suono) {
     if (!holdActive) {
       footer.innerHTML = '&nbsp;';
       footer.style.backgroundColor = '#333';
+      document.getElementById('overlayColor').style.backgroundColor = 'transparent';
       document.body.style.backgroundColor = 'transparent';
       processing = false;
     } else {
@@ -51,6 +53,14 @@ function esito(ok, colore, messaggio, dati = {}, suono) {
       }
       h1 { display: none; }
 video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 1;
+
   width: 100%;
   height: auto;
   position: fixed;
@@ -106,12 +116,26 @@ video {
         cursor: pointer;
         z-index: 999;
       }
-    </style>
+    
+  #overlayColor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: transparent;
+    z-index: 2;
+    pointer-events: none;
+    transition: background-color 0.3s;
+  }
+
+</style>
   </head>
   <body>
     <h1>ControlQR</h1>
     <button id="toggleSound">🔈 Suoni ON</button>
     <video id="video" autoplay muted playsinline></video>
+<div id="overlayColor"></div>
     <canvas id="canvas"></canvas>
     <div id="footerMessage" class="footer-message">&nbsp;</div>
 
@@ -217,6 +241,7 @@ function esito(ok, colore, messaggio, dati = {}, suono) {
 
   footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g, '<br>')}</span>`;
   footer.style.backgroundColor = colore;
+  document.getElementById('overlayColor').style.backgroundColor = colore + 'E6';
   document.body.style.backgroundColor = 'transparent';
 
   try { if (audioEnabled && suono) suono.play(); } catch (e) {}
@@ -225,6 +250,7 @@ function esito(ok, colore, messaggio, dati = {}, suono) {
     if (!holdActive) {
       footer.innerHTML = '&nbsp;';
       footer.style.backgroundColor = '#333';
+      document.getElementById('overlayColor').style.backgroundColor = 'transparent';
       document.body.style.backgroundColor = 'transparent';
       processing = false;
     } else {
