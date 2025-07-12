@@ -5,7 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ControlQR</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<!-- ✅ Script JSQR da CDN -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+<!-- ✅ Funzione esito -->
+<script>
+function esito(ok, colore, messaggio, dati = {}, suono) {
+  let dettagli = '';
+  if (dati.spettacolo) dettagli += `🎭 Spettacolo: ${dati.spettacolo}\n`;
+  if (dati.data || dati.date) dettagli += `📅 Data: ${dati.data || dati.date}\n`;
+  if (dati.posto) dettagli += `🎟️ Posto: ${dati.posto}\n`;
+  if (dati.spettatore) dettagli += `🧍‍♂️ Spettatore: ${dati.spettatore}\n`;
+  if (dati.prenotatoDa) dettagli += `👤 Prenotato da: ${dati.prenotatoDa}\n`;
+
+  footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g, '<br>')}</span>`;
+  footer.style.backgroundColor = colore;
+  document.body.style.backgroundColor = 'transparent';
+
+  try { if (audioEnabled && suono) suono.play(); } catch (e) {}
+
+  const reset = () => {
+    if (!holdActive) {
+      footer.innerHTML = '&nbsp;';
+      footer.style.backgroundColor = '#333';
+      document.body.style.backgroundColor = 'transparent';
+      processing = false;
+    } else {
+      setTimeout(reset, 500);
+    }
+  };
+
+  setTimeout(reset, 2000);
+}
+</script>
 
     <style>
       * { box-sizing: border-box; }
@@ -14,23 +46,20 @@
         font-family: sans-serif;
         text-align: center;
         padding: 0;
-        background-color: #f0f0f0;
+        background-color: transparent;
         transition: background-color 0.3s;
       }
-      video {
-        width: 100%;
-        height: auto;
-      }
+      h1 { display: none; }
+video {
+  width: 100%;
+  height: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+  z-index: 1;
+}
       canvas { display: none; }
-      .overlay {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        border: 24px solid transparent;
-        box-sizing: border-box;
-        pointer-events: none;
-        transition: border-color 0.3s;
-      }
 .footer-message {
   position: fixed;
   bottom: 0;
@@ -95,7 +124,6 @@
       const video = document.getElementById('video');
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
-      const overlay = document.getElementById('overlay');
       const footer = document.getElementById('footerMessage');
       const toggleSound = document.getElementById('toggleSound');
 
@@ -177,35 +205,36 @@ fetch('/verifica-codice-qr', {
           .catch(() => esito(false, 'red', 'ERRORE SERVER', {}, beepKO));
       }
 
-      function esito(ok, colore, messaggio, dati = {}, suono) {
-       let dettagli = '';
-if (dati.spettacolo) dettagli += `🎭 Spettacolo: ${dati.spettacolo}\n`;
-if (dati.data || dati.date) dettagli += `📅 Data: ${dati.data || dati.date}\n`;
-if (dati.posto) dettagli += `🎟️ Posto: ${dati.posto}\n`;
-if (dati.spettatore) dettagli += `🧍‍♂️ Spettatore: ${dati.spettatore}\n`;
-if (dati.prenotatoDa) dettagli += `👤 Prenotato da: ${dati.prenotatoDa}\n`;
+
+    
+function esito(ok, colore, messaggio, dati = {}, suono) {
+  let dettagli = '';
+  if (dati.spettacolo) dettagli += `🎭 Spettacolo: ${dati.spettacolo}\n`;
+  if (dati.data || dati.date) dettagli += `📅 Data: ${dati.data || dati.date}\n`;
+  if (dati.posto) dettagli += `🎟️ Posto: ${dati.posto}\n`;
+  if (dati.spettatore) dettagli += `🧍‍♂️ Spettatore: ${dati.spettatore}\n`;
+  if (dati.prenotatoDa) dettagli += `👤 Prenotato da: ${dati.prenotatoDa}\n`;
+
+  footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g, '<br>')}</span>`;
+  footer.style.backgroundColor = colore;
+  document.body.style.backgroundColor = 'transparent';
+
+  try { if (audioEnabled && suono) suono.play(); } catch (e) {}
+
+  const reset = () => {
+    if (!holdActive) {
+      footer.innerHTML = '&nbsp;';
+      footer.style.backgroundColor = '#333';
+      document.body.style.backgroundColor = 'transparent';
+      processing = false;
+    } else {
+      setTimeout(reset, 500);
+    }
+  };
+
+  setTimeout(reset, 2000);
 }
 
-        footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g, '<br>')}</span>`;
-        footer.style.backgroundColor = colore;
-document.body.style.backgroundColor = colore;
-
-        try { if (audioEnabled && suono) suono.play(); } catch (e) {}
-
-        const reset = () => {
-          if (!holdActive) {
-            footer.innerHTML = '&nbsp;';
-            footer.style.backgroundColor = '#333';
-            document.body.style.backgroundColor = '#f0f0f0';
-            overlay.style.borderColor = 'transparent';
-            processing = false;
-          } else {
-            setTimeout(reset, 500);
-          }
-        };
-
-        setTimeout(reset, 2000);
-      }
-    </script>
+</script>
   </body>
 </html>
