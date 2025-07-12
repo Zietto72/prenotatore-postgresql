@@ -6,6 +6,18 @@ dist/
 build/
 *.sqlite
 *.sqlite3
+!.gitignore
+!.env.example
+!.nvmrc
+!.editorconfig
+
+# ⛔ ignora TUTTI i .sqlite...
+*.sqlite
+
+# ✅ ...ma NON ignorare questi specifici
+!config/config.sqlite
+!eventi/**/booking.sqlite
+
 .DS_Store
 .env
 logs/
