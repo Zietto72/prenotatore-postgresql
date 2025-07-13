@@ -8,7 +8,9 @@
 </head>
 <body>
 <header id="intestazioneSpettacolo" style="text-align: center; font-size: 25px; margin-bottom: 0px;"></header>
-  <div id="svgContainer">
+ 
+ 
+  <div id="svgContainer" style="width: 100%; min-height: 300px; display: block;">
     <!-- L'SVG verrà caricato dinamicamente -->
   </div>
 
@@ -27,16 +29,7 @@
   align-items: center;
   z-index: 100;
 ">
-  <button id="bookButton" onclick="apriModalePrenotatore()" disabled style="
-    padding: 10px 24px;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    max-width: 100%;
-  ">
+<button id="bookButton" onclick="apriModalePrenotatore()" disabled class="prenota-button">
     Prenota – <span id="selectedSeats">0</span> posti (€ <span id="totalAmountModal">0.00</span>)
   </button>
 </div>

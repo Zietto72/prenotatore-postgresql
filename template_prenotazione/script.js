@@ -37,13 +37,24 @@ if (intestazione) {
 intestazione.innerHTML = `<strong>${config.showName}</strong><br>${config.showDate} ${config.showTime}`;
 }
 
-    // ✅ Carica il file SVG
-    const svgText = await fetch(`/eventi/${eventoCorrente}/svg/${config.svgFile}`).then(r => r.text());
-    const container = document.getElementById("svgContainer");
-    container.innerHTML = svgText;
-    const svg = container.querySelector("svg");
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    if (!svg) throw new Error("SVG non trovato dopo iniezione");
+// ✅ Carica il file SVG con DOMParser (compatibile Safari iOS)
+const svgText = await fetch(`/eventi/${eventoCorrente}/svg/${config.svgFile}`).then(r => r.text());
+const parser = new DOMParser();
+const doc = parser.parseFromString(svgText, "image/svg+xml");
+const svg = doc.querySelector("svg");
+if (!svg) throw new Error("SVG non trovato dopo parsing");
+
+// ✅ Forza visibilità e dimensioni compatibili
+svg.setAttribute("width", "100%");
+svg.setAttribute("height", "auto");
+svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+svg.style.display = "block";
+svg.style.maxWidth = "100%";
+
+// ✅ Inserisce nel contenitore
+const container = document.getElementById("svgContainer");
+container.innerHTML = "";
+container.appendChild(svg);
 
     // ✅ Carica i posti occupati
     const occupied = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
