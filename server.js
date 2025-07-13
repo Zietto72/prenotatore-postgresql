@@ -60,159 +60,104 @@ app.post('/genera-pdf-e-invia', async (req, res) => {
       return res.status(400).json({ error: 'Dati mancanti' });
     }
 
-const eventFolder = path.join(__dirname, 'eventi', evento);
-const outputDir = path.join(eventFolder, 'PDF');
-const dbPath = path.join(eventFolder, 'data', 'booking.sqlite');  // ✅ questa sola volta
+    const eventFolder = path.join(__dirname, 'eventi', evento);
+    const outputDir = path.join(eventFolder, 'PDF');
+    const dbPath = path.join(eventFolder, 'data', 'booking.sqlite');
 
-if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-const config = await getEventoConfig(dbPath); // dati dell’evento
-const configUtente = await getConfigUtente(req.session.utente.email); // dati globali da config.sqlite
+    // ✅ Prende TUTTO da booking.sqlite (comprese imgIntest e notespdf)
+    const config = await getEventoConfig(dbPath);
+    const {
+      showName,
+      showDate,
+      showTime,
+      imgEvento,
+      imgIntest = '',
+      notespdf = ''
+    } = config;
 
-const { showName, showDate, imgEvento } = config;
-const imgIntest = configUtente.imgIntest || '';
-const notespdf = configUtente.notespdf || '';
+    const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}`;
 
-const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}`;
     const sqlite3 = require('sqlite3').verbose();
     const db = new sqlite3.Database(dbPath);
 
     const bookingCode = Math.random().toString(36).substring(2, 10).toUpperCase();
     const pdfLinks = [];
 
-for (const s of spettatori) {
-  const doc = new jsPDF();
-  const codice = bookingCode;
+    for (const s of spettatori) {
+      const doc = new jsPDF();
+      const codice = bookingCode;
 
-// ✅ Inserimento immagine evento
-try {
-  const imgEventoPath = path.join(eventFolder, imgEvento); // es: 'eventi/2025-07-05_nome/images/spettacolo.png'
-  const imgBuffer = fs.readFileSync(imgEventoPath);
-  const imgBase64 = `data:image/png;base64,${imgBuffer.toString('base64')}`;
-  doc.addImage(imgBase64, 'PNG', 10, 10, 50, 30); // x, y, width, height
-} catch (e) {
-  console.warn('⚠️ Immagine evento non trovata:', e.message);
-}
+      // Immagine dello spettacolo
+      try {
+        const imgEventoPath = path.join(eventFolder, imgEvento);
+        const imgBuffer = fs.readFileSync(imgEventoPath);
+        const imgBase64 = `data:image/png;base64,${imgBuffer.toString('base64')}`;
+        doc.addImage(imgBase64, 'PNG', 10, 10, 50, 30);
+      } catch (e) {
+        console.warn('⚠️ Immagine evento non trovata:', e.message);
+      }
 
-// ✅ Contenuto testuale
-// Font e dimensioni di base
-const x = 10;
-let y = 50;
+      // Testo principale
+      const x = 10;
+      let y = 50;
 
-// Spettacolo
-doc.setFont('helvetica', 'normal');
-doc.setFontSize(10);
-doc.text('Spettacolo:', x, y);
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(14);
-doc.text(showName, x + 35, y);
+      const separatore = () => {
+        y += 5;
+        doc.setDrawColor(150);
+        doc.setLineWidth(0.2);
+        doc.line(x, y, 200, y);
+        y += 5;
+      };
 
-// 🔽 Linea separatrice
-y += 5;
-doc.setDrawColor(150);
-doc.setLineWidth(0.2);
-doc.line(x, y, 200, y);
+      const intestazione = (label, valore, colore = [0, 0, 0]) => {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(0);
+        doc.text(`${label}:`, x, y);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.setTextColor(...colore);
+        doc.text(valore, x + 35, y);
+        separatore();
+      };
 
-// Data
-y += 10;
-doc.setFont('helvetica', 'normal');
-doc.setFontSize(10);
-doc.text('Data:', x, y);
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(14);
-doc.text(showDate, x + 35, y);
+      intestazione('Spettacolo', showName);
+      intestazione('Data', showDate);
+      intestazione('Posto', s.posto, [220, 38, 38]);
+      intestazione('Spettatore', s.nome);
+      intestazione('Prenotato da', `${prenotatore} (${email})`);
+      intestazione('Prezzo', `€ ${parseFloat(s.prezzo).toFixed(2)}`);
 
-// 🔽 Linea separatrice
-y += 5;
-doc.setDrawColor(150);
-doc.setLineWidth(0.2);
-doc.line(x, y, 200, y);
+      // QR Code
+      try {
+        const codiceQR = JSON.stringify({
+          codice: bookingCode,
+          data: showDate,
+          spettacolo: showName,
+          posto: s.posto,
+          spettatore: s.nome,
+          cartella: evento,
+          prenotatoDa: `${prenotatore} (${email})`
+        });
 
-// Posto
-y += 10;
-doc.setFont('helvetica', 'normal');
-doc.setFontSize(10);
-doc.setTextColor(0, 0, 0);  // Etichetta in nero
-doc.text('Posto:', x, y);
+        const qr = await QRCode.toDataURL(codiceQR);
+        doc.addImage(qr, 'PNG', 150, 20, 40, 40);
+      } catch (e) {
+        console.error('QR generation failed:', e.message);
+      }
 
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(14);
-doc.setTextColor(220, 38, 38); // Rosso acceso (RGB)
-doc.text(s.posto, x + 35, y);
+      // ✅ Note finali (notespdf) in fondo al PDF
+      if (notespdf) {
+        y += 10;
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(10);
+        const righe = doc.splitTextToSize(notespdf, 180);
+        doc.text(righe, x, y);
+      }
 
-// Ripristina colore nero per le righe successive
-doc.setTextColor(0, 0, 0);
-
-// 🔽 Linea separatrice
-y += 5;
-doc.setDrawColor(150);
-doc.setLineWidth(0.2);
-doc.line(x, y, 200, y);
-
-// Spettatore
-y += 10;
-doc.setFont('helvetica', 'normal');
-doc.setFontSize(10);
-doc.text('Spettatore:', x, y);
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(14);
-doc.text(s.nome, x + 35, y);
-
-// 🔽 Linea separatrice
-y += 5;
-doc.setDrawColor(150);
-doc.setLineWidth(0.2);
-doc.line(x, y, 200, y);
-
-// Prenotatore
-y += 10;
-doc.setFont('helvetica', 'normal');
-doc.setFontSize(10);
-doc.text('Prenotato da:', x, y);
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(14);
-doc.text(`${prenotatore} (${email})`, x + 35, y);
-
-// 🔽 Linea separatrice
-y += 5;
-doc.setDrawColor(150);
-doc.setLineWidth(0.2);
-doc.line(x, y, 200, y);
-
-// Prezzo
-y += 10;
-doc.setFont('helvetica', 'normal');
-doc.setFontSize(10);
-doc.text('Prezzo:', x, y);
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(14);
-doc.text(`€ ${parseFloat(s.prezzo).toFixed(2)}`, x + 35, y);
-
-// 🔽 Linea separatrice
-y += 5;
-doc.setDrawColor(150);
-doc.setLineWidth(0.2);
-doc.line(x, y, 200, y);
-
-
-// ✅ QR Code con dati completi
-try {
-const codice = JSON.stringify({
-  codice: bookingCode,
-  data: showDate,
-  spettacolo: showName,
-  posto: s.posto,
-  spettatore: s.nome,
-  cartella: evento,
-  prenotatoDa: `${prenotatore} (${email})`  // ✅ CORRETTO, UNA SOLA VOLTA
-});
-
-  const qr = await QRCode.toDataURL(codice);
-  doc.addImage(qr, 'PNG', 150, 20, 40, 40);
-} catch (e) {
-  console.error('QR generation failed:', e.message);
-}
-
+      // Salvataggio PDF
       const safeName = s.nome.replace(/\s+/g, '_');
       const nomeFile = `${s.posto}_${safeName}.pdf`;
       const filePath = path.join(outputDir, nomeFile);
@@ -220,20 +165,21 @@ const codice = JSON.stringify({
       pdfLinks.push(`/eventi/${evento}/PDF/${nomeFile}`);
     }
 
+    // Salva in database prenotazioni e posti occupati
     db.serialize(() => {
       const stmtP = db.prepare(`
         INSERT INTO prenotazioni (posto, nome, email, telefono, prenotatore, bookingCode)
         VALUES (?, ?, ?, ?, ?, ?)
       `);
       spettatori.forEach(s => {
-stmtP.run(
-  s.posto,
-  s.nome,
-  email,
-  telefono,
-  `${prenotatore} (${email})`,
-  bookingCode
-);
+        stmtP.run(
+          s.posto,
+          s.nome,
+          email,
+          telefono,
+          `${prenotatore} (${email})`,
+          bookingCode
+        );
       });
       stmtP.finalize();
 
@@ -244,7 +190,7 @@ stmtP.run(
 
     db.close();
 
-    // --- INVIO EMAIL ---
+    // Composizione email HTML
     const templatePath = path.join(eventFolder, 'email.html');
     let template = fs.readFileSync(templatePath, 'utf8');
 
@@ -255,7 +201,7 @@ stmtP.run(
       const safeName = s.nome.trim().replace(/\s+/g, ' ');
       const label = `${s.posto} – ${safeName}`;
       const fileName = `${s.posto}_${s.nome.replace(/\s+/g, '_')}.pdf`;
-const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
+      const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
       return `
         <a href="${fileUrl}" target="_blank" style="
           display: inline-block;
@@ -284,6 +230,7 @@ const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
       .replace(/{{notespdf}}/g, escapeHtml(notespdf))
       .replace(/{{booking_code}}/g, bookingCode);
 
+    // Invio email
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       host: 'email-smtp.eu-central-1.amazonaws.com',
@@ -304,7 +251,7 @@ const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error('Errore invio email:', error);
+        console.error('❌ Errore invio email:', error);
       } else {
         console.log('✅ Email inviata:', info.messageId);
       }
@@ -313,10 +260,13 @@ const fileUrl = `${baseUrl}/eventi/${evento}/PDF/${fileName}`;
     return res.json({ success: true, pdfs: pdfLinks });
 
   } catch (err) {
-    console.error('Errore server:', err);
+    console.error('❌ Errore server:', err);
     return res.status(500).json({ error: 'Errore interno del server' });
   }
 });
+
+
+
 
 
 
