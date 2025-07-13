@@ -40,8 +40,11 @@ intestazione.innerHTML = `<strong>${config.showName}</strong><br>${config.showDa
     // ✅ Carica il file SVG
     const svgText = await fetch(`/eventi/${eventoCorrente}/svg/${config.svgFile}`).then(r => r.text());
     const container = document.getElementById("svgContainer");
-    container.innerHTML = svgText;
-    const svg = container.querySelector("svg");
+const parser = new DOMParser();
+const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+const svg = svgDoc.documentElement;
+container.innerHTML = "";
+container.appendChild(svg);
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     if (!svg) throw new Error("SVG non trovato dopo iniezione");
 
