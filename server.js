@@ -2,7 +2,6 @@ require('dotenv').config();
 const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 const session = require('express-session');
-const db = require('./db');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
