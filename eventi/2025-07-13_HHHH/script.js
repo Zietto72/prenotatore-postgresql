@@ -66,7 +66,8 @@ container.appendChild(svg);
     });
 
     // ✅ Ripristina eventuali selezioni precedenti
-    const saved = JSON.parse(localStorage.getItem("selectedSeats") || "[]");
+    const storageKey = `selectedSeats_${eventoCorrente}`;
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
     saved.forEach(id => {
       const g = svg.querySelector(`#${id}`);
       if (g && !g.classList.contains("occupied")) {
@@ -94,7 +95,7 @@ container.appendChild(svg);
           g.classList.add("selected");
         }
 
-        localStorage.setItem("selectedSeats", JSON.stringify(Array.from(selected)));
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
         aggiornaBottoneConferma();
       });
     });
@@ -340,7 +341,7 @@ function inviaEmailConferma(datiPrenotazione) {
 
         // Pulisci selezione e storage
         selected.clear();
-        localStorage.removeItem('selectedSeats');
+        localStorage.removeItem(storageKey);
         aggiornaBottoneConferma();
 
         // Chiude il riepilogo

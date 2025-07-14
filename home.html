@@ -318,12 +318,16 @@ card.innerHTML = `
     ${imgIntest ? `<img src="${imgIntest}" alt="Logo Evento" class="w-24 h-auto mb-2 rounded-md">` : ''}
     ${imgEvento ? `<img src="${imgEvento}" alt="Immagine Spettacolo" class="w-full h-48 object-cover rounded-lg mb-4">` : ''}
 
-   <p class="flex items-center text-sm text-gray-600" id="totali-${(nomeEvento || 'evento').replace(/\s+/g, '')}">
-  <i data-lucide="ticket" class="w-4 h-4 mr-2"></i>Totali: <span class="text-lg font-bold">${postiTotali}</span>
-</p>
-<p class="flex items-center text-sm text-gray-600" id="disponibili-${(nomeEvento || 'evento').replace(/\s+/g, '')}">
-  <i data-lucide="ticket-check" class="w-4 h-4 mr-2"></i>Disponibili: <span class="text-lg font-bold">-</span>
-</p>
+  <div class="flex flex-wrap items-center gap-6 text-sm text-gray-600">
+  <div class="flex items-center" id="totali-${(nomeEvento || 'evento').replace(/\s+/g, '')}">
+    <i data-lucide="ticket" class="w-4 h-4 mr-2"></i>
+    Totali:  <span class="text-lg font-bold ml-1">${postiTotali}</span>
+  </div>
+  <div class="flex items-center" id="disponibili-${(nomeEvento || 'evento').replace(/\s+/g, '')}">
+    <i data-lucide="ticket-check" class="w-4 h-4 mr-2"></i>
+    Disponibili:  <span class="text-lg font-bold ml-1">-</span>
+  </div>
+</div>
     
     ${Object.keys(zonePrices).length > 0 ? `
   <div class="mt-2">

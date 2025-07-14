@@ -8,7 +8,6 @@ let zonePrices = {};
 
 const selected = new Set();
 let eventoCorrente = '';
-let storageKey = '';
 
 // ✅ BASE_URL si adatta automaticamente a locale o online
 const BASE_URL = window.location.hostname === "localhost"
@@ -67,15 +66,7 @@ container.appendChild(svg);
     });
 
     // ✅ Ripristina eventuali selezioni precedenti
-    storageKey = `selectedSeats_${eventoCorrente}`;
-    
-    Object.keys(localStorage).forEach(k => {
-  if (k.startsWith('selectedSeats_') && k !== storageKey) {
-    localStorage.removeItem(k); // pulizia selezioni di eventi diversi
-  }
-});
-    
-    const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    const saved = JSON.parse(localStorage.getItem("selectedSeats") || "[]");
     saved.forEach(id => {
       const g = svg.querySelector(`#${id}`);
       if (g && !g.classList.contains("occupied")) {
@@ -103,7 +94,7 @@ container.appendChild(svg);
           g.classList.add("selected");
         }
 
-        localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+        localStorage.setItem("selectedSeats", JSON.stringify(Array.from(selected)));
         aggiornaBottoneConferma();
       });
     });
@@ -349,7 +340,7 @@ function inviaEmailConferma(datiPrenotazione) {
 
         // Pulisci selezione e storage
         selected.clear();
-        localStorage.removeItem(storageKey);
+        localStorage.removeItem('selectedSeats');
         aggiornaBottoneConferma();
 
         // Chiude il riepilogo
