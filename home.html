@@ -553,6 +553,14 @@ async function toggleModificaEvento(folderName, nomeEvento) {
           <label class="block text-sm font-bold">Nuova Immagine Evento</label>
           <input type="file" id="img-${folderName}" accept="image/*" class="w-full border rounded p-2">
         </div>
+        <div class="mt-4">
+  <label class="block text-sm font-bold">URL immagine intestazione</label>
+  <input type="text" id="imgIntest-${folderName}" value="${config.imgIntest || ''}" class="w-full border rounded p-2">
+</div>
+<div class="mt-2">
+  <label class="block text-sm font-bold">Note da pubblicare su PDF/email</label>
+  <textarea id="notespdf-${folderName}" rows="4" class="w-full border rounded p-2">${config.notespdf || ''}</textarea>
+</div>
         <div class="flex justify-end mt-4">
           <button onclick="salvaModificheEvento('${folderName}')" class="bg-blue-600 text-white px-4 py-2 rounded">Salva</button>
         </div>
@@ -634,6 +642,8 @@ async function salvaModificheEvento(folderName) {
     const zona = input.id.split(`prezzo-${folderName}-`)[1];
     zonePrices[zona] = parseFloat(input.value);
   });
+  const imgIntest = document.getElementById(`imgIntest-${folderName}`).value;
+  const notespdf = document.getElementById(`notespdf-${folderName}`).value;
 
   const formData = new FormData();
   formData.append('nome', nome);
@@ -641,6 +651,8 @@ async function salvaModificheEvento(folderName) {
   formData.append('ora', ora);
   formData.append('numeroPostiTotali', posti);
   formData.append('zonePrices', JSON.stringify(zonePrices));
+  formData.append('imgIntest', imgIntest);
+  formData.append('notespdf', notespdf);
   if (svgFile) formData.append('svg', svgFile);
   if (imgFile) formData.append('imgEvento', imgFile);
 

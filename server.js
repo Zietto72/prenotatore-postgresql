@@ -854,6 +854,8 @@ updateConfig.run(body.data, 'showDate');
 updateConfig.run(body.ora, 'showTime'); // ✅ aggiunto per salvare l'ora
 updateConfig.run(body.numeroPostiTotali, 'numeroPostiTotali');
 updateConfig.run(JSON.stringify(JSON.parse(body.zonePrices || '{}')), 'zonePrices');
+updateConfig.run(body.imgIntest || '', 'imgIntest');
+updateConfig.run(body.notespdf || '', 'notespdf');
 
 
     if (files['svg']) {
