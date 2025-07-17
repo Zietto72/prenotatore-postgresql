@@ -401,7 +401,7 @@ window.procediPagamento = function () {
       document.body.style.pointerEvents = 'auto';
       alert("Errore durante l'invio della conferma.");
     });
-};s
+}
 
 function inviaEmailConferma(datiPrenotazione) {
   return fetch(`${BASE_URL}/genera-pdf-e-invia`, {
