@@ -85,15 +85,26 @@ app.post('/genera-pdf-e-invia', async (req, res) => {
     const pdfLinks = [];
 
     for (const s of spettatori) {
-      const doc = new jsPDF();
-      const codice = bookingCode;
+const doc = new jsPDF();
+const sharp = require('sharp'); // ⬅ se non è già in alto nel file
+const svgPath = path.join(eventFolder, 'svg', config.svgFile);
+
+const codice = bookingCode;
 
       // Immagine dello spettacolo
       try {
         const imgEventoPath = path.join(eventFolder, imgEvento);
-        const imgBuffer = fs.readFileSync(imgEventoPath);
-        const imgBase64 = `data:image/png;base64,${imgBuffer.toString('base64')}`;
-        doc.addImage(imgBase64, 'PNG', 10, 10, 50, 30);
+        const sharp = require('sharp');
+const imgEventoBuffer = fs.readFileSync(imgEventoPath);
+
+// Converte PNG → JPEG compresso e ridotto
+const eventoImgOptimized = await sharp(imgEventoBuffer)
+  .resize({ width: 300 }) // regolabile
+  .jpeg({ quality: 70 }) // alta compressione
+  .toBuffer();
+
+const eventoBase64 = `data:image/jpeg;base64,${eventoImgOptimized.toString('base64')}`;
+doc.addImage(eventoBase64, 'JPEG', 10, 10, 50, 30);
       } catch (e) {
         console.warn('⚠️ Immagine evento non trovata:', e.message);
       }
@@ -128,7 +139,46 @@ app.post('/genera-pdf-e-invia', async (req, res) => {
       intestazione('Spettatore', s.nome);
       intestazione('Prenotato da', `${prenotatore} (${email})`);
       intestazione('Prezzo', `€ ${parseFloat(s.prezzo).toFixed(2)}`);
+      
+// === Inserisci la piantina SVG personalizzata per questo spettatore ===
+try {
+  const svgPath = path.join(eventFolder, 'svg', config.svgFile);
+  let svgText = fs.readFileSync(svgPath, 'utf8');
 
+  const postoPrenotato = s.posto;
+
+  svgText = svgText.replace(
+    new RegExp(`(<rect[^>]*?data-posto="${postoPrenotato}"[^>]*?>)`, 'i'),
+    (match) => {
+      const x = match.match(/x="([^"]+)"/)?.[1];
+      const y = match.match(/y="([^"]+)"/)?.[1];
+      const width = match.match(/width="([^"]+)"/)?.[1];
+      const height = match.match(/height="([^"]+)"/)?.[1];
+      const rx = match.match(/rx="([^"]+)"/)?.[1];
+      const ry = match.match(/ry="([^"]+)"/)?.[1];
+
+      if (x && y && width && height) {
+        const evidenziatore = `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${rx}" ry="${ry}" fill="#0066ff" opacity="0.6"/>`;
+        return evidenziatore + match;
+      } else {
+        return match;
+      }
+    }
+  );
+
+  const imgBuffer = await sharp(Buffer.from(svgText), { density: 100 })
+    .resize({ width: 450 })
+    .png({ compressionLevel: 9, quality: 90 })
+    .toBuffer();
+
+  const base64Image = imgBuffer.toString('base64');
+  y += 5;
+  doc.addImage(`data:image/png;base64,${base64Image}`, 'PNG', x, y, 120, 120);
+  y += 125;
+
+} catch (e) {
+  console.warn(`⚠️ Errore SVG per ${s.nome}:`, e.message);
+}
       // QR Code
       try {
         const codiceQR = JSON.stringify({

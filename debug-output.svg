@@ -1,0 +1,895 @@
+<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 117.3 139.4">
+<!-- Generator: Adobe Illustrator 29.6.1, SVG Export Plug-In . SVG Version: 2.1.1 Build 9)  -->
+<defs>
+<style>
+.st0 {
+fill: #1d1d1b;
+}
+.st0, .st1, .st2, .st3, .st4 {
+isolation: isolate;
+}
+.st0, .st4 {
+font-family: Arial-BoldMT, Arial;
+font-size: 3.2px;
+font-weight: 700;
+}
+.st1 {
+fill: #e5e5e5;
+stroke-width: .3px;
+}
+.st1, .st2 {
+mix-blend-mode: multiply;
+stroke: #b5b5b1;
+stroke-miterlimit: 10;
+}
+.st2 {
+fill: #d9d7d7;
+stroke-width: .5px;
+}
+.st4 {
+fill: #e5241e;
+}
+</style>
+</defs>
+<g class="st3">
+<g id="SPG">
+<g id="PIANTINA">
+<g id="PLATEA">
+<g id="PLATEA_FILA_L">
+<g id="PLATEA_L12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 132.5)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_L12" data-zona="PLATEA" x="101.6" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 132.5)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 132.5)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_L11" data-zona="PLATEA" x="92.9" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 132.5)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_L10" data-zona="PLATEA" x="84.3" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 132.5)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_L9" data-zona="PLATEA" x="75.8" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 132.5)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_L8" data-zona="PLATEA" x="67.1" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 132.5)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_L7" data-zona="PLATEA" x="58.6" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 132.5)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_L6" data-zona="PLATEA" x="50" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 132.5)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_L5" data-zona="PLATEA" x="41.3" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 132.5)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_L4" data-zona="PLATEA" x="32.6" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 132.5)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_L3" data-zona="PLATEA" x="24" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L2">
+<g class="st3">
+<text class="st0" transform="translate(18 132.5)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_L2" data-zona="PLATEA" x="15.4" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_L1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 132.5)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_L1" data-zona="PLATEA" x="6.8" y="128.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_I">
+<g id="PLATEA_I12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 123.3)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_I12" data-zona="PLATEA" x="101.6" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 123.3)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 123.3)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_I11" data-zona="PLATEA" x="92.9" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 123.3)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_I10" data-zona="PLATEA" x="84.3" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 123.3)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_I9" data-zona="PLATEA" x="75.8" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 123.3)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_I8" data-zona="PLATEA" x="67.1" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 123.3)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_I7" data-zona="PLATEA" x="58.6" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 123.3)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_I6" data-zona="PLATEA" x="50" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 123.3)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_I5" data-zona="PLATEA" x="41.3" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 123.3)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_I4" data-zona="PLATEA" x="32.6" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 123.3)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_I3" data-zona="PLATEA" x="24" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I2">
+<g class="st3">
+<text class="st0" transform="translate(18 123.3)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_I2" data-zona="PLATEA" x="15.4" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_I1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 123.3)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_I1" data-zona="PLATEA" x="6.8" y="119" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_H">
+<g id="PLATEA_H12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 113.7)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_H12" data-zona="PLATEA" x="101.6" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 113.7)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 113.7)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_H11" data-zona="PLATEA" x="92.9" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 113.7)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_H10" data-zona="PLATEA" x="84.3" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 113.7)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_H9" data-zona="PLATEA" x="75.8" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 113.7)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_H8" data-zona="PLATEA" x="67.1" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 113.7)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_H7" data-zona="PLATEA" x="58.6" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 113.7)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_H6" data-zona="PLATEA" x="50" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 113.7)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_H5" data-zona="PLATEA" x="41.3" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 113.7)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_H4" data-zona="PLATEA" x="32.6" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 113.7)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_H3" data-zona="PLATEA" x="24" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H2">
+<g class="st3">
+<text class="st0" transform="translate(18 113.7)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_H2" data-zona="PLATEA" x="15.4" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_H1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 113.7)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_H1" data-zona="PLATEA" x="6.8" y="109.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_G">
+<g id="PLATEA_G12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 104.1)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_G12" data-zona="PLATEA" x="101.6" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 104.1)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 104.1)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_G11" data-zona="PLATEA" x="92.9" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 104.1)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_G10" data-zona="PLATEA" x="84.3" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 104.1)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_G9" data-zona="PLATEA" x="75.8" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 104.1)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_G8" data-zona="PLATEA" x="67.1" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 104.1)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_G7" data-zona="PLATEA" x="58.6" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 104.1)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_G6" data-zona="PLATEA" x="50" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 104.1)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_G5" data-zona="PLATEA" x="41.3" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 104.1)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_G4" data-zona="PLATEA" x="32.6" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 104.1)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_G3" data-zona="PLATEA" x="24" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G2">
+<g class="st3">
+<text class="st0" transform="translate(18 104.1)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_G2" data-zona="PLATEA" x="15.4" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_G1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 104.1)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_G1" data-zona="PLATEA" x="6.8" y="99.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_F">
+<g id="PLATEA_F12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 88.5)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_F12" data-zona="PLATEA" x="101.6" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cc0000" />
+</g>
+<g id="PLATEA_F11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 88.5)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 88.5)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_F11" data-zona="PLATEA" x="92.9" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 88.5)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_F10" data-zona="PLATEA" x="84.3" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 88.5)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_F9" data-zona="PLATEA" x="75.8" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 88.5)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_F8" data-zona="PLATEA" x="67.1" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 88.5)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_F7" data-zona="PLATEA" x="58.6" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 88.5)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_F6" data-zona="PLATEA" x="50" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 88.5)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_F5" data-zona="PLATEA" x="41.3" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 88.5)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_F4" data-zona="PLATEA" x="32.6" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 88.5)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_F3" data-zona="PLATEA" x="24" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F2">
+<g class="st3">
+<text class="st0" transform="translate(18 88.5)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_F2" data-zona="PLATEA" x="15.4" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_F1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 88.5)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_F1" data-zona="PLATEA" x="6.8" y="84.3" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_E">
+<g id="PLATEA_E12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 79.3)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_E12" data-zona="PLATEA" x="101.6" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 79.3)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 79.3)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_E11" data-zona="PLATEA" x="92.9" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 79.3)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_E10" data-zona="PLATEA" x="84.3" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 79.3)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_E9" data-zona="PLATEA" x="75.8" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 79.3)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_E8" data-zona="PLATEA" x="67.1" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 79.3)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_E7" data-zona="PLATEA" x="58.6" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 79.3)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_E6" data-zona="PLATEA" x="50" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 79.3)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_E5" data-zona="PLATEA" x="41.3" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 79.3)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_E4" data-zona="PLATEA" x="32.6" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 79.3)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_E3" data-zona="PLATEA" x="24" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E2">
+<g class="st3">
+<text class="st0" transform="translate(18 79.3)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_E2" data-zona="PLATEA" x="15.4" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_E1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 79.3)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_E1" data-zona="PLATEA" x="6.8" y="75" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_D">
+<g id="PLATEA_D12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 69.7)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_D12" data-zona="PLATEA" x="101.6" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 69.7)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 69.7)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_D11" data-zona="PLATEA" x="92.9" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 69.7)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_D10" data-zona="PLATEA" x="84.3" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 69.7)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_D9" data-zona="PLATEA" x="75.8" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 69.7)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_D8" data-zona="PLATEA" x="67.1" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 69.7)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_D7" data-zona="PLATEA" x="58.6" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 69.7)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_D6" data-zona="PLATEA" x="50" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 69.7)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_D5" data-zona="PLATEA" x="41.3" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 69.7)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_D4" data-zona="PLATEA" x="32.6" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 69.7)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_D3" data-zona="PLATEA" x="24" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D2">
+<g class="st3">
+<text class="st0" transform="translate(18 69.7)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_D2" data-zona="PLATEA" x="15.4" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_D1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 69.7)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_D1" data-zona="PLATEA" x="6.8" y="65.4" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_C">
+<g id="PLATEA_C12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 60.1)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_C12" data-zona="PLATEA" x="101.6" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 60.1)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 60.1)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_C11" data-zona="PLATEA" x="92.9" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 60.1)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_C10" data-zona="PLATEA" x="84.3" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 60.1)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_C9" data-zona="PLATEA" x="75.8" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 60.1)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_C8" data-zona="PLATEA" x="67.1" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 60.1)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_C7" data-zona="PLATEA" x="58.6" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 60.1)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_C6" data-zona="PLATEA" x="50" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 60.1)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_C5" data-zona="PLATEA" x="41.3" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 60.1)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_C4" data-zona="PLATEA" x="32.6" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 60.1)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_C3" data-zona="PLATEA" x="24" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C2">
+<g class="st3">
+<text class="st0" transform="translate(18 60.1)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_C2" data-zona="PLATEA" x="15.4" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_C1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 60.1)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_C1" data-zona="PLATEA" x="6.8" y="55.8" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_B">
+<g id="PLATEA_B12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 50.8)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_B12" data-zona="PLATEA" x="101.6" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 50.8)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 50.8)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_B11" data-zona="PLATEA" x="92.9" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 50.8)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_B10" data-zona="PLATEA" x="84.3" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 50.8)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_B9" data-zona="PLATEA" x="75.8" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 50.8)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_B8" data-zona="PLATEA" x="67.1" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 50.8)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_B7" data-zona="PLATEA" x="58.6" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 50.8)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_B6" data-zona="PLATEA" x="50" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 50.8)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_B5" data-zona="PLATEA" x="41.3" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 50.8)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_B4" data-zona="PLATEA" x="32.6" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 50.8)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_B3" data-zona="PLATEA" x="24" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B2">
+<g class="st3">
+<text class="st0" transform="translate(18 50.8)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_B2" data-zona="PLATEA" x="15.4" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_B1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 50.8)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_B1" data-zona="PLATEA" x="6.8" y="46.6" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+<g id="PLATEA_FILA_A">
+<g id="PLATEA_A12">
+<g class="st3">
+<text class="st0" transform="translate(103.1 41.2)"><tspan x="0" y="0">12</tspan></text>
+</g>
+<rect data-posto="PLATEA_A12" data-zona="PLATEA" x="101.6" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A11">
+<g class="st3">
+<g class="st3">
+<text class="st0" transform="translate(94.6 41.2)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<g class="st3">
+<text class="st0" transform="translate(96.2 41.2)"><tspan x="0" y="0">1</tspan></text>
+</g>
+</g>
+<rect data-posto="PLATEA_A11" data-zona="PLATEA" x="92.9" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A10">
+<g class="st3">
+<text class="st0" transform="translate(86.1 41.2)"><tspan x="0" y="0">10</tspan></text>
+</g>
+<rect data-posto="PLATEA_A10" data-zona="PLATEA" x="84.3" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A9">
+<g class="st3">
+<text class="st0" transform="translate(78.3 41.2)"><tspan x="0" y="0">9</tspan></text>
+</g>
+<rect data-posto="PLATEA_A9" data-zona="PLATEA" x="75.8" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A8">
+<g class="st3">
+<text class="st0" transform="translate(69.7 41.2)"><tspan x="0" y="0">8</tspan></text>
+</g>
+<rect data-posto="PLATEA_A8" data-zona="PLATEA" x="67.1" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A7">
+<g class="st3">
+<text class="st0" transform="translate(61.1 41.2)"><tspan x="0" y="0">7</tspan></text>
+</g>
+<rect data-posto="PLATEA_A7" data-zona="PLATEA" x="58.6" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A6">
+<g class="st3">
+<text class="st0" transform="translate(52.5 41.2)"><tspan x="0" y="0">6</tspan></text>
+</g>
+<rect data-posto="PLATEA_A6" data-zona="PLATEA" x="50" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A5">
+<g class="st3">
+<text class="st0" transform="translate(43.9 41.2)"><tspan x="0" y="0">5</tspan></text>
+</g>
+<rect data-posto="PLATEA_A5" data-zona="PLATEA" x="41.3" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A4">
+<g class="st3">
+<text class="st0" transform="translate(35.2 41.2)"><tspan x="0" y="0">4</tspan></text>
+</g>
+<rect data-posto="PLATEA_A4" data-zona="PLATEA" x="32.6" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A3">
+<g class="st3">
+<text class="st0" transform="translate(26.6 41.2)"><tspan x="0" y="0">3</tspan></text>
+</g>
+<rect data-posto="PLATEA_A3" data-zona="PLATEA" x="24" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A2">
+<g class="st3">
+<text class="st0" transform="translate(18 41.2)"><tspan x="0" y="0">2</tspan></text>
+</g>
+<rect data-posto="PLATEA_A2" data-zona="PLATEA" x="15.4" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+<g id="PLATEA_A1">
+<g class="st3">
+<text class="st0" transform="translate(9.4 41.2)"><tspan x="0" y="0">1</tspan></text>
+</g>
+<rect data-posto="PLATEA_A1" data-zona="PLATEA" x="6.8" y="37" width="6.8" height="6.8" rx="2.1" ry="2.1" / fill="#cccccc" />
+</g>
+</g>
+</g>
+</g>
+<g id="VARIE">
+<rect id="PALCO" class="st2" x="6.8" y="6" width="101.3" height="22.1" />
+<g class="st3">
+<text class="st4" transform="translate(3.2 51.2)"><tspan x="0" y="0">B</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 60.5)"><tspan x="0" y="0">C</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 41.1)"><tspan x="0" y="0">A</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 79.8)"><tspan x="0" y="0">E</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 89.1)"><tspan x="0" y="0">F</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 69.7)"><tspan x="0" y="0">D</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 104.1)"><tspan x="0" y="0">G</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 123.4)"><tspan x="0" y="0">I</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 132.7)"><tspan x="0" y="0">L</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(3.2 113.3)"><tspan x="0" y="0">H</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 51.2)"><tspan x="0" y="0">B</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 60.5)"><tspan x="0" y="0">C</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 41.1)"><tspan x="0" y="0">A</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 79.8)"><tspan x="0" y="0">E</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 89.1)"><tspan x="0" y="0">F</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 69.7)"><tspan x="0" y="0">D</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 104.1)"><tspan x="0" y="0">G</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 123.4)"><tspan x="0" y="0">I</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 132.7)"><tspan x="0" y="0">L</tspan></text>
+</g>
+<g class="st3">
+<text class="st4" transform="translate(110.8 113.3)"><tspan x="0" y="0">H</tspan></text>
+</g>
+</g>
+</g>
+</g>
+</svg>
