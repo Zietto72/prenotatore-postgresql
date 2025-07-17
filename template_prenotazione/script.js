@@ -196,54 +196,85 @@ window.chiudiMessaggioConferma = function () {
   }
 };
 
-window.controllaPrenotatore = function () {
-  const nome = document.getElementById('prenotatoreNome').value.trim();
-  const email = document.getElementById('prenotatoreEmail').value.trim();
-  const email2 = document.getElementById('prenotatoreEmailConferma').value.trim();
-  const telefono = document.getElementById('prenotatoreTelefono').value.trim();
 
-  // Verifica campi vuoti
-  if (!nome || !email || !email2 || !telefono) {
-    alert("Compila tutti i campi.");
+
+
+window.controllaPrenotatore = function () {
+  const campoPrenotatore = document.getElementById('prenotatoreNome');
+  const campoEmail = document.getElementById('prenotatoreEmail');
+  const campoEmail2 = document.getElementById('prenotatoreEmailConferma');
+  const campoTelefono = document.getElementById('prenotatoreTelefono');
+
+  // 🔠 Formattazione automatica del nome
+  campoPrenotatore.value = campoPrenotatore.value
+    .split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+    
+    // 🔡 Minuscolo automatico su email
+campoEmail.value = campoEmail.value.toLowerCase();
+campoEmail2.value = campoEmail2.value.toLowerCase();
+
+  // ✅ Validazione Nome e Cognome
+  validaCampoNome(campoPrenotatore);
+  if (!campoPrenotatore.checkValidity()) {
+    campoPrenotatore.reportValidity();
     return;
   }
 
-  // Verifica formato email
+  // ✅ Validazione Email
+  const email = campoEmail.value.trim();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    alert("Inserisci un indirizzo email valido.");
+    campoEmail.setCustomValidity("Inserisci un indirizzo email valido");
+    campoEmail.reportValidity();
     return;
+  } else {
+    campoEmail.setCustomValidity("");
   }
 
-  // Verifica che le due email coincidano
+  // ✅ Conferma Email
+  const email2 = campoEmail2.value.trim();
   if (email !== email2) {
-    alert("Le due email non coincidono. Controlla di averle scritte correttamente.");
+    campoEmail2.setCustomValidity("Le due email non coincidono");
+    campoEmail2.reportValidity();
     return;
+  } else {
+    campoEmail2.setCustomValidity("");
   }
 
-  // Verifica dominio simile (es. gmal.com → gmail.com)
+  // ✅ Telefono
+  const telefono = campoTelefono.value.trim();
+  if (!/^\d{6,13}$/.test(telefono)) {
+    campoTelefono.setCustomValidity("Inserisci solo cifre");
+    campoTelefono.reportValidity();
+    return;
+  } else {
+    campoTelefono.setCustomValidity("");
+  }
+
+  // 🔍 Controllo dominio simile (gmail vs gmal)
   const dominiComuni = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'libero.it', 'fastwebnet.it'];
   const dominioInserito = email.split('@')[1]?.toLowerCase();
-
-  if (dominioInserito && !dominiComuni.includes(dominioInserito)) {
-    const suggerito = dominiComuni.find(d => distanzaLevenshtein(d, dominioInserito) <= 2);
-    if (suggerito) {
-      const conferma = confirm(
-        `Hai scritto "${dominioInserito}". Forse intendevi "${suggerito}"?\n\nPremi OK per CONTINUARE in ogni caso oppure ANNULLA per CORREGGERE l'indirizzo email.`
-      );
-      if (!conferma) return;
-    }
-  }
-
-  // Verifica numero di telefono: solo cifre, da 6 a 13 cifre
-  if (!/^\d{6,13}$/.test(telefono)) {
-    alert("Inserisci solo cifre nel numero di telefono (da 6 a 13 cifre, senza simboli).");
+if (dominioInserito && !dominiComuni.includes(dominioInserito)) {
+  const suggerito = dominiComuni.find(d => distanzaLevenshtein(d, dominioInserito) <= 2);
+  if (suggerito) {
+    campoEmail.setCustomValidity(`Hai scritto "${dominioInserito}". Forse intendevi "${suggerito}"`);
+    campoEmail.reportValidity();
     return;
+  } else {
+    campoEmail.setCustomValidity('');
   }
+}
 
-  // Dati confermati → passaggio al modulo spettatori
-  window.prenotatoreData = { nome, email, telefono };
+  // ✅ Se tutto è valido → salva i dati
+  window.prenotatoreData = {
+    nome: campoPrenotatore.value.trim(),
+    email,
+    telefono
+  };
 
+  // 👉 Passaggio alla modale degli spettatori
   const container = document.getElementById('spettatoriInput');
   container.innerHTML = '';
 
@@ -261,6 +292,15 @@ window.controllaPrenotatore = function () {
     input.required = true;
     input.type = 'text';
 
+    // Formattazione e validazione live
+    input.addEventListener('input', () => {
+      input.value = input.value
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
+      validaCampoNome(input);
+    });
+
     formGroup.appendChild(label);
     formGroup.appendChild(input);
     container.appendChild(formGroup);
@@ -270,7 +310,25 @@ window.controllaPrenotatore = function () {
   document.getElementById('spettatoriModal').style.display = 'block';
 };
 
+['prenotatoreEmail', 'prenotatoreEmailConferma', 'prenotatoreTelefono'].forEach(id => {
+  const campo = document.getElementById(id);
+  campo.addEventListener('input', () => campo.setCustomValidity(''));
+});
+
+
+
+
+
+
 window.apriRiepilogo = function () {
+  // ✅ Verifica che tutti i campi spettatori siano validi
+  const campiSpettatori = document.querySelectorAll('[id^="spettatore-"]');
+  for (let campo of campiSpettatori) {
+    if (!campo.checkValidity()) {
+      campo.reportValidity(); // Mostra messaggio di errore
+      return;
+    }
+  }
   let contenuto = '';
   let totale = 0;
   const spettatori = [];
@@ -306,25 +364,44 @@ window.apriRiepilogo = function () {
 };
 
 window.procediPagamento = function () {
-  // Mostra la barra di attesa
   const barraAttesa = document.getElementById('barraAttesa');
   const barraInterna = document.getElementById('barraInterna');
-  barraAttesa.style.display = 'block';
-  document.body.style.pointerEvents = 'none'; // Blocca tutte le interazioni
 
-  // Resetta e avvia animazione della barra
+  // Mostra la barra e blocca interazioni
+  barraAttesa.style.display = 'block';
+  document.body.style.pointerEvents = 'none';
   barraInterna.style.width = '0%';
-  setTimeout(() => {
-    barraInterna.style.width = '100%';
-  }, 100);
+
+  let progresso = 0;
+  const intervallo = setInterval(() => {
+    if (progresso < 80) {
+      progresso += Math.floor(Math.random() * 10) + 5; // step casuali 5-14%
+      if (progresso > 80) progresso = 80;
+      barraInterna.style.width = `${progresso}%`;
+    }
+  }, 300);
 
   inviaEmailConferma(window.datiPrenotazione)
-    .finally(() => {
-      // Nascondi barra di attesa e riattiva interazioni
+    .then(() => {
+      clearInterval(intervallo);
+      barraInterna.style.width = '100%';
+
+      setTimeout(() => {
+        barraAttesa.style.display = 'none';
+        document.body.style.pointerEvents = 'auto';
+
+        // Mostra messaggio verde di conferma
+        const confermaMsg = document.getElementById("messaggioConferma");
+        if (confermaMsg) confermaMsg.style.display = "block";
+      }, 500);
+    })
+    .catch(() => {
+      clearInterval(intervallo);
       barraAttesa.style.display = 'none';
       document.body.style.pointerEvents = 'auto';
+      alert("Errore durante l'invio della conferma.");
     });
-};
+};s
 
 function inviaEmailConferma(datiPrenotazione) {
   return fetch(`${BASE_URL}/genera-pdf-e-invia`, {
@@ -368,5 +445,33 @@ function inviaEmailConferma(datiPrenotazione) {
       alert("Errore nella richiesta al server.");
     });
 }
+
+function validaCampoNome(input) {
+  const parole = input.value.trim().split(/\s+/);
+  const valide = parole.filter(p => p.length >= 2);
+  if (valide.length >= 2) {
+    input.setCustomValidity('');
+  } else {
+    input.setCustomValidity('Inserisci Nome e Cognome');
+  }
+}
+
+// Formattazione e validazione automatica live per prenotatore
+document.getElementById('prenotatoreNome').addEventListener('input', function () {
+  this.value = this.value
+    .split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+
+  validaCampoNome(this); // ✅ aggiunto
+});
+
+['prenotatoreEmail', 'prenotatoreEmailConferma'].forEach(id => {
+  const campo = document.getElementById(id);
+  campo.addEventListener('input', () => {
+    campo.value = campo.value.toLowerCase();       // 🔡 forza minuscolo
+    campo.setCustomValidity('');                   // ✅ reset validazione se corregge
+  });
+});
 
 window.inviaEmailConferma = inviaEmailConferma;
