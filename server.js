@@ -9,8 +9,6 @@ const path = require('path');
 const configDbPath = path.join(__dirname, 'config', 'config.sqlite');
 
 const configDir = path.join(__dirname, 'config');
-console.log('📂 configDir esiste:', fs.existsSync(configDir));
-console.log('📄 config.sqlite esiste:', fs.existsSync(configDbPath));
 
 const { jsPDF } = require('jspdf');
 const QRCode = require('qrcode');
@@ -76,7 +74,7 @@ app.post('/genera-pdf-e-invia', async (req, res) => {
       notespdf = ''
     } = config;
 
-    const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}`;
+    const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}?t=${Date.now()}`;
 
     const sqlite3 = require('sqlite3').verbose();
     const db = new sqlite3.Database(dbPath);
