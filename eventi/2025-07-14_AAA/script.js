@@ -430,8 +430,9 @@ window.procediPagamento = function () {
     }
   }, 300);
 
+  // L'invio gestisce internamente successo/errore
   inviaEmailConferma(window.datiPrenotazione)
-    .then(() => {
+    .finally(() => {
       clearInterval(intervallo);
       barraInterna.style.width = '100%';
 
@@ -443,23 +444,7 @@ window.procediPagamento = function () {
           bottone.disabled = false;
           bottone.innerText = "Conferma e Invia";
         }
-
-        // Mostra messaggio verde di conferma
-        const confermaMsg = document.getElementById("messaggioConferma");
-        if (confermaMsg) confermaMsg.style.display = "block";
       }, 500);
-    })
-    .catch(() => {
-      clearInterval(intervallo);
-      barraAttesa.style.display = 'none';
-      document.body.style.pointerEvents = 'auto';
-
-      if (bottone) {
-        bottone.disabled = false;
-        bottone.innerText = "Conferma e Invia";
-      }
-
-      alert("Errore durante l'invio della conferma.");
     });
 };
 
@@ -472,62 +457,68 @@ function inviaEmailConferma(datiPrenotazione) {
       ...datiPrenotazione
     })
   })
-    .then(async response => {
-      const data = await response.json();
-
-if (response.status === 409) {
-  const msg = data.error || "⚠️ Uno o più posti sono già stati prenotati da altri.";
-  alert(msg);
-
-  // Prova a trovare il posto indicato nell'errore
-  const match = msg.match(/posto\s+([A-Za-z0-9]+)/i);
-  if (match) {
-    const postoOccupato = match[1];
-    selected.delete(postoOccupato);
-
-    const rect = document.querySelector(`[data-posto="${postoOccupato}"]`);
-    if (rect) {
-      rect.classList.remove("selected");
-      rect.classList.add("occupied");
+  .then(async response => {
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      console.error("❌ Risposta non valida (non è JSON):", e);
+      alert("Errore di comunicazione con il server. Riprova tra poco.");
+      return;
     }
 
-    // Aggiorna interfaccia e bottone
-    localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
-    aggiornaBottoneConferma();
-  }
+    if (response.status === 409) {
+      const msg = data.error || "⚠️ Uno o più posti sono già stati prenotati da altri.";
+      alert(msg);
 
-  return;
-}
-
-      if (!response.ok || !data.success) {
-        alert("Errore nella generazione del PDF o invio email.");
-        return;
+      const match = msg.match(/posto\s+([A-Za-z0-9]+)/i);
+      if (match) {
+        const postoOccupato = match[1];
+        selected.delete(postoOccupato);
+        const rect = document.querySelector(`[data-posto="${postoOccupato}"]`);
+        if (rect) {
+          rect.classList.remove("selected");
+          rect.classList.add("occupied");
+        }
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+        aggiornaBottoneConferma();
       }
 
-      // ✅ Successo → aggiorna UI
-      window.datiPrenotazione.spettatori.forEach(s => {
-        const rect = document.querySelector(`[data-posto="${s.posto}"]`);
-        if (rect) {
-          rect.classList.add('occupied');
-          rect.classList.remove('selected');
-        }
-      });
+      return;
+    }
 
-      selected.clear();
-      localStorage.removeItem(storageKey);
-      aggiornaBottoneConferma();
+    if (!response.ok || !data.success) {
+      alert("Errore nella generazione del PDF o invio email.");
+      return;
+    }
 
-      const riepilogo = document.getElementById("riepilogoModal");
-      if (riepilogo) riepilogo.style.display = "none";
-
-      const confermaMsg = document.getElementById("messaggioConferma");
-      if (confermaMsg) confermaMsg.style.display = "block";
-    })
-    .catch(error => {
-      console.error("Errore chiamata backend:", error);
-      alert("Errore nella richiesta al server.");
+    // ✅ Solo se tutto è andato bene → aggiorna interfaccia
+    window.datiPrenotazione.spettatori.forEach(s => {
+      const rect = document.querySelector(`[data-posto="${s.posto}"]`);
+      if (rect) {
+        rect.classList.add('occupied');
+        rect.classList.remove('selected');
+      }
     });
+
+    selected.clear();
+    localStorage.removeItem(storageKey);
+    aggiornaBottoneConferma();
+
+    const riepilogo = document.getElementById("riepilogoModal");
+    if (riepilogo) riepilogo.style.display = "none";
+
+    // ✅ Mostra conferma SOLO se tutto è andato bene
+    const confermaMsg = document.getElementById("messaggioConferma");
+    if (confermaMsg) confermaMsg.style.display = "block";
+  })
+  .catch(error => {
+    console.error("Errore chiamata backend:", error);
+    alert("Errore nella richiesta al server.");
+  });
 }
+
+
 function validaCampoNome(input) {
   const parole = input.value.trim().split(/\s+/);
   const valide = parole.filter(p => p.length >= 2);
