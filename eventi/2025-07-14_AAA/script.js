@@ -431,8 +431,16 @@ window.procediPagamento = function () {
   }, 300);
 
   // L'invio gestisce internamente successo/errore
-  inviaEmailConferma(window.datiPrenotazione)
-    .finally(() => {
+verificaPostiDisponibili(Array.from(selected))
+  .then(ok => {
+    if (ok) {
+      return inviaEmailConferma(window.datiPrenotazione);
+    } else {
+      alert("⚠️ Alcuni dei posti selezionati sono appena stati prenotati da altri. Aggiorno la mappa.");
+      aggiornaPostiOccupati();
+      return Promise.reject(); // blocca il flusso
+    }
+  })    .finally(() => {
       clearInterval(intervallo);
       barraInterna.style.width = '100%';
 
@@ -546,5 +554,36 @@ document.getElementById('prenotatoreNome').addEventListener('input', function ()
     campo.setCustomValidity('');                   // ✅ reset validazione se corregge
   });
 });
+
+function verificaPostiDisponibili(listaPosti) {
+  return fetch(`${BASE_URL}/verifica-posti`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ evento: eventoCorrente, posti: listaPosti })
+  })
+  .then(r => r.json())
+  .then(data => data.ok === true)
+  .catch(e => {
+    console.warn("⚠️ Errore durante la verifica dei posti:", e);
+    return false;
+  });
+}
+
+function aggiornaPostiOccupati() {
+  fetch(`/eventi/${eventoCorrente}/occupied-seats`)
+    .then(r => r.json())
+    .then(lista => {
+      lista.forEach(id => {
+        const el = document.querySelector(`[data-posto="${id}"]`);
+        if (el) {
+          el.classList.add("occupied");
+          el.classList.remove("selected");
+          selected.delete(id);
+        }
+      });
+      localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+      aggiornaBottoneConferma();
+    });
+}
 
 window.inviaEmailConferma = inviaEmailConferma;

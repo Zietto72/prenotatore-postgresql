@@ -74,6 +74,8 @@ app.post('/genera-pdf-e-invia', async (req, res) => {
     const dbPath = path.join(eventFolder, 'data', 'booking.sqlite');
 
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+    
+    
 
     // ✅ Prende TUTTO da booking.sqlite (comprese imgIntest e notespdf)
     const config = await getEventoConfig(dbPath);
@@ -353,7 +355,36 @@ await new Promise((resolve, reject) => {
 });
 
 
+app.post('/verifica-posti', (req, res) => {
+  const { evento, posti } = req.body;
+  if (!evento || !Array.isArray(posti)) {
+    return res.status(400).json({ ok: false });
+  }
 
+  const dbPath = path.join(__dirname, 'eventi', evento, 'data', 'booking.sqlite');
+  if (!fs.existsSync(dbPath)) {
+    return res.status(404).json({ ok: false, message: 'Evento non trovato' });
+  }
+
+  const db = new sqlite3.Database(dbPath);
+  const placeholders = posti.map(() => '?').join(',');
+  const query = `SELECT posto FROM occupiedSeats WHERE posto IN (${placeholders})`;
+
+  db.all(query, posti, (err, rows) => {
+    db.close();
+    if (err) {
+      console.error("Errore verifica-posti:", err);
+      return res.status(500).json({ ok: false });
+    }
+
+    if (rows.length > 0) {
+      const giaOccupati = rows.map(r => r.posto);
+      return res.json({ ok: false, giàOccupati: giaOccupati });
+    }
+
+    return res.json({ ok: true });
+  });
+});
 
 
 
