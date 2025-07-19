@@ -17,6 +17,18 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const app = express();
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
+
+/// --- Funzione per semplificare il nome della cartella dell'evento
+
+function slugify(testo) {
+  return testo
+    .normalize('NFD')                     // separa lettere da accenti
+    .replace(/[\u0300-\u036f]/g, '')      // rimuove accenti
+    .replace(/[^\w\s-]/g, '')             // rimuove simboli speciali
+    .trim()
+    .replace(/\s+/g, '_');                // sostituisce spazi con _
+}
+
 /// --- Login
 app.use(session({
   store: new SQLiteStore({ db: 'sessions.sqlite', dir: './config' }),
@@ -213,7 +225,25 @@ try {
     }
 
     // Salva in database prenotazioni e posti occupati
-    db.serialize(() => {
+    let erroreOccupazione = null;
+
+await new Promise((resolve, reject) => {
+  db.serialize(() => {
+    db.run('BEGIN TRANSACTION');
+
+    const checkStmt = db.prepare(`SELECT 1 FROM occupiedSeats WHERE posto = ?`);
+    for (const s of spettatori) {
+      checkStmt.get([s.posto], (err, row) => {
+        if (err) erroreOccupazione = err;
+        if (row) erroreOccupazione = new Error(`Il posto ${s.posto} è già stato prenotato.`);
+      });
+    }
+    checkStmt.finalize(err => {
+      if (erroreOccupazione) {
+        db.run('ROLLBACK');
+        return reject(erroreOccupazione);
+      }
+
       const stmtP = db.prepare(`
         INSERT INTO prenotazioni (posto, nome, email, telefono, prenotatore, bookingCode)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -230,11 +260,21 @@ try {
       });
       stmtP.finalize();
 
-      const stmtO = db.prepare(`INSERT OR IGNORE INTO occupiedSeats (posto) VALUES (?)`);
+      const stmtO = db.prepare(`INSERT INTO occupiedSeats (posto) VALUES (?)`);
       spettatori.forEach(s => stmtO.run(s.posto));
-      stmtO.finalize();
+      stmtO.finalize(err => {
+        if (err) {
+          db.run('ROLLBACK');
+          return reject(err);
+        }
+        db.run('COMMIT', err => {
+          if (err) return reject(err);
+          resolve();
+        });
+      });
     });
-
+  });
+});
     db.close();
 
     // Composizione email HTML
@@ -700,7 +740,7 @@ app.post('/crea-evento', upload.fields([{ name: 'svg' }, { name: 'imgEvento' }])
     }
 
     const nomeSvg = files['svg'][0].originalname;
-    const folder = `${data}_${nome.replace(/\s+/g, '_')}`;
+    const folder = `${data}_${slugify(nome)}`;
     const dir = path.join(eventiDir, folder);
 
     if (!fs.existsSync(eventiDir)) fs.mkdirSync(eventiDir);

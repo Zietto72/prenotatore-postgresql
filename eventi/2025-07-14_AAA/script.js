@@ -65,6 +65,27 @@ container.appendChild(svg);
       const el = svg.querySelector(`[data-posto="${id}"]`);
       if (el) el.classList.add("occupied");
     });
+    
+    // 🔁 Polling: aggiorna i posti occupati ogni 7 secondi
+setInterval(async () => {
+  try {
+    const aggiornati = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
+
+    aggiornati.forEach(id => {
+      const el = svg.querySelector(`[data-posto="${id}"]`);
+      if (el) {
+        el.classList.add("occupied");
+        el.classList.remove("selected");
+        selected.delete(id);
+      }
+    });
+
+    localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+    aggiornaBottoneConferma();
+  } catch (e) {
+    console.warn("⚠️ Impossibile aggiornare la mappa dei posti:", e);
+  }
+}, 7000); // ogni 7 secondi
 
     // ✅ Ripristina eventuali selezioni precedenti
     storageKey = `selectedSeats_${eventoCorrente}`;
@@ -178,9 +199,24 @@ function aggiornaBottoneConferma() {
   }
 }
 
+// Modale Prenotatore TEST
+
+window.apriModalePrenotatore = function () {
+  // Precompila i campi (solo per test)
+  document.getElementById("prenotatoreNome").value = "Mario Test";
+  document.getElementById("prenotatoreEmail").value = "enzio.isaia@gmail.com";
+  document.getElementById("prenotatoreEmailConferma").value = "enzio.isaia@gmail.com";
+  document.getElementById("prenotatoreTelefono").value = "3331234567";
+
+  document.getElementById("prenotatoreModal").style.display = "block";
+};
+
+/*
+// Modale Prenotatore effettiva
 window.apriModalePrenotatore = function () {
   document.getElementById("prenotatoreModal").style.display = "block";
 };
+*/
 
 window.chiudiModale = function () {
   document.querySelectorAll('.modal').forEach(modale => {
@@ -292,6 +328,12 @@ if (dominioInserito && !dominiComuni.includes(dominioInserito)) {
     input.required = true;
     input.type = 'text';
 
+
+// Dati farlocchi e inseriti automaticamente degli spettaori
+  input.value = "Enzio Isaia"; // ← AGGIUNTA QUI
+
+
+
     // Formattazione e validazione live
     input.addEventListener('input', () => {
       input.value = input.value
@@ -372,10 +414,17 @@ window.procediPagamento = function () {
   document.body.style.pointerEvents = 'none';
   barraInterna.style.width = '0%';
 
+  // Disabilita il pulsante per evitare clic multipli
+  const bottone = document.querySelector('#riepilogoModal .button-group button');
+  if (bottone) {
+    bottone.disabled = true;
+    bottone.innerText = "Attendere...";
+  }
+
   let progresso = 0;
   const intervallo = setInterval(() => {
     if (progresso < 80) {
-      progresso += Math.floor(Math.random() * 10) + 5; // step casuali 5-14%
+      progresso += Math.floor(Math.random() * 10) + 5;
       if (progresso > 80) progresso = 80;
       barraInterna.style.width = `${progresso}%`;
     }
@@ -390,6 +439,11 @@ window.procediPagamento = function () {
         barraAttesa.style.display = 'none';
         document.body.style.pointerEvents = 'auto';
 
+        if (bottone) {
+          bottone.disabled = false;
+          bottone.innerText = "Conferma e Invia";
+        }
+
         // Mostra messaggio verde di conferma
         const confermaMsg = document.getElementById("messaggioConferma");
         if (confermaMsg) confermaMsg.style.display = "block";
@@ -399,9 +453,15 @@ window.procediPagamento = function () {
       clearInterval(intervallo);
       barraAttesa.style.display = 'none';
       document.body.style.pointerEvents = 'auto';
+
+      if (bottone) {
+        bottone.disabled = false;
+        bottone.innerText = "Conferma e Invia";
+      }
+
       alert("Errore durante l'invio della conferma.");
     });
-}
+};
 
 function inviaEmailConferma(datiPrenotazione) {
   return fetch(`${BASE_URL}/genera-pdf-e-invia`, {
@@ -412,40 +472,62 @@ function inviaEmailConferma(datiPrenotazione) {
       ...datiPrenotazione
     })
   })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Trasforma i posti selezionati in occupati
-        window.datiPrenotazione.spettatori.forEach(s => {
-          const rect = document.querySelector(`[data-posto="${s.posto}"]`);
-          if (rect) {
-            rect.classList.add('occupied');
-            rect.classList.remove('selected');
-          }
-        });
+    .then(async response => {
+      const data = await response.json();
 
-        // Pulisci selezione e storage
-        selected.clear();
-        localStorage.removeItem(storageKey);
-        aggiornaBottoneConferma();
+if (response.status === 409) {
+  const msg = data.error || "⚠️ Uno o più posti sono già stati prenotati da altri.";
+  alert(msg);
 
-        // Chiude il riepilogo
-        const riepilogo = document.getElementById("riepilogoModal");
-        if (riepilogo) riepilogo.style.display = "none";
+  // Prova a trovare il posto indicato nell'errore
+  const match = msg.match(/posto\s+([A-Za-z0-9]+)/i);
+  if (match) {
+    const postoOccupato = match[1];
+    selected.delete(postoOccupato);
 
-        // Mostra il messaggio di conferma
-        const confermaMsg = document.getElementById("messaggioConferma");
-        if (confermaMsg) confermaMsg.style.display = "block";
-      } else {
+    const rect = document.querySelector(`[data-posto="${postoOccupato}"]`);
+    if (rect) {
+      rect.classList.remove("selected");
+      rect.classList.add("occupied");
+    }
+
+    // Aggiorna interfaccia e bottone
+    localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+    aggiornaBottoneConferma();
+  }
+
+  return;
+}
+
+      if (!response.ok || !data.success) {
         alert("Errore nella generazione del PDF o invio email.");
+        return;
       }
+
+      // ✅ Successo → aggiorna UI
+      window.datiPrenotazione.spettatori.forEach(s => {
+        const rect = document.querySelector(`[data-posto="${s.posto}"]`);
+        if (rect) {
+          rect.classList.add('occupied');
+          rect.classList.remove('selected');
+        }
+      });
+
+      selected.clear();
+      localStorage.removeItem(storageKey);
+      aggiornaBottoneConferma();
+
+      const riepilogo = document.getElementById("riepilogoModal");
+      if (riepilogo) riepilogo.style.display = "none";
+
+      const confermaMsg = document.getElementById("messaggioConferma");
+      if (confermaMsg) confermaMsg.style.display = "block";
     })
     .catch(error => {
       console.error("Errore chiamata backend:", error);
       alert("Errore nella richiesta al server.");
     });
 }
-
 function validaCampoNome(input) {
   const parole = input.value.trim().split(/\s+/);
   const valide = parole.filter(p => p.length >= 2);
