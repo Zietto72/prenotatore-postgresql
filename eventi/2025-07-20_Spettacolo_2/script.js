@@ -540,7 +540,8 @@ if (response.status === 409) {
     aggiornaBottoneConferma();
   }
 
-  return;
+  // 🚫 BLOCCA IL FLUSSO completamente
+  throw new Error("Posto già prenotato da altri");
 }
 
       if (!response.ok || !data.success) {
@@ -556,6 +557,17 @@ if (response.status === 409) {
           rect.classList.remove('selected');
         }
       });
+      
+      // 🔁 Forza aggiornamento mappa in tempo reale (sincronizza da DB)
+const aggiornati = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
+aggiornati.forEach(id => {
+  const el = document.querySelector(`[data-posto="${id}"]`);
+  if (el) {
+    el.classList.add("occupied");
+    el.classList.remove("selected");
+    selected.delete(id);
+  }
+});
 
       selected.clear();
       localStorage.removeItem(storageKey);
