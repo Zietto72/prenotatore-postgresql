@@ -631,11 +631,11 @@ try {
   fse.removeSync(eventoPath);
   console.log(`✅ Evento "${evento}" eliminato da file system.`);
 
-  // 2. Elimina dalla tabella eventi_utenti (relazione utente-evento)
-  await pool.query(
-    'DELETE FROM eventi_utenti WHERE nome_cartella = $1 AND email_utente = $2',
-    [evento, email_utente]
-  );
+// 2. Elimina dal database PostgreSQL (tabella eventi)
+const result = await pool.query(
+  'DELETE FROM eventi WHERE slug = $1 AND email_utente = $2',
+  [evento, email_utente]
+);
 
   // 3. Elimina dalla tabella eventi (evento vero e proprio)
   await pool.query(
