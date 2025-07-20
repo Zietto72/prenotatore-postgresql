@@ -1,26 +1,3 @@
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-dist/
-build/
-*.sqlite
-*.sqlite3
-!.gitignore
-!.env.example
-!.nvmrc
-!.editorconfig
-
-# ⛔ ignora TUTTI i .sqlite...
-*.sqlite
-
-# ✅ ...ma NON ignorare questi specifici
-!config/config.sqlite
-!eventi/**/booking.sqlite
-
-.DS_Store
 .env
-logs/
-*.log
-.cache/
-launch.txt
+node_modules/
+tmp/

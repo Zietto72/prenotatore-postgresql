@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
     "connect-sqlite3": "^0.9.16",
     "dotenv": "^17.1.0",
     "emailjs": "^4.0.3",
@@ -10,6 +11,7 @@
     "jspdf": "^3.0.1",
     "multer": "^2.0.1",
     "nodemailer": "^7.0.5",
+    "pg": "^8.16.3",
     "qrcode": "^1.5.4",
     "sharp": "^0.34.3",
     "sqlite3": "^5.1.7"
