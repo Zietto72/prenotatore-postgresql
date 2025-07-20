@@ -475,20 +475,25 @@ window.procediPagamento = async function () {
   try {
     await inviaEmailConferma(window.datiPrenotazione);
   } catch (error) {
-    // ❌ Errore → blocca tutto
-    clearInterval(intervallo);
-    barraAttesa.style.display = 'none';
-    document.body.style.pointerEvents = 'auto';
+  clearInterval(intervallo);
+  barraAttesa.style.display = 'none';
+  document.body.style.pointerEvents = 'auto';
 
-    if (bottone) {
-      bottone.disabled = false;
-      bottone.innerText = "Conferma e Invia";
-    }
-
-    console.error("Errore chiamata backend:", error);
-    alert(error.message || "Errore durante la prenotazione.");
-    return; // 🚫 Blocca il flusso
+  if (bottone) {
+    bottone.disabled = false;
+    bottone.innerText = "Conferma e Invia";
   }
+
+  // ✅ Blocca schermata verde SOLO se è errore 409 (posto occupato)
+  if (error.message === "409") {
+    console.warn("⚠️ Prenotazione annullata per conflitto sui posti.");
+    return;
+  }
+
+  alert(error.message || "Errore durante la prenotazione.");
+  console.error("Errore chiamata backend:", error);
+  return;
+}
 
   // ✅ Successo
   clearInterval(intervallo);
@@ -542,7 +547,7 @@ if (response.status === 409) {
   }
 
   // 🚫 BLOCCA IL FLUSSO completamente
-  throw new Error("Posto già prenotato da altri");
+  throw new Error("409");
 }
 
       if (!response.ok || !data.success) {
