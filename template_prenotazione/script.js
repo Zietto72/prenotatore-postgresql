@@ -449,7 +449,7 @@ window.apriRiepilogo = function () {
   };
 };
 
-window.procediPagamento = function () {
+window.procediPagamento = async function () {
   const barraAttesa = document.getElementById('barraAttesa');
   const barraInterna = document.getElementById('barraInterna');
 
@@ -472,39 +472,40 @@ window.procediPagamento = function () {
     }
   }, 300);
 
-  inviaEmailConferma(window.datiPrenotazione)
-    .then(() => {
-      clearInterval(intervallo);
-      barraInterna.style.width = '100%';
+  try {
+    await inviaEmailConferma(window.datiPrenotazione);
+  } catch (error) {
+    // ❌ Errore → blocca tutto
+    clearInterval(intervallo);
+    barraAttesa.style.display = 'none';
+    document.body.style.pointerEvents = 'auto';
 
-      setTimeout(() => {
-        barraAttesa.style.display = 'none';
-        document.body.style.pointerEvents = 'auto';
+    if (bottone) {
+      bottone.disabled = false;
+      bottone.innerText = "Conferma e Invia";
+    }
 
-        if (bottone) {
-          bottone.disabled = false;
-          bottone.innerText = "Conferma e Invia";
-        }
+    console.error("Errore chiamata backend:", error);
+    alert(error.message || "Errore durante la prenotazione.");
+    return; // 🚫 Blocca il flusso
+  }
 
-        const confermaMsg = document.getElementById("messaggioConferma");
-        if (confermaMsg) confermaMsg.style.display = "block";
-      }, 500);
-    })
-    .catch(error => {
-      // ✅ FERMA ANIMAZIONE E INTERAZIONE
-      clearInterval(intervallo);
-      barraAttesa.style.display = 'none';
-      document.body.style.pointerEvents = 'auto';
+  // ✅ Successo
+  clearInterval(intervallo);
+  barraInterna.style.width = '100%';
 
-      if (bottone) {
-        bottone.disabled = false;
-        bottone.innerText = "Conferma e Invia";
-      }
+  setTimeout(() => {
+    barraAttesa.style.display = 'none';
+    document.body.style.pointerEvents = 'auto';
 
-      // ✅ BLOCCA schermata di conferma se errore da `inviaEmailConferma`
-      console.error("Errore chiamata backend:", error);
-      alert("Errore durante l'invio della conferma.");
-    });
+    if (bottone) {
+      bottone.disabled = false;
+      bottone.innerText = "Conferma e Invia";
+    }
+
+    const confermaMsg = document.getElementById("messaggioConferma");
+    if (confermaMsg) confermaMsg.style.display = "block";
+  }, 500);
 };
 
 function inviaEmailConferma(datiPrenotazione) {
