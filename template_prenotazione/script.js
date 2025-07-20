@@ -453,12 +453,10 @@ window.procediPagamento = function () {
   const barraAttesa = document.getElementById('barraAttesa');
   const barraInterna = document.getElementById('barraInterna');
 
-  // Mostra la barra e blocca interazioni
   barraAttesa.style.display = 'block';
   document.body.style.pointerEvents = 'none';
   barraInterna.style.width = '0%';
 
-  // Disabilita il pulsante per evitare clic multipli
   const bottone = document.querySelector('#riepilogoModal .button-group button');
   if (bottone) {
     bottone.disabled = true;
@@ -488,12 +486,12 @@ window.procediPagamento = function () {
           bottone.innerText = "Conferma e Invia";
         }
 
-        // Mostra messaggio verde di conferma
         const confermaMsg = document.getElementById("messaggioConferma");
         if (confermaMsg) confermaMsg.style.display = "block";
       }, 500);
     })
-    .catch(() => {
+    .catch(error => {
+      // ✅ FERMA ANIMAZIONE E INTERAZIONE
       clearInterval(intervallo);
       barraAttesa.style.display = 'none';
       document.body.style.pointerEvents = 'auto';
@@ -503,6 +501,8 @@ window.procediPagamento = function () {
         bottone.innerText = "Conferma e Invia";
       }
 
+      // ✅ BLOCCA schermata di conferma se errore da `inviaEmailConferma`
+      console.error("Errore chiamata backend:", error);
       alert("Errore durante l'invio della conferma.");
     });
 };
@@ -550,13 +550,21 @@ if (response.status === 409) {
       }
 
       // ✅ Successo → aggiorna UI
-      window.datiPrenotazione.spettatori.forEach(s => {
-        const rect = document.querySelector(`[data-posto="${s.posto}"]`);
-        if (rect) {
-          rect.classList.add('occupied');
-          rect.classList.remove('selected');
-        }
-      });
+window.datiPrenotazione.spettatori.forEach(s => {
+  selected.delete(s.posto); // ✅ rimuove il posto da quelli selezionati
+
+  const rect = document.querySelector(`[data-posto="${s.posto}"]`);
+  if (rect) {
+    rect.classList.add('occupied');
+    rect.classList.remove('selected');
+  }
+});
+
+// ✅ aggiorna localStorage
+localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+
+// ✅ aggiorna bottone e interfaccia
+aggiornaBottoneConferma();
       
       // 🔁 Forza aggiornamento mappa in tempo reale (sincronizza da DB)
 const aggiornati = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
