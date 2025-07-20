@@ -13,7 +13,7 @@ let storageKey = '';
 // ✅ BASE_URL si adatta automaticamente a locale o online
 const BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost:3000"
-  : "https://teatro-booking-2.onrender.com";
+  : "https://prenotatore-postgresql.onrender.com";
 
 window.addEventListener("DOMContentLoaded", async () => {
   try {
