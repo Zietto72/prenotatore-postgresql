@@ -13,24 +13,45 @@ const io = new Server(http, {
   cors: { origin: '*' }
 });
 
+const blocchiTemporanei = {}; // es: { eventoSlug: Set([...posti bloccati]) }
+
 // ✅ Gestione connessioni WebSocket
 io.on('connection', (socket) => {
   console.log('🔌 Client connesso via WebSocket');
 
   // 🔸 Utente clicca un posto
-  socket.on('blocca-posto', ({ evento, posto }) => {
-    socket.broadcast.emit('posto-bloccato', { evento, posto });
-  });
+socket.on('blocca-posto', ({ evento, posto }) => {
+  if (!blocchiTemporanei[evento]) blocchiTemporanei[evento] = new Set();
+  blocchiTemporanei[evento].add(posto); // salva il blocco
+
+  socket.broadcast.emit('posto-bloccato', { evento, posto });
+});
 
   // 🔸 Utente conferma prenotazione
-  socket.on('prenota-posti', ({ evento, posti }) => {
-    io.emit('posti-prenotati', { evento, posti });
-  });
+socket.on('prenota-posti', ({ evento, posti }) => {
+  if (blocchiTemporanei[evento]) {
+    posti.forEach(p => blocchiTemporanei[evento].delete(p));
+  }
+
+  io.emit('posti-prenotati', { evento, posti });
+});
 
   // 🔸 Utente libera un posto (o esce)
-  socket.on('libera-posti', ({ evento, posti }) => {
-    io.emit('posti-liberati', { evento, posti });
-  });
+socket.on('libera-posti', ({ evento, posti }) => {
+  if (blocchiTemporanei[evento]) {
+    posti.forEach(p => blocchiTemporanei[evento].delete(p));
+  }
+
+  io.emit('posti-liberati', { evento, posti });
+});
+
+socket.on('richiesta-blocchi', ({ evento }) => {
+  const blocchi = blocchiTemporanei[evento]
+    ? Array.from(blocchiTemporanei[evento])
+    : [];
+
+  socket.emit('blocchi-esistenti', { evento, posti: blocchi });
+});
 
   socket.on('disconnect', () => {
     console.log('🔌 Client disconnesso');
