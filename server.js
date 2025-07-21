@@ -242,6 +242,11 @@ for (const s of spettatori) {
       );
     }
 
+// 🔴 Dopo il salvataggio nel DB, emetti i posti prenotati via WebSocket
+const postiPrenotati = spettatori.map(s => s.posto);
+io.emit('posti-prenotati', { evento, posti: postiPrenotati });
+
+
     // Genera i PDF
     for (const s of spettatori) {
       const doc = new jsPDF();

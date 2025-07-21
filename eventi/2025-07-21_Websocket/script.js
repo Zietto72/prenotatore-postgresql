@@ -600,7 +600,6 @@ window.datiPrenotazione.spettatori.forEach(s => {
   selected.delete(s.posto); // ✅ rimuove il posto da quelli selezionati
   
   const postiPrenotati = window.datiPrenotazione.spettatori.map(s => s.posto);
-socket.emit('prenota-posti', { evento: eventoCorrente, posti: postiPrenotati });
 
   const rect = document.querySelector(`[data-posto="${s.posto}"]`);
   if (rect) {
