@@ -21,6 +21,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     const pathParts = window.location.pathname.split('/').filter(p => p);
     eventoCorrente = pathParts[1];
 
+    // ✅ Ripristina eventuali selezioni precedenti
+    storageKey = `selectedSeats_${eventoCorrente}`;
+    const mieiPosti = new Set(JSON.parse(localStorage.getItem(storageKey) || "[]"));
+
     // ✅ Carica configurazione dal database tramite l'endpoint
     const config = await fetch(`/eventi/${eventoCorrente}/config`)
       .then(r => {
@@ -31,91 +35,116 @@ window.addEventListener("DOMContentLoaded", async () => {
     showName = config.showName;
     showDate = config.showDate;
     imgIntest = config.imgIntest;
-    zonePrices = config.zonePrices || {}; // ⚠️ stringa → oggetto JS
+    zonePrices = config.zonePrices || {};
 
-// ✅ Intestazione sopra la piantina
-const intestazione = document.getElementById("intestazioneSpettacolo");
-if (intestazione) {
-  // ✅ Formatta data
-  const dataLocale = new Date(config.showDate).toLocaleDateString('it-IT', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+    // ✅ Intestazione spettacolo
+    const intestazione = document.getElementById("intestazioneSpettacolo");
+    if (intestazione) {
+      const dataLocale = new Date(config.showDate).toLocaleDateString('it-IT', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      const oraLocale = new Date(`1970-01-01T${config.showTime}`).toLocaleTimeString('it-IT', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      intestazione.innerHTML = `<strong>${config.showName}</strong><br>${dataLocale} - ore ${oraLocale}`;
+    }
 
-  // ✅ Formatta ora (solo hh:mm)
-  const oraLocale = new Date(`1970-01-01T${config.showTime}`).toLocaleTimeString('it-IT', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+    // ✅ Carica SVG
+    const svgText = await fetch(`/eventi/${eventoCorrente}/svg/${config.svgFile}`).then(r => r.text());
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgText, "image/svg+xml");
+    const svg = doc.querySelector("svg");
+    if (!svg) throw new Error("SVG non trovato dopo parsing");
 
-  intestazione.innerHTML = `<strong>${config.showName}</strong><br>${dataLocale} - ore ${oraLocale}`;
-}
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "auto");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.style.display = "block";
+    svg.style.maxWidth = "100%";
 
-// ✅ Carica il file SVG con DOMParser (compatibile Safari iOS)
-const svgText = await fetch(`/eventi/${eventoCorrente}/svg/${config.svgFile}`).then(r => r.text());
-const parser = new DOMParser();
-const doc = parser.parseFromString(svgText, "image/svg+xml");
-const svg = doc.querySelector("svg");
-if (!svg) throw new Error("SVG non trovato dopo parsing");
+    const container = document.getElementById("svgContainer");
+    container.innerHTML = "";
+    container.appendChild(svg);
 
-// ✅ Forza visibilità e dimensioni compatibili
-svg.setAttribute("width", "100%");
-svg.setAttribute("height", "auto");
-svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-svg.style.display = "block";
-svg.style.maxWidth = "100%";
+    // ✅ Inizializza WebSocket
+    const socket = io(BASE_URL);
 
-// ✅ Inserisce nel contenitore
-const container = document.getElementById("svgContainer");
-container.innerHTML = "";
-container.appendChild(svg);
+    // 🔸 Blocchi già attivi dal server
+   socket.on('blocchi-esistenti', ({ evento, posti }) => {
+  if (evento === eventoCorrente) {
+    const mieiPostiAttivi = new Set(JSON.parse(localStorage.getItem(storageKey) || "[]"));
 
-  const socket = io(BASE_URL); // 👈 WebSocket attivo
-  socket.emit('richiesta-blocchi', { evento: eventoCorrente });
-
-    // ✅ Carica i posti occupati
-    const occupied = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
-
-    // ✅ Marca i posti occupati
-    occupied.forEach(id => {
-      const el = svg.querySelector(`[data-posto="${id}"]`);
-      if (el) el.classList.add("occupied");
-    });
-    
-    // 🔁 Polling: aggiorna i posti occupati ogni 7 secondi
-setInterval(async () => {
-  try {
-    const aggiornati = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
-
-    aggiornati.forEach(id => {
-      const el = svg.querySelector(`[data-posto="${id}"]`);
-      if (el) {
-        el.classList.add("occupied");
-        el.classList.remove("selected");
-        selected.delete(id);
+    posti.forEach(posto => {
+      const el = document.querySelector(`[data-posto="${posto}"]`);
+      if (el && !el.classList.contains("occupied")) {
+        if (mieiPostiAttivi.has(posto)) {
+          // Se lo avevo selezionato io ma ora è bloccato da altri, lo rimuovo
+          el.classList.remove("selected");
+          el.classList.add("bloccato");
+          mieiPostiAttivi.delete(posto);
+        } else {
+          el.classList.add("bloccato");
+        }
       }
+    });
+
+    // 🔄 aggiorna selezione effettiva
+    selected.clear();
+    mieiPostiAttivi.forEach(p => {
+      selected.add(p);
+      const el = document.querySelector(`[data-posto="${p}"]`);
+      if (el) el.classList.add("selected");
     });
 
     localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
     aggiornaBottoneConferma();
-  } catch (e) {
-    console.warn("⚠️ Impossibile aggiornare la mappa dei posti:", e);
-  }
-}, 7000); // ogni 7 secondi
-
-    // ✅ Ripristina eventuali selezioni precedenti
-    storageKey = `selectedSeats_${eventoCorrente}`;
-    
-    Object.keys(localStorage).forEach(k => {
-  if (k.startsWith('selectedSeats_') && k !== storageKey) {
-    localStorage.removeItem(k); // pulizia selezioni di eventi diversi
   }
 });
-    
-    const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    saved.forEach(id => {
+      }
+    });
+
+    // ✅ Ora puoi richiedere i blocchi esistenti
+    socket.emit('richiesta-blocchi', { evento: eventoCorrente });
+
+    // ✅ Carica posti occupati
+    const occupied = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
+    occupied.forEach(id => {
+      const el = svg.querySelector(`[data-posto="${id}"]`);
+      if (el) el.classList.add("occupied");
+    });
+
+    // 🔁 Polling ogni 7 secondi
+    setInterval(async () => {
+      try {
+        const aggiornati = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
+        aggiornati.forEach(id => {
+          const el = svg.querySelector(`[data-posto="${id}"]`);
+          if (el) {
+            el.classList.add("occupied");
+            el.classList.remove("selected");
+            selected.delete(id);
+          }
+        });
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+        aggiornaBottoneConferma();
+      } catch (e) {
+        console.warn("⚠️ Impossibile aggiornare la mappa dei posti:", e);
+      }
+    }, 7000);
+
+    // 🧹 Pulisce altre selezioni
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('selectedSeats_') && k !== storageKey) {
+        localStorage.removeItem(k);
+      }
+    });
+
+    // ✅ Ripristina selezioni proprie
+    mieiPosti.forEach(id => {
       const g = svg.querySelector(`#${id}`);
       if (g && !g.classList.contains("occupied")) {
         selected.add(id);
@@ -123,7 +152,7 @@ setInterval(async () => {
       }
     });
 
-    // ✅ Attacca i click sui posti selezionabili
+    // 🎯 Gestione click sui posti
     svg.querySelectorAll(".posto").forEach(posto => {
       posto.addEventListener("click", () => {
         const g = posto.closest("g");
@@ -141,7 +170,7 @@ setInterval(async () => {
           }
           selected.add(id);
           g.classList.add("selected");
-          socket.emit('blocca-posto', { evento: eventoCorrente, posto: id }); 
+          socket.emit('blocca-posto', { evento: eventoCorrente, posto: id });
         }
 
         localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
@@ -161,62 +190,47 @@ setInterval(async () => {
       emailConferma.addEventListener('cut', e => e.preventDefault());
       emailConferma.addEventListener('contextmenu', e => e.preventDefault());
     }
-    
-    // 🔸 Ricevi posto bloccato da altri
-socket.on('posto-bloccato', ({ evento, posto }) => {
-  if (evento === eventoCorrente) {
-    const el = document.querySelector(`[data-posto="${posto}"]`);
-    if (el && !el.classList.contains("occupied")) {
-      el.classList.add("bloccato");
-      el.classList.remove("selected");
-    }
-  }
-});
 
-// 🔸 Ricevi conferma prenotazione da altri
-socket.on('posti-prenotati', ({ evento, posti }) => {
-  if (evento === eventoCorrente) {
-    posti.forEach(posto => {
-      const el = document.querySelector(`[data-posto="${posto}"]`);
-      if (el) {
-        el.classList.add("occupied");
-        el.classList.remove("selected", "bloccato");
+    // 🔸 Posto bloccato da altri
+    socket.on('posto-bloccato', ({ evento, posto }) => {
+      if (evento === eventoCorrente) {
+        const el = document.querySelector(`[data-posto="${posto}"]`);
+        if (el && !el.classList.contains("occupied")) {
+          el.classList.add("bloccato");
+          el.classList.remove("selected");
+        }
       }
     });
-  }
-});
 
-// 🔸 Ricevi liberazione posti da altri
-socket.on('posti-liberati', ({ evento, posti }) => {
-  if (evento === eventoCorrente) {
-    posti.forEach(posto => {
-      const el = document.querySelector(`[data-posto="${posto}"]`);
-      if (el) {
-        el.classList.remove("bloccato");
+    // 🔸 Prenotazione confermata
+    socket.on('posti-prenotati', ({ evento, posti }) => {
+      if (evento === eventoCorrente) {
+        posti.forEach(posto => {
+          const el = document.querySelector(`[data-posto="${posto}"]`);
+          if (el) {
+            el.classList.add("occupied");
+            el.classList.remove("selected", "bloccato");
+          }
+        });
       }
     });
-  }
-});
 
-// 🔸 Ricevi elenco dei posti già bloccati all'ingresso
-socket.on('blocchi-esistenti', ({ evento, posti }) => {
-  if (evento === eventoCorrente) {
-    posti.forEach(posto => {
-      const el = document.querySelector(`[data-posto="${posto}"]`);
-      if (el && !el.classList.contains("occupied")) {
-        el.classList.add("bloccato");
-        el.classList.remove("selected");
+    // 🔸 Posti liberati
+    socket.on('posti-liberati', ({ evento, posti }) => {
+      if (evento === eventoCorrente) {
+        posti.forEach(posto => {
+          const el = document.querySelector(`[data-posto="${posto}"]`);
+          if (el) {
+            el.classList.remove("bloccato");
+          }
+        });
       }
     });
-  }
-});
 
   } catch (err) {
     console.error("❌ Errore inizializzazione mappa:", err);
   }
 });
-
-// --------------------------------------------------------------------
 
 // Funzione di controllo intelligente del dominio email,
 

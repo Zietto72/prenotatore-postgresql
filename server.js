@@ -14,6 +14,10 @@ const io = new Server(http, {
 });
 
 const blocchiTemporanei = {}; // es: { eventoSlug: Set([...posti bloccati]) }
+const bloccoSocket = {}; // es: { postoId: socket.id }
+const timerScadenza = {}; // es: { postoId: timeoutId }
+
+
 
 // ✅ Gestione connessioni WebSocket
 io.on('connection', (socket) => {
@@ -22,7 +26,20 @@ io.on('connection', (socket) => {
   // 🔸 Utente clicca un posto
 socket.on('blocca-posto', ({ evento, posto }) => {
   if (!blocchiTemporanei[evento]) blocchiTemporanei[evento] = new Set();
-  blocchiTemporanei[evento].add(posto); // salva il blocco
+
+  blocchiTemporanei[evento].add(posto);
+  bloccoSocket[posto] = socket.id;
+
+  // Se c'era già un timeout precedente, lo cancella
+  if (timerScadenza[posto]) clearTimeout(timerScadenza[posto]);
+
+  // Imposta timeout di 30 secondi (30.000 ms)
+  timerScadenza[posto] = setTimeout(() => {
+    if (blocchiTemporanei[evento]) blocchiTemporanei[evento].delete(posto);
+    delete bloccoSocket[posto];
+    delete timerScadenza[posto];
+    io.emit('posti-liberati', { evento, posti: [posto] });
+  }, 30000);
 
   socket.broadcast.emit('posto-bloccato', { evento, posto });
 });
@@ -30,7 +47,14 @@ socket.on('blocca-posto', ({ evento, posto }) => {
   // 🔸 Utente conferma prenotazione
 socket.on('prenota-posti', ({ evento, posti }) => {
   if (blocchiTemporanei[evento]) {
-    posti.forEach(p => blocchiTemporanei[evento].delete(p));
+    posti.forEach(p => {
+      blocchiTemporanei[evento].delete(p);
+      if (timerScadenza[p]) {
+        clearTimeout(timerScadenza[p]);
+        delete timerScadenza[p];
+      }
+      delete bloccoSocket[p];
+    });
   }
 
   io.emit('posti-prenotati', { evento, posti });
@@ -53,9 +77,25 @@ socket.on('richiesta-blocchi', ({ evento }) => {
   socket.emit('blocchi-esistenti', { evento, posti: blocchi });
 });
 
-  socket.on('disconnect', () => {
-    console.log('🔌 Client disconnesso');
-  });
+socket.on('disconnect', () => {
+  console.log('🔌 Client disconnesso');
+
+  // 🔄 Rilascia tutti i posti bloccati da questo socket
+  for (const [evento, posti] of Object.entries(blocchiTemporanei)) {
+    const daRimuovere = [];
+    for (const posto of posti) {
+      // Salviamo mappa socket-posti per sapere cosa era bloccato da chi
+      if (bloccoSocket[posto] === socket.id) {
+        daRimuovere.push(posto);
+        delete bloccoSocket[posto];
+      }
+    }
+    daRimuovere.forEach(posto => posti.delete(posto));
+    if (daRimuovere.length) {
+      io.emit('posti-liberati', { evento, posti: daRimuovere });
+    }
+  }
+});
 });
 
 
