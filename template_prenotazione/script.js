@@ -104,8 +104,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     aggiornaBottoneConferma();
   }
 });
-      }
-    });
+
 
    
 
