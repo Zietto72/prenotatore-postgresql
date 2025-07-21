@@ -15,8 +15,6 @@ const BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost:3000"
   : "https://prenotatore-postgresql.onrender.com";
   
-  const socket = io(BASE_URL); // 👈 WebSocket attivo
-  socket.emit('richiesta-blocchi', { evento: eventoCorrente });
 
 window.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -73,6 +71,9 @@ svg.style.maxWidth = "100%";
 const container = document.getElementById("svgContainer");
 container.innerHTML = "";
 container.appendChild(svg);
+
+  const socket = io(BASE_URL); // 👈 WebSocket attivo
+  socket.emit('richiesta-blocchi', { evento: eventoCorrente });
 
     // ✅ Carica i posti occupati
     const occupied = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
