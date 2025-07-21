@@ -16,6 +16,8 @@ const io = new Server(http, {
 const blocchiTemporanei = {}; // es: { eventoSlug: Set([...posti bloccati]) }
 const bloccoSocket = {}; // es: { postoId: socket.id }
 const timerScadenza = {}; // es: { postoId: timeoutId }
+const socketPosti = {};       // es: { socket.id: Set([...posti]) }
+const timeoutSessione = {};   // es: { socket.id: timeoutID }
 
 
 
