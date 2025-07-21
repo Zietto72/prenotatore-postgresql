@@ -16,6 +16,7 @@ const BASE_URL = window.location.hostname === "localhost"
   : "https://prenotatore-postgresql.onrender.com";
   
   const socket = io(BASE_URL); // 👈 WebSocket attivo
+  socket.emit('richiesta-blocchi', { evento: eventoCorrente });
 
 window.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -191,6 +192,19 @@ socket.on('posti-liberati', ({ evento, posti }) => {
       const el = document.querySelector(`[data-posto="${posto}"]`);
       if (el) {
         el.classList.remove("bloccato");
+      }
+    });
+  }
+});
+
+// 🔸 Ricevi elenco dei posti già bloccati all'ingresso
+socket.on('blocchi-esistenti', ({ evento, posti }) => {
+  if (evento === eventoCorrente) {
+    posti.forEach(posto => {
+      const el = document.querySelector(`[data-posto="${posto}"]`);
+      if (el && !el.classList.contains("occupied")) {
+        el.classList.add("bloccato");
+        el.classList.remove("selected");
       }
     });
   }
@@ -600,6 +614,7 @@ window.datiPrenotazione.spettatori.forEach(s => {
   selected.delete(s.posto); // ✅ rimuove il posto da quelli selezionati
   
   const postiPrenotati = window.datiPrenotazione.spettatori.map(s => s.posto);
+socket.emit('prenota-posti', { evento: eventoCorrente, posti: postiPrenotati });
 
   const rect = document.querySelector(`[data-posto="${s.posto}"]`);
   if (rect) {
