@@ -107,8 +107,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    // ✅ Ora puoi richiedere i blocchi esistenti
-    socket.emit('richiesta-blocchi', { evento: eventoCorrente });
+   
 
     // ✅ Carica posti occupati
     const occupied = await fetch(`/eventi/${eventoCorrente}/occupied-seats`).then(r => r.json());
@@ -226,6 +225,9 @@ window.addEventListener("DOMContentLoaded", async () => {
         });
       }
     });
+    
+     // ✅ Ora puoi richiedere i blocchi esistenti
+    socket.emit('richiesta-blocchi', { evento: eventoCorrente });
 
   } catch (err) {
     console.error("❌ Errore inizializzazione mappa:", err);

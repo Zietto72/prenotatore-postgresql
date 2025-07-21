@@ -25,36 +25,47 @@ io.on('connection', (socket) => {
 
   // 🔸 Utente clicca un posto
 socket.on('blocca-posto', ({ evento, posto }) => {
-  if (!blocchiTemporanei[evento]) blocchiTemporanei[evento] = new Set();
+    if (!blocchiTemporanei[evento]) blocchiTemporanei[evento] = new Set();
 
-  blocchiTemporanei[evento].add(posto);
-  bloccoSocket[posto] = socket.id;
+    blocchiTemporanei[evento].add(posto);
+    bloccoSocket[posto] = socket.id;
 
-  // Se c'era già un timeout precedente, lo cancella
-  if (timerScadenza[posto]) clearTimeout(timerScadenza[posto]);
+    if (!socketPosti[socket.id]) socketPosti[socket.id] = new Set();
+    socketPosti[socket.id].add(posto);
 
-  // Imposta timeout di 30 secondi (30.000 ms)
-  timerScadenza[posto] = setTimeout(() => {
-    if (blocchiTemporanei[evento]) blocchiTemporanei[evento].delete(posto);
-    delete bloccoSocket[posto];
-    delete timerScadenza[posto];
-    io.emit('posti-liberati', { evento, posti: [posto] });
-  }, 30000);
+    // 🔁 Reset del timeout globale per la sessione
+    if (timeoutSessione[socket.id]) clearTimeout(timeoutSessione[socket.id]);
 
-  socket.broadcast.emit('posto-bloccato', { evento, posto });
-});
+    timeoutSessione[socket.id] = setTimeout(() => {
+      const postiDaLiberare = Array.from(socketPosti[socket.id] || []);
+      postiDaLiberare.forEach(p => {
+        blocchiTemporanei[evento]?.delete(p);
+        delete bloccoSocket[p];
+      });
+      delete socketPosti[socket.id];
+      delete timeoutSessione[socket.id];
+      io.emit('posti-liberati', { evento, posti: postiDaLiberare });
+    }, 30000);
+
+    socket.broadcast.emit('posto-bloccato', { evento, posto });
+  });
+
 
   // 🔸 Utente conferma prenotazione
 socket.on('prenota-posti', ({ evento, posti }) => {
   if (blocchiTemporanei[evento]) {
-    posti.forEach(p => {
-      blocchiTemporanei[evento].delete(p);
-      if (timerScadenza[p]) {
-        clearTimeout(timerScadenza[p]);
-        delete timerScadenza[p];
-      }
-      delete bloccoSocket[p];
-    });
+    posti.forEach(p => blocchiTemporanei[evento].delete(p));
+  }
+
+  posti.forEach(p => {
+    delete bloccoSocket[p];
+    if (socketPosti[socket.id]) socketPosti[socket.id].delete(p);
+  });
+
+  if (socketPosti[socket.id]?.size === 0) {
+    clearTimeout(timeoutSessione[socket.id]);
+    delete timeoutSessione[socket.id];
+    delete socketPosti[socket.id];
   }
 
   io.emit('posti-prenotati', { evento, posti });
@@ -80,21 +91,21 @@ socket.on('richiesta-blocchi', ({ evento }) => {
 socket.on('disconnect', () => {
   console.log('🔌 Client disconnesso');
 
-  // 🔄 Rilascia tutti i posti bloccati da questo socket
-  for (const [evento, posti] of Object.entries(blocchiTemporanei)) {
-    const daRimuovere = [];
-    for (const posto of posti) {
-      // Salviamo mappa socket-posti per sapere cosa era bloccato da chi
-      if (bloccoSocket[posto] === socket.id) {
-        daRimuovere.push(posto);
-        delete bloccoSocket[posto];
-      }
+  const postiDaLiberare = Array.from(socketPosti[socket.id] || []);
+  postiDaLiberare.forEach(p => {
+    for (const evento in blocchiTemporanei) {
+      blocchiTemporanei[evento].delete(p);
     }
-    daRimuovere.forEach(posto => posti.delete(posto));
-    if (daRimuovere.length) {
-      io.emit('posti-liberati', { evento, posti: daRimuovere });
-    }
+    delete bloccoSocket[p];
+  });
+
+  if (postiDaLiberare.length) {
+    io.emit('posti-liberati', { evento: eventoCorrente, posti: postiDaLiberare });
   }
+
+  clearTimeout(timeoutSessione[socket.id]);
+  delete timeoutSessione[socket.id];
+  delete socketPosti[socket.id];
 });
 });
 
