@@ -5,6 +5,39 @@ const SALT_ROUNDS = 10;
 const session = require('express-session');
 const express = require('express');
 const app = express();
+const http = require('http').createServer(app);
+const { Server } = require('socket.io');
+
+// ✅ Inizializza socket.io DOPO aver creato http
+const io = new Server(http, {
+  cors: { origin: '*' }
+});
+
+// ✅ Gestione connessioni WebSocket
+io.on('connection', (socket) => {
+  console.log('🔌 Client connesso via WebSocket');
+
+  // 🔸 Utente clicca un posto
+  socket.on('blocca-posto', ({ evento, posto }) => {
+    socket.broadcast.emit('posto-bloccato', { evento, posto });
+  });
+
+  // 🔸 Utente conferma prenotazione
+  socket.on('prenota-posti', ({ evento, posti }) => {
+    io.emit('posti-prenotati', { evento, posti });
+  });
+
+  // 🔸 Utente libera un posto (o esce)
+  socket.on('libera-posti', ({ evento, posti }) => {
+    io.emit('posti-liberati', { evento, posti });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('🔌 Client disconnesso');
+  });
+});
+
+
 
 const bodyParser = require('body-parser'); // ← Sposta prima dell'uso
 app.use(bodyParser.json({ limit: '10mb' }));
@@ -1171,6 +1204,6 @@ app.get('/', (req, res) => {
 
 // --- Avvio del server ---
 const PORT = 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server avviato su http://localhost:${PORT}`);
+http.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server WebSocket + Express avviato su http://localhost:${PORT}`);
 });
