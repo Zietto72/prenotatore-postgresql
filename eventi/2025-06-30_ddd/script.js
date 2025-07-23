@@ -580,10 +580,27 @@ window.procediPagamento = async function () {
     return;
   }
 
+
+// Chiudi la modale riepilogo prima di mostrare la barra di attesa
+const riepilogoModal = document.getElementById("riepilogoModal");
+if (riepilogoModal) riepilogoModal.style.display = "none";
+
+
   const barraAttesa = document.getElementById('barraAttesa');
   const barraInterna = document.getElementById('barraInterna');
 
   barraAttesa.style.display = 'block';
+  
+  const barraMessaggio = document.getElementById("barraMessaggio");
+if (barraMessaggio) {
+  barraMessaggio.innerHTML = 'Elaborazione in corso <span class="puntini">.</span>';
+  let count = 0;
+  window.animazionePuntini = setInterval(() => {
+    count = (count + 1) % 4;
+    barraMessaggio.querySelector(".puntini").textContent = '.'.repeat(count + 1);
+  }, 400);
+}
+
   document.body.style.pointerEvents = 'none';
   barraInterna.style.width = '0%';
 
@@ -632,6 +649,10 @@ window.procediPagamento = async function () {
   setTimeout(() => {
     barraAttesa.style.display = 'none';
     document.body.style.pointerEvents = 'auto';
+    
+      // 🛑 Ferma l'animazione dei puntini
+  clearInterval(window.animazionePuntini);
+
 
     if (bottone) {
       bottone.disabled = false;

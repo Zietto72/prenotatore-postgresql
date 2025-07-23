@@ -580,10 +580,27 @@ window.procediPagamento = async function () {
     return;
   }
 
+
+// Chiudi la modale riepilogo prima di mostrare la barra di attesa
+const riepilogoModal = document.getElementById("riepilogoModal");
+if (riepilogoModal) riepilogoModal.style.display = "none";
+
+
   const barraAttesa = document.getElementById('barraAttesa');
   const barraInterna = document.getElementById('barraInterna');
 
   barraAttesa.style.display = 'block';
+  
+  const barraMessaggio = document.getElementById("barraMessaggio");
+if (barraMessaggio) {
+  barraMessaggio.innerHTML = 'Elaborazione in corso <span class="puntini">.</span>';
+  let count = 0;
+  window.animazionePuntini = setInterval(() => {
+    count = (count + 1) % 4;
+    barraMessaggio.querySelector(".puntini").textContent = '.'.repeat(count + 1);
+  }, 400);
+}
+
   document.body.style.pointerEvents = 'none';
   barraInterna.style.width = '0%';
 
@@ -632,6 +649,10 @@ window.procediPagamento = async function () {
   setTimeout(() => {
     barraAttesa.style.display = 'none';
     document.body.style.pointerEvents = 'auto';
+    
+      // 🛑 Ferma l'animazione dei puntini
+  clearInterval(window.animazionePuntini);
+
 
     if (bottone) {
       bottone.disabled = false;
@@ -686,18 +707,20 @@ if (response.status === 409) {
       }
 
       // ✅ Successo → aggiorna UI
-window.datiPrenotazione.spettatori.forEach(s => {
-  selected.delete(s.posto); // ✅ rimuove il posto da quelli selezionati
-  
-  const postiPrenotati = window.datiPrenotazione.spettatori.map(s => s.posto);
-socket.emit('prenota-posti', { evento: eventoCorrente, posti: postiPrenotati });
+      const postiPrenotati = window.datiPrenotazione.spettatori.map(s => s.posto);
+      socket.emit('prenota-posti', { evento: eventoCorrente, posti: postiPrenotati });
 
-  const rect = document.querySelector(`[data-posto="${s.posto}"]`);
-  if (rect) {
-    rect.classList.add('occupied');
-    rect.classList.remove('selected');
-  }
-});
+      postiPrenotati.forEach(posto => {
+        selected.delete(posto);
+
+        const el = document.querySelector(`[data-posto="${posto}"]`);
+        const g = el?.closest("g");
+
+        if (g) {
+          g.classList.remove("selected");
+          g.classList.add("occupied");
+        }
+      });
 
 // ✅ aggiorna localStorage
 localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));

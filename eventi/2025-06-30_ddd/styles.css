@@ -64,6 +64,11 @@ html, body {
   color: #000;
 }
 
+#barraMessaggio {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
 
 .center-container {
     text-align: center;
@@ -77,6 +82,8 @@ html, body {
     display: block;
     margin: 0 auto;
 }
+
+
 
 /* Stili generali per le modali modernizzate */
 .modal {
