@@ -15,6 +15,8 @@ const BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost:3000"
   : "https://prenotatore-postgresql.onrender.com";
   
+    // ✅ Inizializza WebSocket
+    const socket = io(BASE_URL);
 
 window.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -70,37 +72,38 @@ window.addEventListener("DOMContentLoaded", async () => {
     container.innerHTML = "";
     container.appendChild(svg);
 
-    // ✅ Inizializza WebSocket
-    const socket = io(BASE_URL);
+
 
     // 🔸 Blocchi già attivi dal server
-   socket.on('blocchi-esistenti', ({ evento, posti }) => {
-  if (evento === eventoCorrente) {
-    const mieiPostiAttivi = new Set(JSON.parse(localStorage.getItem(storageKey) || "[]"));
+socket.on('blocchi-esistenti', ({ evento, posti }) => {
+  if (evento !== eventoCorrente) return;
 
-    posti.forEach(posto => {
-      const el = document.querySelector(`[data-posto="${posto}"]`);
-      if (el && !el.classList.contains("occupied")) {
-        if (mieiPostiAttivi.has(posto)) {
-          // Se lo avevo selezionato io ma ora è bloccato da altri, lo rimuovo
-          el.classList.remove("selected");
-          el.classList.add("bloccato");
-          mieiPostiAttivi.delete(posto);
-        } else {
-          el.classList.add("bloccato");
-        }
+  const mieiPostiAttivi = new Set(JSON.parse(localStorage.getItem(storageKey) || "[]"));
+  let modificato = false;
+
+  posti.forEach(posto => {
+    const el = document.querySelector(`[data-posto="${posto}"]`);
+    if (el && !el.classList.contains("occupied")) {
+      if (mieiPostiAttivi.has(posto)) {
+        // Se era mio ma ora è bloccato da altri
+        el.classList.remove("selected");
+        mieiPostiAttivi.delete(posto);
+        modificato = true;
       }
-    });
+      el.classList.add("bloccato");
+    }
+  });
 
-    // 🔄 aggiorna selezione effettiva
-    selected.clear();
-    mieiPostiAttivi.forEach(p => {
-      selected.add(p);
-      const el = document.querySelector(`[data-posto="${p}"]`);
-      if (el) el.classList.add("selected");
-    });
+  // Ricostruisci selected a partire da quelli ancora validi
+  selected.clear();
+  mieiPostiAttivi.forEach(p => {
+    selected.add(p);
+    const el = document.querySelector(`[data-posto="${p}"]`);
+    if (el) el.classList.add("selected");
+  });
 
-    localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+  if (modificato) {
+    localStorage.setItem(storageKey, JSON.stringify(Array.from(mieiPostiAttivi)));
     aggiornaBottoneConferma();
   }
 });
@@ -141,14 +144,14 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    // ✅ Ripristina selezioni proprie
-    mieiPosti.forEach(id => {
-      const g = svg.querySelector(`#${id}`);
-      if (g && !g.classList.contains("occupied")) {
-        selected.add(id);
-        g.classList.add("selected");
-      }
-    });
+// ✅ Ripristina solo quelli ancora validi (non bloccati o occupati)
+mieiPosti.forEach(id => {
+  const g = svg.querySelector(`#${id}`);
+  if (g && !g.classList.contains("occupied") && !g.classList.contains("bloccato")) {
+    selected.add(id);
+    g.classList.add("selected");
+  }
+});
 
     // 🎯 Gestione click sui posti
     svg.querySelectorAll(".posto").forEach(posto => {
@@ -213,18 +216,38 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    // 🔸 Posti liberati
-    socket.on('posti-liberati', ({ evento, posti }) => {
-      if (evento === eventoCorrente) {
-        posti.forEach(posto => {
-          const el = document.querySelector(`[data-posto="${posto}"]`);
-          if (el) {
-            el.classList.remove("bloccato");
-          }
-        });
-      }
-    });
-    
+// 🔸 Posti liberati (timeout o uscita utente)
+socket.on('posti-liberati', ({ evento, posti }) => {
+  if (evento !== eventoCorrente) return;
+
+  let modificato = false;
+
+  posti.forEach(posto => {
+    const el = document.querySelector(`[data-posto="${posto}"]`);
+    const g = el?.closest("g");
+
+    if (!el || !g) return;
+
+    // 🔓 Rimuove il blocco sia dal gruppo che dal rect (per sicurezza)
+    g.classList.remove("bloccato");
+    el.classList.remove("bloccato");
+
+    // ✅ Se il posto era selezionato da me
+    if (selected.has(posto)) {
+      selected.delete(posto);
+      g.classList.remove("selected");
+      modificato = true;
+    }
+  });
+
+  if (modificato) {
+    localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
+    aggiornaBottoneConferma();
+  }
+
+  console.log("⏱️ Timeout: sbloccati i posti", posti);
+});
+
      // ✅ Ora puoi richiedere i blocchi esistenti
     socket.emit('richiesta-blocchi', { evento: eventoCorrente });
 
@@ -319,21 +342,44 @@ window.apriModalePrenotatore = function () {
 //
 //
 //
+// ✅ Resetta correttamente la selezione utente
+window.resetSelezioneUtente = function () {
+  // Rimuove classe 'selected' da tutti i posti selezionati
+  selected.forEach(id => {
+    const el = document.querySelector(`[data-posto="${id}"]`);
+    if (el) el.classList.remove("selected");
+  });
 
+  // Pulisce memoria locale e oggetto selected
+  selected.clear();
+  localStorage.removeItem(storageKey);
+
+  // Se usi WebSocket, notifica il rilascio (opzionale)
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({
+      type: 'libera-posti',
+      evento: eventoCorrente,
+      posti: Array.from(selected)
+    }));
+  }
+
+  aggiornaBottoneConferma();
+};
+
+// ✅ Chiude tutte le modali
 window.chiudiModale = function () {
   document.querySelectorAll('.modal').forEach(modale => {
     modale.style.display = 'none';
   });
 };
 
+// ✅ Chiude il messaggio di conferma
 window.chiudiMessaggioConferma = function () {
   const msg = document.getElementById("messaggioConferma");
   if (msg) {
     msg.style.display = "none";
-    window.location.reload();
   }
 };
-
 
 
 
@@ -518,8 +564,22 @@ window.apriRiepilogo = function () {
     totale
   };
 };
-
 window.procediPagamento = async function () {
+  // 🔒 BLOCCO di sicurezza: controlla che i posti siano ancora validi
+  let ancoraValidi = true;
+  selected.forEach(id => {
+    const g = document.querySelector(`#${id}`);
+    if (!g || g.classList.contains("bloccato") || g.classList.contains("occupied")) {
+      ancoraValidi = false;
+    }
+  });
+
+  if (!ancoraValidi) {
+    alert("⏱️ Alcuni dei posti selezionati non sono più disponibili. Ricarica la pagina e riprova.");
+    resetSelezioneUtente(); // ← funzione che svuota `selected`, `localStorage` e aggiorna mappa
+    return;
+  }
+
   const barraAttesa = document.getElementById('barraAttesa');
   const barraInterna = document.getElementById('barraInterna');
 
@@ -545,25 +605,25 @@ window.procediPagamento = async function () {
   try {
     await inviaEmailConferma(window.datiPrenotazione);
   } catch (error) {
-  clearInterval(intervallo);
-  barraAttesa.style.display = 'none';
-  document.body.style.pointerEvents = 'auto';
+    clearInterval(intervallo);
+    barraAttesa.style.display = 'none';
+    document.body.style.pointerEvents = 'auto';
 
-  if (bottone) {
-    bottone.disabled = false;
-    bottone.innerText = "Conferma e Invia";
-  }
+    if (bottone) {
+      bottone.disabled = false;
+      bottone.innerText = "Conferma e Invia";
+    }
 
-  // ✅ Blocca schermata verde SOLO se è errore 409 (posto occupato)
-  if (error.message === "409") {
-    console.warn("⚠️ Prenotazione annullata per conflitto sui posti.");
+    // ✅ Blocca schermata verde SOLO se è errore 409 (posto occupato)
+    if (error.message === "409") {
+      console.warn("⚠️ Prenotazione annullata per conflitto sui posti.");
+      return;
+    }
+
+    alert(error.message || "Errore durante la prenotazione.");
+    console.error("Errore chiamata backend:", error);
     return;
   }
-
-  alert(error.message || "Errore durante la prenotazione.");
-  console.error("Errore chiamata backend:", error);
-  return;
-}
 
   // ✅ Successo
   clearInterval(intervallo);

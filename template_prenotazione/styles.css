@@ -442,7 +442,7 @@ button:disabled {
 }
 
 .posto.bloccato {
-  fill: orange !important;
+  fill: #888888 !important;
   cursor: not-allowed;
   pointer-events: none;
 }
