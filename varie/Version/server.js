@@ -1,44 +1,8 @@
 require('dotenv').config();
-const generaPDF = require('./pdfGenerator');
+
 const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 const session = require('express-session');
-
-
-let sessioniAttive = 0;
-const codaPrenotazioni = [];
-const clientSessionIds = new Map(); // chiave: IP o sessionID, valore: posizione nella coda
-
-async function eseguiConSlotDisponibile(fn, clientId) {
-  return new Promise((resolve, reject) => {
-    const esegui = async () => {
-      sessioniAttive++;
-      clientSessionIds.delete(clientId); // rimuovi se entra in esecuzione
-
-      try {
-        const risultato = await fn();
-        resolve(risultato);
-      } catch (e) {
-        reject(e);
-      } finally {
-        sessioniAttive--;
-        if (codaPrenotazioni.length > 0) {
-          const prossimo = codaPrenotazioni.shift();
-          prossimo();
-        }
-      }
-    };
-
-    if (sessioniAttive < 2) {
-      esegui();
-    } else {
-      codaPrenotazioni.push(esegui);
-      clientSessionIds.set(clientId, codaPrenotazioni.length);
-    }
-  });
-}
-
-
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
@@ -59,82 +23,109 @@ const socketEvento = {}; // { socket.id: evento }
 
 
 // ✅ Gestione connessioni WebSocket
-const utentiConnessiPerEvento = {}; // { eventoSlug: [socket.id, ...] }
-
 io.on('connection', (socket) => {
   console.log('🔌 Client connesso via WebSocket');
 
-  socket.on('richiesta-blocchi', ({ evento }) => {
-    // 🔐 Registra l'evento corrente del socket
-    socketEvento[socket.id] = evento;
+// 🔸 Utente clicca un posto
+socket.on('blocca-posto', ({ evento, posto }) => {
+  if (!blocchiTemporanei[evento]) blocchiTemporanei[evento] = new Set();
 
-    // 🔁 Aggiungi socket alla lista degli utenti per quell'evento
-    if (!utentiConnessiPerEvento[evento]) utentiConnessiPerEvento[evento] = [];
-    utentiConnessiPerEvento[evento].push(socket.id);
+  blocchiTemporanei[evento].add(posto);
+  bloccoSocket[posto] = socket.id;
 
-    // 📍 Calcola posizione
-    const posizione = utentiConnessiPerEvento[evento].indexOf(socket.id) + 1;
-    const totale = utentiConnessiPerEvento[evento].length;
+  if (!socketPosti[socket.id]) socketPosti[socket.id] = new Set();
+  socketPosti[socket.id].add(posto);
 
-    io.to(socket.id).emit('posizione-utente', { totale, posizione });
-
-    // 🔁 Aggiorna anche tutti gli altri con la nuova posizione
-    utentiConnessiPerEvento[evento].forEach((id, index) => {
-      io.to(id).emit('posizione-utente', {
-        totale,
-        posizione: index + 1
-      });
-    });
-  });
-
-  socket.on('disconnect', () => {
-    console.log('🔌 Client disconnesso');
-
-    const evento = socketEvento[socket.id];
+  // 🔁 Timeout per la sessione intera (come già facevi)
+  if (timeoutSessione[socket.id]) clearTimeout(timeoutSessione[socket.id]);
+  timeoutSessione[socket.id] = setTimeout(() => {
     const postiDaLiberare = Array.from(socketPosti[socket.id] || []);
-
     postiDaLiberare.forEach(p => {
       blocchiTemporanei[evento]?.delete(p);
       delete bloccoSocket[p];
+      if (timerScadenzaPosto[p]) {
+        clearTimeout(timerScadenzaPosto[p]);
+        delete timerScadenzaPosto[p];
+      }
     });
-
-    if (evento && postiDaLiberare.length > 0) {
-      io.emit('posti-liberati', { evento, posti: postiDaLiberare });
-        // Rimuovi utente dalla coda per evento
-  if (evento && utentiConnessiPerEvento[evento]) {
-    utentiConnessiPerEvento[evento] = utentiConnessiPerEvento[evento].filter(id => id !== socket.id);
-
-    // Aggiorna posizione degli altri utenti
-    utentiConnessiPerEvento[evento].forEach((id, index) => {
-      io.to(id).emit('posizione-utente', {
-        totale: utentiConnessiPerEvento[evento].length,
-        posizione: index + 1
-      });
-    });
-  }
-    }
-
-    clearTimeout(timeoutSessione[socket.id]);
-    delete timeoutSessione[socket.id];
     delete socketPosti[socket.id];
-    delete socketEvento[socket.id];
+    delete timeoutSessione[socket.id];
+    io.emit('posti-liberati', { evento, posti: postiDaLiberare });
+  }, 10000);
 
-    // 🔁 Rimuovi socket dalla lista per evento
-    if (evento && utentiConnessiPerEvento[evento]) {
-      utentiConnessiPerEvento[evento] = utentiConnessiPerEvento[evento].filter(id => id !== socket.id);
+  // ✅ Timeout individuale per ogni posto bloccato
+  if (timerScadenzaPosto[posto]) clearTimeout(timerScadenzaPosto[posto]);
 
-      // 🔁 Aggiorna le posizioni degli altri utenti
-      utentiConnessiPerEvento[evento].forEach((id, index) => {
-        io.to(id).emit('posizione-utente', {
-          totale: utentiConnessiPerEvento[evento].length,
-          posizione: index + 1
-        });
-      });
-    }
-  });
+  timerScadenzaPosto[posto] = setTimeout(() => {
+    blocchiTemporanei[evento]?.delete(posto);
+    delete bloccoSocket[posto];
+    if (socketPosti[socket.id]) socketPosti[socket.id].delete(posto);
+    delete timerScadenzaPosto[posto];
+    io.emit('posti-liberati', { evento, posti: [posto] });
+  }, 10000);
+
+  socket.broadcast.emit('posto-bloccato', { evento, posto });
 });
 
 
+  // 🔸 Utente conferma prenotazione
+socket.on('prenota-posti', ({ evento, posti }) => {
+  if (blocchiTemporanei[evento]) {
+    posti.forEach(p => blocchiTemporanei[evento].delete(p));
+  }
+
+  posti.forEach(p => {
+    delete bloccoSocket[p];
+    if (socketPosti[socket.id]) socketPosti[socket.id].delete(p);
+  });
+
+  if (socketPosti[socket.id]?.size === 0) {
+    clearTimeout(timeoutSessione[socket.id]);
+    delete timeoutSessione[socket.id];
+    delete socketPosti[socket.id];
+  }
+
+  io.emit('posti-prenotati', { evento, posti });
+});
+
+  // 🔸 Utente libera un posto (o esce)
+socket.on('libera-posti', ({ evento, posti }) => {
+  if (blocchiTemporanei[evento]) {
+    posti.forEach(p => blocchiTemporanei[evento].delete(p));
+  }
+
+  io.emit('posti-liberati', { evento, posti });
+});
+
+socket.on('richiesta-blocchi', ({ evento }) => {
+  const blocchi = blocchiTemporanei[evento]
+    ? Array.from(blocchiTemporanei[evento])
+    : [];
+
+  socket.emit('blocchi-esistenti', { evento, posti: blocchi });
+});
+
+socket.on('disconnect', () => {
+  console.log('🔌 Client disconnesso');
+
+  const evento = socketEvento[socket.id];
+  const postiDaLiberare = Array.from(socketPosti[socket.id] || []);
+
+  postiDaLiberare.forEach(p => {
+    blocchiTemporanei[evento]?.delete(p);
+    delete bloccoSocket[p];
+  });
+
+  if (evento && postiDaLiberare.length > 0) {
+    io.emit('posti-liberati', { evento, posti: postiDaLiberare });
+  }
+
+  clearTimeout(timeoutSessione[socket.id]);
+  delete timeoutSessione[socket.id];
+  delete socketPosti[socket.id];
+  delete socketEvento[socket.id]; // ✅ pulizia
+});
+});
 
 
 
@@ -282,31 +273,9 @@ app.get('/modifica-svg.html', (req, res) => {
 app.use(express.static('public'));
 app.use('/eventi', express.static(path.join(__dirname, 'eventi')));
 
-app.get('/stato-coda', (req, res) => {
-  const clientId = req.ip; // oppure usa req.sessionID se Express-session è configurato
-  const posizione = clientSessionIds.get(clientId) || 0;
-
-  res.json({
-    sessioniAttive,
-    inCoda: codaPrenotazioni.length,
-    tuaPosizione: posizione
-  });
-});
-
 // ✅ Versione corretta per struttura reale della tabella `eventi`
 
 app.post('/genera-pdf-e-invia', async (req, res) => {
-  try {
-    await eseguiConSlotDisponibile(() => gestisciPrenotazione(req, res), req.ip);
-  } catch (err) {
-    console.error('❌ Errore durante eseguiConSlotDisponibile:', err);
-    if (!res.headersSent) {
-      res.status(500).json({ error: 'Errore durante la prenotazione' });
-    }
-  }
-});
-
-async function gestisciPrenotazione(req, res) {
   const nodemailer = require('nodemailer');
   const sharp = require('sharp');
   const QRCode = require('qrcode');
@@ -324,7 +293,7 @@ async function gestisciPrenotazione(req, res) {
 
     const { rows } = await pool.query('SELECT * FROM eventi WHERE slug = $1', [evento]);
     if (rows.length === 0) return res.status(404).json({ error: 'Evento non trovato' });
-
+    
     await pool.query('BEGIN');
 
     const config = rows[0];
@@ -340,18 +309,21 @@ async function gestisciPrenotazione(req, res) {
 
     const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}?t=${Date.now()}`;
     const bookingCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const pdfLinks = [];
 
-    for (const s of spettatori) {
-      const check = await pool.query(
-        'SELECT 1 FROM prenotazioni WHERE evento = $1 AND posto = $2',
-        [evento, s.posto]
-      );
-      if (check.rows.length > 0) {
-        await pool.query('ROLLBACK');
-        return res.status(409).json({ error: `⚠️ Il posto ${s.posto} è già stato prenotato.` });
-      }
-    }
+// Controllo posti già occupati
+for (const s of spettatori) {
+  const check = await pool.query(
+    'SELECT 1 FROM prenotazioni WHERE evento = $1 AND posto = $2',
+    [evento, s.posto]
+  );
+  if (check.rows.length > 0) {
+    await pool.query('ROLLBACK');
+    return res.status(409).json({ error: `⚠️ Il posto ${s.posto} è già stato prenotato.` });
+  }
+}
 
+    // Inserimento prenotazioni
     for (const s of spettatori) {
       await pool.query(`
         INSERT INTO prenotazioni (evento, posto, nome, email, telefono, prenotatore, booking_code)
@@ -360,27 +332,98 @@ async function gestisciPrenotazione(req, res) {
       );
     }
 
-    const postiPrenotati = spettatori.map(s => s.posto);
-    io.emit('posti-prenotati', { evento, posti: postiPrenotati });
+// 🔴 Dopo il salvataggio nel DB, emetti i posti prenotati via WebSocket
+const postiPrenotati = spettatori.map(s => s.posto);
+io.emit('posti-prenotati', { evento, posti: postiPrenotati });
 
-    const pdfLinks = await generaPDF({
-      evento,
-      spettatori,
-      eventFolder,
-      outputDir,
-      svgFile,
-      imgEvento,
-      imgIntest,
-      showName,
-      showDate,
-      prenotatore,
-      email,
-      notespdf,
-      bookingCode
-    });
+
+// Genera i PDF in parallelo
+await Promise.all(spettatori.map(async (s) => {
+  const doc = new jsPDF();
+  const imgEventoPath = path.join(eventFolder, imgEvento);
+  const imgEventoBuffer = fs.readFileSync(imgEventoPath);
+  const eventoImgOptimized = await sharp(imgEventoBuffer)
+    .resize({ width: 300 })
+    .jpeg({ quality: 70 })
+    .toBuffer();
+  const eventoBase64 = `data:image/jpeg;base64,${eventoImgOptimized.toString('base64')}`;
+  doc.addImage(eventoBase64, 'JPEG', 10, 10, 50, 30);
+
+  const x = 10;
+  let y = 50;
+
+  const intestazione = (label, valore, colore = [0, 0, 0]) => {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text(`${label}:`, x, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(...colore);
+    doc.text(valore, x + 35, y);
+    y += 10;
+  };
+
+  intestazione('Spettacolo', showName);
+  const formattedDate = new Date(showDate).toLocaleDateString('it-IT');
+  intestazione('Data', formattedDate);
+  intestazione('Posto', s.posto, [220, 38, 38]);
+  intestazione('Spettatore', s.nome);
+  intestazione('Prenotato da', `${prenotatore} (${email})`);
+  intestazione('Prezzo', `€ ${parseFloat(s.prezzo).toFixed(2)}`);
+
+  const svgPath = path.join(eventFolder, 'svg', svgFile);
+  let svgText = fs.readFileSync(svgPath, 'utf8');
+  svgText = svgText.replace(
+    new RegExp(`(<rect[^>]*?data-posto="${s.posto}"[^>]*?>)`, 'i'),
+    (match) => {
+      const x = match.match(/x="([^"]+)"/)?.[1];
+      const y = match.match(/y="([^"]+)"/)?.[1];
+      const width = match.match(/width="([^"]+)"/)?.[1];
+      const height = match.match(/height="([^"]+)"/)?.[1];
+      const rx = match.match(/rx="([^"]+)"/)?.[1];
+      const ry = match.match(/ry="([^"]+)"/)?.[1];
+      return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${rx}" ry="${ry}" fill="#0066ff" opacity="0.6"/>` + match;
+    }
+  );
+
+  const imgBuffer = await sharp(Buffer.from(svgText), { density: 100 })
+    .resize({ width: 450 })
+    .png()
+    .toBuffer();
+  const base64Image = imgBuffer.toString('base64');
+  doc.addImage(`data:image/png;base64,${base64Image}`, 'PNG', x, y + 10, 120, 120);
+  y += 135;
+
+  if (notespdf) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    const righe = doc.splitTextToSize(notespdf, 180);
+    doc.text(righe, x, y);
+  }
+
+  const codiceQR = JSON.stringify({
+    codice: bookingCode,
+    data: showDate,
+    spettacolo: showName,
+    posto: s.posto,
+    spettatore: s.nome,
+    cartella: evento,
+    prenotatoDa: `${prenotatore} (${email})`
+  });
+  const qr = await QRCode.toDataURL(codiceQR);
+  doc.addImage(qr, 'PNG', 150, 20, 40, 40);
+
+  const safeName = s.nome.replace(/\s+/g, '_');
+  const nomeFile = `${s.posto}_${safeName}.pdf`;
+  const filePath = path.join(outputDir, nomeFile);
+  fs.writeFileSync(filePath, Buffer.from(doc.output('arraybuffer')));
+  pdfLinks.push(`/eventi/${evento}/PDF/${nomeFile}`);
+}));
 
     await pool.query('COMMIT');
 
+    // Invia email
     const templatePath = path.join(eventFolder, 'email.html');
     let template = fs.readFileSync(templatePath, 'utf8');
 
@@ -425,13 +468,6 @@ async function gestisciPrenotazione(req, res) {
       html: htmlEmail
     });
 
-    await pool.query(
-      `UPDATE prenotazioni
-       SET email_inviata = TRUE
-       WHERE evento = $1 AND booking_code = $2`,
-      [evento, bookingCode]
-    );
-
     res.json({ success: true, pdfs: pdfLinks });
 
   } catch (err) {
@@ -439,7 +475,7 @@ async function gestisciPrenotazione(req, res) {
     await pool.query('ROLLBACK');
     res.status(500).json({ error: 'Errore interno del server' });
   }
-}
+});
 
 
 
@@ -642,7 +678,7 @@ app.get('/eventi/:evento/prenotazioni', async (req, res) => {
 
   try {
     const { rows } = await pool.query(
-      `SELECT posto, nome, email, telefono, prenotatore, booking_code, email_inviata
+      `SELECT posto, nome, email, telefono, prenotatore, booking_code
        FROM prenotazioni
        WHERE evento = $1
        ORDER BY id`,
@@ -1265,26 +1301,6 @@ app.get('/', (req, res) => {
     return res.redirect('/login.html');
   }
   return res.redirect('/home.html');
-});
-
-
-// 📬 Elenco prenotazioni con email non ancora inviata
-app.get('/email-non-inviate/:evento', async (req, res) => {
-  const evento = req.params.evento;
-
-  try {
-    const result = await pool.query(
-      `SELECT * FROM prenotazioni
-       WHERE evento = $1 AND email_inviata = FALSE`,
-      [evento]
-    );
-
-    res.json({ success: true, nonInviate: result.rows });
-
-  } catch (err) {
-    console.error('❌ Errore /email-non-inviate:', err);
-    res.status(500).json({ success: false, error: 'Errore lettura prenotazioni' });
-  }
 });
 
 // --- Avvio del server ---

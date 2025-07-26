@@ -440,19 +440,26 @@ async function togglePrenotazioni(nome, folderName, postiTotali) {
     const resPdf = await fetch(`/eventi/${encodeURIComponent(folderName)}/pdf-list`);
     const pdfFiles = resPdf.ok ? await resPdf.json() : [];
 
-    // 🔥 RIMOSSA la parte che aggiorna "totali" e "disponibili"
-
     if (!Array.isArray(prenotazioni) || prenotazioni.length === 0) {
       container.innerHTML = '<p class="text-gray-500 text-center p-4">Nessuna prenotazione trovata.</p>';
       return;
     }
 
     let html = `
+      <div class="flex justify-end mb-2">
+        <button onclick="eliminaSelezionati('${folderName}')" class="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">
+          🗑️ Elimina selezionati
+        </button>
+      </div>
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="bg-gray-100 text-gray-700 uppercase text-xs">
+            <th class="border-b p-2 text-center">
+              <input type="checkbox" onclick="toggleTutti(this, '${folderName}')" />
+            </th>
             <th class="border-b p-2 text-left">Posto</th>
             <th class="border-b p-2 text-left">Nome</th>
+            <th class="border-b p-2 text-center">Email</th>
             <th class="border-b p-2 text-center">Azioni</th>
           </tr>
         </thead>
@@ -463,16 +470,26 @@ async function togglePrenotazioni(nome, folderName, postiTotali) {
       const safeNome = (p.nome || '').trim().replace(/\s+/g, '_');
       const fileName = `${p.posto}_${safeNome}.pdf`;
       const idDettagli = `dettagli-${p.posto.replace(/\s+/g, '')}`;
+      const idCheckbox = `check-${folderName}-${p.posto}`;
 
       let rowClass = "cursor-pointer hover:bg-gray-100";
       if (!pdfFiles.includes(fileName)) {
-        rowClass += " bg-orange-200"; // Se manca il PDF, coloro la riga
+        rowClass += " bg-orange-200";
       }
 
       html += `
-        <tr class="${rowClass}" onclick="toggleDettagli('${idDettagli}')">
+<tr class="${rowClass}" onclick="toggleDettagli('${idDettagli}')">
+  <td class="border-b p-2 text-center">
+    <input type="checkbox" class="chk-${folderName}" value="${p.posto}|${p.nome}" onclick="event.stopPropagation();">
+  </td>
           <td class="border-b p-2">${p.posto || ''}</td>
           <td class="border-b p-2">${p.nome || ''}</td>
+          <td class="border-b p-2 text-center">
+            ${p.email_inviata
+              ? '<span class="text-green-600 font-bold text-xl">✅</span>'
+              : '<span class="text-red-500 font-bold text-xl">❌</span>'
+            }
+          </td>
           <td class="border-b p-2 text-center">
             <button onclick="event.stopPropagation(); eliminaPrenotazione('${folderName}', '${p.posto.replace(/'/g, "\\'")}', '${p.nome.replace(/'/g, "\\'")}')" class="bg-red-500 hover:bg-red-700 text-white rounded-lg w-6 h-6 flex items-center justify-center text-xs">
               ❌
@@ -480,11 +497,11 @@ async function togglePrenotazioni(nome, folderName, postiTotali) {
           </td>
         </tr>
         <tr id="${idDettagli}" class="hidden bg-gray-50">
-          <td colspan="3" class="p-2 text-sm">
+          <td colspan="5" class="p-2 text-sm">
             <i data-lucide="at-sign" class="w-4 h-4 mr-2"></i>Email: ${p.email || '---'}<br>
             📞 Telefono: ${p.telefono || '---'}<br>
             🧑 Prenotatore: ${p.prenotatore || '---'}<br>
-            🔒 Codice: ${p.bookingCode || '---'}
+            🔒 Codice: ${p.booking_code || '---'}
           </td>
         </tr>
       `;
@@ -1031,7 +1048,7 @@ window.salvaConfig = function () {
       .catch(err => console.warn('Errore caricamento nome utente:', err));
 
   // Logout
-  window.logout = function () {
+   window.logout = function () {
     fetch('/logout')
       .then(() => {
         window.location.href = '/login.html';
@@ -1041,6 +1058,36 @@ window.salvaConfig = function () {
         console.error(err);
       });
   };
+
+  // ✅ SELEZIONA TUTTI I CHECKBOX
+  function toggleTutti(master, folderName) {
+    const checkboxes = document.querySelectorAll(`.chk-${folderName}`);
+    checkboxes.forEach(cb => cb.checked = master.checked);
+  }
+
+  // ✅ ELIMINA PRENOTAZIONI SELEZIONATE
+  async function eliminaSelezionati(folderName) {
+    const checkboxes = document.querySelectorAll(`.chk-${folderName}:checked`);
+    if (checkboxes.length === 0) {
+      mostraToast("Nessuna prenotazione selezionata", "error");
+      return;
+    }
+
+    const conferma = confirm(`Vuoi eliminare ${checkboxes.length} prenotazioni?`);
+    if (!conferma) return;
+
+    for (const cb of checkboxes) {
+      const [posto, nome] = cb.value.split('|');
+      await fetch(`/eventi/${encodeURIComponent(folderName)}/elimina-prenotazione`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ posto, nome })
+      });
+    }
+
+    mostraToast("Prenotazioni eliminate.");
+    location.reload();
+  }
 </script>
 
 <!-- Progress Bar -->
