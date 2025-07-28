@@ -131,7 +131,7 @@ const codiceQR = JSON.stringify({
   posto: s.posto,
   spettatore: s.nome,
   cartella: evento,
-  prenotatoDa: `${prenotatore} (${email})`
+  prenotatoDa: prenotatore
 });
 
         const qr = await QRCode.toDataURL(codiceQR);
