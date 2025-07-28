@@ -5,7 +5,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Dashboard Eventi</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<!-- <script src="https://cdn.tailwindcss.com"></script>-->
+<link href="/css/output.css" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex">
@@ -33,25 +34,26 @@
 <h2 class="text-xl font-bold mb-4">Impostazioni Evento</h2>
 <form class="space-y-4" id="formConfig">
 <div>
-<label class="block font-semibold mb-1">Nome Utente</label>
+<label for="inputNomeUtente" class="block font-semibold mb-1">Nome Utente</label>
 <input class="w-full border rounded p-2" id="inputNomeUtente" type="text"/>
 </div>
 <div>
-<label class="block font-semibold mb-1">Indirizzo Utente</label>
+<label for="inputIndirizzoUtente" class="block font-semibold mb-1">Indirizzo Utente</label>
 <input class="w-full border rounded p-2" id="inputIndirizzoUtente" type="text"/>
 </div>
 <div>
-<label class="block font-semibold mb-1">Email Utente</label>
+<label for="inputEmailUtente" class="block font-semibold mb-1">Email Utente</label>
 <input class="w-full border rounded p-2 bg-gray-200 text-gray-600 cursor-not-allowed" id="inputEmailUtente" type="email" readonly tabindex="-1"/>
 </div>
 <div>
-<label class="block font-semibold mb-1">URL intestazione immagine</label>
+<label for="inputImgIntest" class="block font-semibold mb-1">URL intestazione immagine</label>
 <input class="w-full border rounded p-2" id="inputImgIntest" type="text"/>
 </div>
-<button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="salvaConfig()" type="button">Salva configurazione</button><div>
-<label class="block font-semibold mb-1">Note da pubblicare su PDF/email</label>
+<div>
+<label for="inputNotePdf" class="block font-semibold mb-1">Note da pubblicare su PDF/email</label>
 <textarea class="w-full border rounded p-2" id="inputNotePdf" rows="4"></textarea>
 </div>
+<button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="salvaConfig()" type="button">Salva configurazione</button>
 </form>
 </div>
 <!-- Sezione Piantina SVG -->

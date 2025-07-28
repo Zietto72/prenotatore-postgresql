@@ -4,6 +4,12 @@ const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 const session = require('express-session');
 
+// 🔧 TIMEOUT CONFIGURABILI (in millisecondi)
+const TIMEOUT_INATTIVITA_LOOP_MS    = 300000;  // tempo max inattività utente senza selezione
+const TIMEOUT_SELEZIONE_POSTI_MS    = 300000;  // tempo max per completare la prenotazione
+const TIMEOUT_SINGOLO_POSTO_MS      = 240000;  // tempo max per mantenere bloccato un singolo posto
+const MAX_SESSIONI_SIMULTANEE       = 2; // Max PDF/email in contemporanea
+const DURATA_SESSIONE_MS            = 24 * 60 * 60 * 1000;   // Sessione login (1 giorno)
 
 let sessioniAttive = 0;
 const codaPrenotazioni = [];
@@ -29,7 +35,7 @@ async function eseguiConSlotDisponibile(fn, clientId) {
       }
     };
 
-    if (sessioniAttive < 2) {
+    if (sessioniAttive < MAX_SESSIONI_SIMULTANEE) {
       esegui();
     } else {
       codaPrenotazioni.push(esegui);
@@ -61,31 +67,169 @@ const socketEvento = {}; // { socket.id: evento }
 // ✅ Gestione connessioni WebSocket
 const utentiConnessiPerEvento = {}; // { eventoSlug: [socket.id, ...] }
 
+// ⏳ Timeout inattività all'ingresso: ricalcola posizione mettendolo in fondo
+function gestisciInattivita(socket, evento) {
+  if (timeoutSessione[socket.id]) clearTimeout(timeoutSessione[socket.id]);
+
+  timeoutSessione[socket.id] = setTimeout(() => {
+    const postiDaLiberare = Array.from(socketPosti[socket.id] || []);
+
+    postiDaLiberare.forEach(p => {
+      blocchiTemporanei[evento]?.delete(p);
+      delete bloccoSocket[p];
+      if (timerScadenzaPosto[p]) {
+        clearTimeout(timerScadenzaPosto[p]);
+        delete timerScadenzaPosto[p];
+      }
+    });
+
+    delete socketPosti[socket.id];
+    delete timeoutSessione[socket.id];
+
+    socket.emit('posti-liberati', { evento, posti: postiDaLiberare });
+    io.emit('posti-liberati', { evento, posti: postiDaLiberare });
+
+    // 🔁 Rimuovi e reinserisci in fondo alla coda
+    if (evento && utentiConnessiPerEvento[evento]) {
+      utentiConnessiPerEvento[evento] = utentiConnessiPerEvento[evento].filter(id => id !== socket.id);
+      utentiConnessiPerEvento[evento].push(socket.id);
+
+      utentiConnessiPerEvento[evento].forEach((id, index) => {
+        io.to(id).emit('posizione-utente', {
+          totale: utentiConnessiPerEvento[evento].length,
+          posizione: index + 1
+        });
+      });
+    }
+
+    // 🔁 Rilancia solo se l’utente non ha ancora selezionato posti
+    if (!socketPosti[socket.id] || socketPosti[socket.id].size === 0) {
+      gestisciInattivita(socket, evento);
+    }
+
+  }, TIMEOUT_INATTIVITA_LOOP_MS); // 20 secondi
+}
+
 io.on('connection', (socket) => {
   console.log('🔌 Client connesso via WebSocket');
 
-  socket.on('richiesta-blocchi', ({ evento }) => {
-    // 🔐 Registra l'evento corrente del socket
-    socketEvento[socket.id] = evento;
+socket.on('richiesta-blocchi', ({ evento }) => {
 
-    // 🔁 Aggiungi socket alla lista degli utenti per quell'evento
-    if (!utentiConnessiPerEvento[evento]) utentiConnessiPerEvento[evento] = [];
+  // 🔐 Registra l'evento corrente del socket
+  socketEvento[socket.id] = evento;
+
+  // 🔁 Aggiungi socket alla lista degli utenti per quell'evento
+  if (!utentiConnessiPerEvento[evento]) utentiConnessiPerEvento[evento] = [];
+  utentiConnessiPerEvento[evento].push(socket.id);
+
+  // 📍 Calcola posizione
+  const posizione = utentiConnessiPerEvento[evento].indexOf(socket.id) + 1;
+  const totale = utentiConnessiPerEvento[evento].length;
+
+  io.to(socket.id).emit('posizione-utente', { totale, posizione });
+
+  // 🔁 Aggiorna anche tutti gli altri con la nuova posizione
+  utentiConnessiPerEvento[evento].forEach((id, index) => {
+    io.to(id).emit('posizione-utente', {
+      totale,
+      posizione: index + 1
+    });
+  });
+
+  // ✅ INVIA I POSTI GIÀ BLOCCATI al nuovo utente
+  const blocchi = blocchiTemporanei[evento]
+    ? Array.from(blocchiTemporanei[evento])
+    : [];
+
+  socket.emit('blocchi-esistenti', { evento, posti: blocchi });
+
+// ⏱️ Avvia il ciclo di inattività con reinserimento in coda
+gestisciInattivita(socket, evento);
+});
+  
+  
+  // 🔹 Utente seleziona un posto
+socket.on('blocca-posto', ({ evento, posto }) => {
+  if (!blocchiTemporanei[evento]) blocchiTemporanei[evento] = new Set();
+
+  blocchiTemporanei[evento].add(posto);
+  bloccoSocket[posto] = socket.id;
+
+  if (!socketPosti[socket.id]) socketPosti[socket.id] = new Set();
+  socketPosti[socket.id].add(posto);
+
+  // ⏱ Timeout sessione intera
+if (timeoutSessione[socket.id]) clearTimeout(timeoutSessione[socket.id]);
+timeoutSessione[socket.id] = setTimeout(() => {
+  const postiDaLiberare = Array.from(socketPosti[socket.id] || []);
+
+  postiDaLiberare.forEach(p => {
+    blocchiTemporanei[evento]?.delete(p);
+    delete bloccoSocket[p];
+    if (timerScadenzaPosto[p]) {
+      clearTimeout(timerScadenzaPosto[p]);
+      delete timerScadenzaPosto[p];
+    }
+  });
+
+  delete socketPosti[socket.id];
+  delete timeoutSessione[socket.id];
+
+  socket.emit('posti-liberati', { evento, posti: postiDaLiberare }); // notifica anche all'utente stesso
+  io.emit('posti-liberati', { evento, posti: postiDaLiberare });
+
+  // 🧹 Ricalcola posizione utenti
+  if (evento && utentiConnessiPerEvento[evento]) {
+    // 🔁 Rimuovi temporaneamente il socket
+    utentiConnessiPerEvento[evento] = utentiConnessiPerEvento[evento].filter(id => id !== socket.id);
+
+    // 🔁 Reinserisci in fondo alla coda
     utentiConnessiPerEvento[evento].push(socket.id);
 
-    // 📍 Calcola posizione
-    const posizione = utentiConnessiPerEvento[evento].indexOf(socket.id) + 1;
-    const totale = utentiConnessiPerEvento[evento].length;
-
-    io.to(socket.id).emit('posizione-utente', { totale, posizione });
-
-    // 🔁 Aggiorna anche tutti gli altri con la nuova posizione
+    // 📣 Notifica a tutti la nuova posizione corretta (con il socket già reinserito)
     utentiConnessiPerEvento[evento].forEach((id, index) => {
       io.to(id).emit('posizione-utente', {
-        totale,
+        totale: utentiConnessiPerEvento[evento].length,
         posizione: index + 1
       });
     });
-  });
+  }
+
+  // 🔁 Se l’utente non ha più selezioni → riavvia il ciclo di inattività
+  if (!socketPosti[socket.id] || socketPosti[socket.id].size === 0) {
+    gestisciInattivita(socket, evento);
+  }
+}, TIMEOUT_SELEZIONE_POSTI_MS);
+  
+  // 🔸 Utente libera un posto (o li deseleziona)
+socket.on('libera-posti', ({ evento, posti }) => {
+  if (blocchiTemporanei[evento]) {
+    posti.forEach(p => {
+      blocchiTemporanei[evento].delete(p);
+      delete bloccoSocket[p];
+    });
+  }
+
+  if (socketPosti[socket.id]) {
+    posti.forEach(p => socketPosti[socket.id].delete(p));
+  }
+
+  io.emit('posti-liberati', { evento, posti });
+});
+
+  // ⏱ Timeout individuale per il posto
+  if (timerScadenzaPosto[posto]) clearTimeout(timerScadenzaPosto[posto]);
+  timerScadenzaPosto[posto] = setTimeout(() => {
+    blocchiTemporanei[evento]?.delete(posto);
+    delete bloccoSocket[posto];
+    if (socketPosti[socket.id]) socketPosti[socket.id].delete(posto);
+    delete timerScadenzaPosto[posto];
+    io.emit('posti-liberati', { evento, posti: [posto] });
+  }, TIMEOUT_SINGOLO_POSTO_MS); // 20 secondi
+
+  // ✅ Notifica a tutti gli altri utenti
+  socket.broadcast.emit('posto-bloccato', { evento, posto });
+});
 
   socket.on('disconnect', () => {
     console.log('🔌 Client disconnesso');
@@ -98,13 +242,17 @@ io.on('connection', (socket) => {
       delete bloccoSocket[p];
     });
 
-    if (evento && postiDaLiberare.length > 0) {
-      io.emit('posti-liberati', { evento, posti: postiDaLiberare });
-        // Rimuovi utente dalla coda per evento
-  if (evento && utentiConnessiPerEvento[evento]) {
+    if (evento) {
+  // 🔓 Se ci sono posti da liberare → emetti evento
+  if (postiDaLiberare.length > 0) {
+    io.emit('posti-liberati', { evento, posti: postiDaLiberare });
+  }
+
+  // 🔁 Rimuovi l’utente dalla lista anche se non aveva posti
+  if (utentiConnessiPerEvento[evento]) {
     utentiConnessiPerEvento[evento] = utentiConnessiPerEvento[evento].filter(id => id !== socket.id);
 
-    // Aggiorna posizione degli altri utenti
+    // 📣 Aggiorna le posizioni degli altri utenti
     utentiConnessiPerEvento[evento].forEach((id, index) => {
       io.to(id).emit('posizione-utente', {
         totale: utentiConnessiPerEvento[evento].length,
@@ -112,7 +260,7 @@ io.on('connection', (socket) => {
       });
     });
   }
-    }
+}
 
     clearTimeout(timeoutSessione[socket.id]);
     delete timeoutSessione[socket.id];
@@ -166,7 +314,7 @@ app.use(session({
   secret: 'una-chiave-super-segreta',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 giorno
+  cookie: { maxAge: DURATA_SESSIONE_MS } // 1 giorno
 }));
 
 // --- Endpoint di test connessione DB ---

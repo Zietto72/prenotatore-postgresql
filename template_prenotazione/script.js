@@ -6,6 +6,11 @@ let showDate = '';
 let imgIntest = '';
 let zonePrices = {};
 
+// 🔧 PARAMETRI CONFIGURABILI (client-side)
+const MAX_POSTI_PRENOTABILI = 8; //numero massimo dei posti prenotabili
+const MAX_UTENTI_INTERATTIVI = 4; // numero massimo degli utenti che possono operare
+const INTERVALLO_POLLING_MS = 7000; // il tempo di verifca econtrollo sui posti occupati in piatina
+
 const selected = new Set();
 let eventoCorrente = '';
 let storageKey = '';
@@ -17,6 +22,17 @@ const BASE_URL = window.location.hostname === "localhost"
   
     // ✅ Inizializza WebSocket
     const socket = io(BASE_URL);
+    
+        // 🔸 Posto bloccato da altri
+    socket.on('posto-bloccato', ({ evento, posto }) => {
+      if (evento === eventoCorrente) {
+        const el = document.querySelector(`[data-posto="${posto}"]`);
+        if (el && !el.classList.contains("occupied")) {
+          el.classList.add("bloccato");
+          el.classList.remove("selected");
+        }
+      }
+    });
     
     socket.on('posizione-utente', ({ totale, posizione }) => {
   const infoBox = document.getElementById("infoCoda");
@@ -30,12 +46,17 @@ const BASE_URL = window.location.hostname === "localhost"
   }
 
   if (overlay) {
-    if (posizione > 4) { // Numero di utenti a cui è permesso selezionare
-      overlay.style.display = "flex";  // Mostra il blocco
-    } else {
-      overlay.style.display = "none";  // Nascondi il blocco
+  if (posizione > MAX_UTENTI_INTERATTIVI) {
+    overlay.style.display = "flex";
+
+    const messaggio = document.getElementById("messaggioCoda");
+    if (messaggio) {
+      messaggio.innerHTML = `Solo <b>${MAX_UTENTI_INTERATTIVI}</b> utenti alla volta possono effettuare la prenotazione.<br>Appena sarà il tuo turno potrai selezionare i posti.`;
     }
+  } else {
+    overlay.style.display = "none";
   }
+}
 });
 
 socket.on('utenti-attivi', (totale) => {
@@ -146,6 +167,8 @@ socket.on('blocchi-esistenti', ({ evento, posti }) => {
       if (mieiPostiAttivi.has(posto)) {
         daLiberare.push(posto); // 🔥 aggiungi alla lista da liberare
       } else {
+        const g = el.closest("g");
+        if (g) g.classList.add("bloccato");
         el.classList.add("bloccato");
       }
     }
@@ -197,7 +220,7 @@ socket.on('blocchi-esistenti', ({ evento, posti }) => {
       } catch (e) {
         console.warn("⚠️ Impossibile aggiornare la mappa dei posti:", e);
       }
-    }, 7000);
+    }, INTERVALLO_POLLING_MS);
 
     // 🧹 Pulisce altre selezioni
     Object.keys(localStorage).forEach(k => {
@@ -234,7 +257,7 @@ svg.querySelectorAll(".posto").forEach(posto => {
 
       socket.emit('libera-posti', { evento: eventoCorrente, posti: [id] });
     } else {
-      if (selected.size >= 8) {
+      if (selected.size >= MAX_POSTI_PRENOTABILI) {
         alert("Puoi prenotare al massimo 8 posti.");
         return;
       }
@@ -267,16 +290,6 @@ rect.style.fill = "#007bff";  // forza blu
       emailConferma.addEventListener('contextmenu', e => e.preventDefault());
     }
 
-    // 🔸 Posto bloccato da altri
-    socket.on('posto-bloccato', ({ evento, posto }) => {
-      if (evento === eventoCorrente) {
-        const el = document.querySelector(`[data-posto="${posto}"]`);
-        if (el && !el.classList.contains("occupied")) {
-          el.classList.add("bloccato");
-          el.classList.remove("selected");
-        }
-      }
-    });
 
     // 🔸 Prenotazione confermata
     socket.on('posti-prenotati', ({ evento, posti }) => {
@@ -308,11 +321,15 @@ socket.on('posti-liberati', ({ evento, posti }) => {
     el.classList.remove("bloccato");
 
     // ✅ Se il posto era selezionato da me
-    if (selected.has(posto)) {
-      selected.delete(posto);
-      g.classList.remove("selected");
-      modificato = true;
-    }
+selected.delete(posto);
+g.classList.remove("selected", "bloccato");
+el.classList.remove("selected", "bloccato");
+
+// 🔧 Rimuove colore BLU forzato per Safari iOS
+el.removeAttribute("fill");
+el.style.fill = "#dddddd";
+
+modificato = true;
   });
 
   if (modificato) {
