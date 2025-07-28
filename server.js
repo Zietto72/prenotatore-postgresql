@@ -460,6 +460,23 @@ app.post('/genera-pdf-e-invia', async (req, res) => {
   }
 });
 
+
+function formattaDataItaliana(dataISO, ora = '') {
+  const dataObj = new Date(dataISO);
+  const formatter = new Intl.DateTimeFormat('it-IT', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  let dataFormattata = formatter.format(dataObj);
+  dataFormattata = dataFormattata.charAt(0).toUpperCase() + dataFormattata.slice(1); // maiuscola
+
+  return ora ? `${dataFormattata} - ore ${ora}` : dataFormattata;
+}
+
+
 async function gestisciPrenotazione(req, res) {
   const nodemailer = require('nodemailer');
   const sharp = require('sharp');
@@ -492,6 +509,7 @@ async function gestisciPrenotazione(req, res) {
       note_pdf: notespdf = ''
     } = config;
 
+  const dataFormattata = formattaDataItaliana(showDate, showTime);
     const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}?t=${Date.now()}`;
     const bookingCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
@@ -552,7 +570,7 @@ async function gestisciPrenotazione(req, res) {
       .replace(/{{img_intest}}/g, imgIntest)
       .replace(/{{img_evento}}/g, imgEventoUrl)
       .replace(/{{show_name}}/g, showName)
-      .replace(/{{show_date}}/g, showDate)
+      .replace(/{{show_date}}/g, dataFormattata)
       .replace(/{{nome}}/g, firstName)
       .replace(/{{cognome}}/g, lastName)
       .replace(/{{email}}/g, email)
@@ -1165,8 +1183,8 @@ app.post('/eventi/:evento/modifica', upload.fields([{ name: 'svg' }, { name: 'im
       i++;
     };
 
-    addField('nome', body.nome);
-    addField('data_spettacolo', body.data);
+    if (body.nome?.trim()) addField('nome', body.nome.trim());
+    if (body.data?.trim()) addField('data_spettacolo', body.data.trim());
     addField('ora', body.ora || '');
     addField('numero_posti_totali', body.numeroPostiTotali);
     addField('zone_prices', JSON.stringify(JSON.parse(body.zonePrices || '{}')));
