@@ -410,12 +410,18 @@ app.get('/home.html', (req, res, next) => {
   }
   return res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
-
+/*
 // Protegge verifica.html
 app.get('/verifica.html', (req, res) => {
   if (!req.session.utente) {
     return res.redirect('/login.html');
   }
+  return res.sendFile(path.join(__dirname, 'public', 'verifica.html'));
+});
+*/
+
+// ✅ Accesso libero alla pagina di verifica
+app.get('/verifica.html', (req, res) => {
   return res.sendFile(path.join(__dirname, 'public', 'verifica.html'));
 });
 
