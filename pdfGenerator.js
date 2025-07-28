@@ -126,7 +126,7 @@ module.exports = {
 const codiceQR = JSON.stringify({
   codice: bookingCode,
   data: formattaDataItaliana(showDate, showTime),
-  date: showDate.slice(0, 10), // ← formato ISO per confronto preciso
+  date: (typeof showDate === 'string' ? showDate : showDate.toISOString()).slice(0, 10),
   spettacolo: showName,
   posto: s.posto,
   spettatore: s.nome,
