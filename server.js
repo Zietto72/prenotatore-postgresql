@@ -1,5 +1,5 @@
 require('dotenv').config();
-const generaPDF = require('./pdfGenerator');
+const { generaPDF, formattaDataItaliana } = require('./pdfGenerator');
 const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 const session = require('express-session');
@@ -461,20 +461,6 @@ app.post('/genera-pdf-e-invia', async (req, res) => {
 });
 
 
-function formattaDataItaliana(dataISO, ora = '') {
-  const dataObj = new Date(dataISO);
-  const formatter = new Intl.DateTimeFormat('it-IT', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  let dataFormattata = formatter.format(dataObj);
-  dataFormattata = dataFormattata.charAt(0).toUpperCase() + dataFormattata.slice(1); // maiuscola
-
-  return ora ? `${dataFormattata} - ore ${ora}` : dataFormattata;
-}
 
 
 async function gestisciPrenotazione(req, res) {
@@ -545,6 +531,7 @@ async function gestisciPrenotazione(req, res) {
       imgIntest,
       showName,
       showDate,
+      showTime, 
       prenotatore,
       email,
       notespdf,
@@ -1184,7 +1171,11 @@ app.post('/eventi/:evento/modifica', upload.fields([{ name: 'svg' }, { name: 'im
     };
 
     if (body.nome?.trim()) addField('nome', body.nome.trim());
-    if (body.data?.trim()) addField('data_spettacolo', body.data.trim());
+    if (body.data?.trim()) {
+  const [yyyy, mm, dd] = body.data.trim().split('-');
+  const dataFormattata = `${yyyy}-${mm}-${dd}`; // forza formato YYYY-MM-DD
+  addField('data_spettacolo', dataFormattata);
+}
     addField('ora', body.ora || '');
     addField('numero_posti_totali', body.numeroPostiTotali);
     addField('zone_prices', JSON.stringify(JSON.parse(body.zonePrices || '{}')));

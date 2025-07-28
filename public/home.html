@@ -270,19 +270,39 @@ function apriPreview(folderName) {
 function formattaDataCompleta(data, ora) {
   if (!data) return '';
 
-  // Estrae solo la parte della data se arriva in formato completo (ISO 8601)
-  const soloData = data.includes('T') ? data.split('T')[0] : data;
+  let dateObj;
 
-  const [anno, mese, giorno] = soloData.split('-');
-  const date = new Date(`${anno}-${mese}-${giorno}`);
+  // 🔍 Gestione formato ISO o stringa semplice
+  if (data.includes('T')) {
+    dateObj = new Date(data);
+  } else if (data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    // Forza l'orario a mezzogiorno per evitare slittamenti per fuso orario
+    dateObj = new Date(`${data}T12:00:00`);
+  } else {
+    // fallback generico
+    return data + (ora ? ` – ${ora}` : '');
+  }
 
   const giorniSettimana = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
   const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
 
-  const giornoSettimana = giorniSettimana[date.getDay()];
-  const dataFormattata = `${giornoSettimana} ${giorno} ${mesi[+mese - 1]} ${anno}`;
+  const giornoSettimana = giorniSettimana[dateObj.getDay()];
+  const giorno = String(dateObj.getDate()).padStart(2, '0');
+  const mese = mesi[dateObj.getMonth()];
+  const anno = dateObj.getFullYear();
 
+  const dataFormattata = `${giornoSettimana} ${giorno} ${mese} ${anno}`;
   return ora ? `${dataFormattata} – ${ora}` : dataFormattata;
+}
+
+
+function formattaPerInputDate(dataISO) {
+  if (!dataISO) return '';
+  const dateObj = new Date(dataISO);
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 async function caricaEventi() {
@@ -313,12 +333,7 @@ if (!folderName) {
 
 
   // 🔵 Formatta data + ora
-  const dataObj = new Date(dataEvento);
-  const giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
-  const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
-  const dataFormattata = isNaN(dataObj.getTime()) ? '' :
-    `${giorni[dataObj.getDay()]} ${String(dataObj.getDate()).padStart(2, '0')} ${mesi[dataObj.getMonth()]} ${dataObj.getFullYear()}`;
-  const dataEOra = oraEvento ? `${dataFormattata} – ${oraEvento}` : dataFormattata;
+const dataEOra = formattaDataCompleta(dataEvento, oraEvento);
   
   
 
@@ -546,7 +561,7 @@ async function toggleModificaEvento(folderName, nomeEvento) {
         </div>
         <div>
           <label class="block text-sm font-bold">Data</label>
-          <input type="date" id="data-${folderName}" value="${config.showDate ? config.showDate.substring(0, 10) : ''}" class="w-full border rounded p-2">
+          <input type="date" id="data-${folderName}" value="${formattaPerInputDate(config.showDate)}" class="w-full border rounded p-2">
         </div>
         <div>
           <label class="block text-sm font-bold">Ora</label>
@@ -775,7 +790,7 @@ if (previewSvg) {
 
     document.getElementById('modalTitle').textContent = 'Modifica Evento';
     inputNomeEvento.value = config.showName || '';
-    inputDataEvento.value = (config.showDate || '').substring(0, 10);
+    inputDataEvento.value = formattaPerInputDate(config.showDate);
     document.getElementById('inputOraEvento').value = config.showTime || '';
     document.getElementById('inputNumeroPosti').value = config.numeroPostiTotali || '';
 
