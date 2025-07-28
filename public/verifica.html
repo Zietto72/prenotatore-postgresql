@@ -206,7 +206,7 @@ footer.innerHTML = `${messaggio}<span class="dettagli">${dettagli.replace(/\n/g,
         try { dati = JSON.parse(raw); } catch { return esito(false, 'red', 'BIGLIETTO NON VALIDO'); }
 
         const oggi = new Date().toISOString().slice(0, 10);
-        const dataBiglietto = (dati.data || dati.date || '').slice(0, 10);
+        const dataBiglietto = dati.date || '';
         const key = `${dati.codice}_${dati.posto}_${dati.spettatore}`;
 
         if (controllati.has(key)) {
