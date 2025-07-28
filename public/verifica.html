@@ -226,9 +226,9 @@ fetch('/verifica-codice-qr', {
           .then(res => {
             if (!res.valido) {
               esito(false, 'red', 'BIGLIETTO NON VALIDO', dati, beepKO);
-            } else if (dataBiglietto !== oggi) {
-              esito(true, 'deepskyblue', 'BIGLIETTO VALIDO, MA NON PER OGGI', dati, beepWrongDate);
-            } else {
+            } else if (!res.dataCorrisponde) {
+  esito(true, 'deepskyblue', 'BIGLIETTO VALIDO, MA NON PER OGGI', dati, beepWrongDate);
+} else {
               controllati.add(key);
               localStorage.setItem('controllatiQR', JSON.stringify([...controllati]));
               esito(true, 'green', 'BIGLIETTO VALIDO', dati, beepOK);
