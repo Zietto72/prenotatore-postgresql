@@ -8,7 +8,7 @@ const session = require('express-session');
 const TIMEOUT_INATTIVITA_LOOP_MS    = 300000;  // tempo max inattività utente senza selezione
 const TIMEOUT_SELEZIONE_POSTI_MS    = 300000;  // tempo max per completare la prenotazione
 const TIMEOUT_SINGOLO_POSTO_MS      = 240000;  // tempo max per mantenere bloccato un singolo posto
-const MAX_SESSIONI_SIMULTANEE       = 2; // Max PDF/email in contemporanea
+const MAX_SESSIONI_SIMULTANEE       = 1; // Max PDF/email in contemporanea
 const DURATA_SESSIONE_MS            = 24 * 60 * 60 * 1000;   // Sessione login (1 giorno)
 
 let sessioniAttive = 0;
@@ -72,6 +72,11 @@ function gestisciInattivita(socket, evento) {
   if (timeoutSessione[socket.id]) clearTimeout(timeoutSessione[socket.id]);
 
   timeoutSessione[socket.id] = setTimeout(() => {
+  
+  if (socket.staPrenotando) {
+  console.log('⏸ Timeout ignorato perché utente sta prenotando');
+  return;
+}
     const postiDaLiberare = Array.from(socketPosti[socket.id] || []);
 
     postiDaLiberare.forEach(p => {
@@ -111,6 +116,17 @@ function gestisciInattivita(socket, evento) {
 }
 
 io.on('connection', (socket) => {
+
+socket.on('finalizza-prenotazione', ({ evento }) => {
+  socket.staPrenotando = true;
+  if (timeoutSessione[socket.id]) {
+    clearTimeout(timeoutSessione[socket.id]);
+    delete timeoutSessione[socket.id];
+  }
+  console.log(`✅ L’utente ${socket.id} ha finalizzato la prenotazione per ${evento}`);
+});
+
+
   console.log('🔌 Client connesso via WebSocket');
 
 socket.on('richiesta-blocchi', ({ evento }) => {
@@ -202,6 +218,7 @@ timeoutSessione[socket.id] = setTimeout(() => {
 }, TIMEOUT_SELEZIONE_POSTI_MS);
   
   // 🔸 Utente libera un posto (o li deseleziona)
+socket.removeAllListeners('libera-posti'); // ✅ PREVIENE DUPLICAZIONI
 socket.on('libera-posti', ({ evento, posti }) => {
   if (blocchiTemporanei[evento]) {
     posti.forEach(p => {
@@ -450,6 +467,15 @@ app.get('/stato-coda', (req, res) => {
 // ✅ Versione corretta per struttura reale della tabella `eventi`
 
 app.post('/genera-pdf-e-invia', async (req, res) => {
+
+const clientId = req.ip;
+let inCoda = sessioniAttive >= MAX_SESSIONI_SIMULTANEE;
+if (inCoda) {
+  console.log('⏳ Utente in coda per generazione PDF:', clientId);
+  // 👇 Non rispondere subito, ma metti un flag per il client se serve
+  req.inCoda = true;
+}
+
   try {
     await eseguiConSlotDisponibile(() => gestisciPrenotazione(req, res), req.ip);
   } catch (err) {
@@ -592,6 +618,13 @@ async function gestisciPrenotazione(req, res) {
     );
 
     res.json({ success: true, pdfs: pdfLinks });
+    
+    for (const [id, ev] of Object.entries(socketEvento)) {
+  if (ev === evento) {
+    const s = io.sockets.sockets.get(id);
+    if (s) s.staPrenotando = false;
+  }
+}
 
   } catch (err) {
     console.error('❌ Errore /genera-pdf-e-invia:', err);
@@ -1099,7 +1132,7 @@ app.post('/verifica-codice-qr', async (req, res) => {
 
     const query = `
       SELECT * FROM prenotazioni 
-      WHERE booking_code = $1 AND posto = $2 AND nome = $3 AND prenotatore = $4 AND evento = $5
+      WHERE booking_code = $1 AND posto = $2 AND nome = $3 AND evento = $5
     `;
     const values = [codice, posto, spettatore, prenotatoDa, cartella];
 
