@@ -8,7 +8,7 @@ const session = require('express-session');
 const TIMEOUT_INATTIVITA_LOOP_MS    = 300000;  // tempo max inattività utente senza selezione
 const TIMEOUT_SELEZIONE_POSTI_MS    = 300000;  // tempo max per completare la prenotazione
 const TIMEOUT_SINGOLO_POSTO_MS      = 240000;  // tempo max per mantenere bloccato un singolo posto
-const MAX_SESSIONI_SIMULTANEE       = 1; // Max PDF/email in contemporanea
+const MAX_SESSIONI_SIMULTANEE       = 3; // Max PDF/email in contemporanea
 const DURATA_SESSIONE_MS            = 24 * 60 * 60 * 1000;   // Sessione login (1 giorno)
 
 let sessioniAttive = 0;

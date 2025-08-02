@@ -1,5 +1,5 @@
 config:
-  target: "http://localhost:3000"
+  target: "https://prenotatore-postgresql.onrender.com"
   phases:
   - duration: 60         # 60 secondi
     arrivalRate: 100      # 100 utenti al secondo × 60s = 6000 richieste
