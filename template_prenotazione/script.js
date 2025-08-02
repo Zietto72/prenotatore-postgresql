@@ -6,7 +6,7 @@ let zonePrices = {};
 
 // 🔧 PARAMETRI CONFIGURABILI (client-side)
 const MAX_POSTI_PRENOTABILI = 8; //numero massimo dei posti prenotabili
-const MAX_UTENTI_INTERATTIVI = 4; // numero massimo degli utenti che possono operare
+window.MAX_UTENTI_INTERATTIVI = 4;
 const INTERVALLO_POLLING_MS = 3000; // il tempo di verifca econtrollo sui posti occupati in piatina
 
 const selected = new Set();
@@ -20,7 +20,7 @@ const BASE_URL =
     : "https://prenotatore-postgresql.onrender.com";
 
 // ✅ Inizializza WebSocket
-const socket = io(BASE_URL);
+const socket = io(BASE_URL, { withCredentials: true });
 
 let mioSocketId = "";
 
@@ -49,6 +49,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 socket.on("connect", () => {
   mioSocketId = socket.id;
+});
+
+
+// ✅ Gestione overlay per coda WebSocket
+socket.on("posizione-coda", ({ tuaPosizione, sessioniAttive }) => {
+  console.log("📩 Ricevuta posizione-coda:", tuaPosizione);
+
+  const overlay = document.getElementById("overlayBloccaCoda");
+  const messaggio = document.getElementById("messaggioCoda");
+
+  if (overlay && messaggio) {
+    if (tuaPosizione > window.MAX_UTENTI_INTERATTIVI) {
+      overlay.style.display = "flex";
+      messaggio.innerHTML = `
+        ⏳ Stai aspettando il tuo turno (#${tuaPosizione})<br>
+        Solo <b>${window.MAX_UTENTI_INTERATTIVI}</b> utenti alla volta possono prenotare.<br>
+        Verrai abilitato automaticamente appena sarà disponibile uno slot.`;
+    } else {
+      overlay.style.display = "none";
+      messaggio.innerHTML = "";
+    }
+  }
 });
 
 // 🎯 Avanzamento reale progress bar
@@ -83,36 +105,27 @@ socket.on("posto-bloccato", ({ evento, posto }) => {
   }
 });
 
-socket.on("posizione-utente", ({ totale, posizione }) => {
-  const infoBox = document.getElementById("infoCoda");
-  const overlay = document.getElementById("overlayBloccaCoda");
-
-  if (infoBox) {
-    infoBox.innerHTML = `
-      👥 Utenti attivi: <b>${totale}</b> - 
-      🧍 La tua posizione: <b>#${posizione}</b>`;
-    infoBox.style.color = "#444";
-  }
-
-  if (overlay) {
-    if (posizione > MAX_UTENTI_INTERATTIVI) {
-      overlay.style.display = "flex";
-
-      const messaggio = document.getElementById("messaggioCoda");
-      if (messaggio) {
-        messaggio.innerHTML = `Solo <b>${MAX_UTENTI_INTERATTIVI}</b> utenti alla volta possono effettuare la prenotazione.<br>Appena sarà il tuo turno potrai selezionare i posti.`;
-      }
-    } else {
-      overlay.style.display = "none";
-    }
-  }
-});
 
 socket.on("utenti-attivi", (totale) => {
   const infoBox = document.getElementById("infoCoda");
   if (infoBox && !infoBox.innerHTML.includes("#")) {
     infoBox.innerHTML = `👥 Utenti attivi: <b>${totale}</b>`;
     infoBox.style.color = "#666";
+  }
+});
+
+socket.on("posizione-utente", ({ totale, posizione }) => {
+  document.getElementById("infoCoda").innerHTML =
+    `👥 Utenti attivi: ${totale} — Sei il n° ${posizione}`;
+
+  // 🔄 Se sei ora rientrato tra i primi, nascondi overlay
+  if (posizione <= MAX_UTENTI_INTERATTIVI) {
+    const overlay = document.getElementById("overlayBloccaCoda");
+    const messaggio = document.getElementById("messaggioCoda");
+    if (overlay && messaggio) {
+      overlay.style.display = "none";
+      messaggio.innerHTML = "";
+    }
   }
 });
 
@@ -413,8 +426,10 @@ window.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    // ✅ Ora puoi richiedere i blocchi esistenti
-    socket.emit("richiesta-blocchi", { evento: eventoCorrente });
+    // ✅ Ora puoi richiedere i blocchi esistenti, ma solo dopo che mioSocketId è pronto
+await attendiSocketId();
+console.log("✅ mioSocketId pronto:", mioSocketId);
+socket.emit("richiesta-blocchi", { evento: eventoCorrente });
 
     // 🔄 Mostra messaggio di attesa o posizione in coda
   } catch (err) {

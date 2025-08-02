@@ -1,39 +1,43 @@
 require('dotenv').config();
-const express = require('express');           // ✅ Aggiunto
-const app = express();                        // ✅ Aggiunto
+const express = require('express');
+const app = express();
 const { generaPDF, formattaDataItaliana } = require('./pdfGenerator');
 const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 
+// ✅ Unica dichiarazione di express-session + connect-pg-simple
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
+const sharedSession = require('express-socket.io-session'); // ✅ AGGIUNTO
 
-app.use(session({
+// ✅ Sessione condivisa tra Express e Socket.IO
+const expressSession = session({
+  store: new pgSession({
+    conObject: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    },
+    tableName: 'session',
+    createTableIfMissing: false
+  }),
   secret: process.env.SESSION_SECRET || 'keyboard cat',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 1 giorno
+    maxAge: 24 * 60 * 60 * 1000,
     secure: false,
     sameSite: 'lax'
   }
-}));
+});
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'keyboard cat',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 1 giorno
-    secure: false,
-    sameSite: 'lax'
-  }
-}));
+app.use(expressSession);
 
 // 🔧 TIMEOUT CONFIGURABILI (in millisecondi)
 const TIMEOUT_INATTIVITA_LOOP_MS    = 300000;  // tempo max inattività utente senza selezione
 const TIMEOUT_SELEZIONE_POSTI_MS    = 300000;  // tempo max per completare la prenotazione
 const TIMEOUT_SINGOLO_POSTO_MS      = 240000;  // tempo max per mantenere bloccato un singolo posto
 const MAX_SESSIONI_SIMULTANEE       = 3; // Max PDF/email in contemporanea
+const MAX_UTENTI_INTERATTIVI = 4; // numero massimo degli utenti che possono operare
 const DURATA_SESSIONE_MS            = 24 * 60 * 60 * 1000;   // Sessione login (1 giorno)
 
 let sessioniAttive = 0;
@@ -76,6 +80,15 @@ const { Server } = require('socket.io');
 const io = new Server(http, {
   cors: { origin: '*' }
 });
+
+// ✅ Condivide le sessioni tra Express e WebSocket
+io.use(sharedSession(expressSession, {
+  autoSave: true
+}));
+
+io.use(sharedSession(expressSession, {
+  autoSave: true
+}));
 
 const blocchiTemporanei = {}; // es: { eventoSlug: Set([...posti bloccati]) }
 const bloccoSocket = {}; // es: { postoId: socket.id }
@@ -137,6 +150,28 @@ function gestisciInattivita(socket, evento) {
   }, TIMEOUT_INATTIVITA_LOOP_MS); // 20 secondi
 }
 
+
+const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
+io.use(wrap(session({
+  store: new pgSession({
+    conObject: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    },
+    tableName: 'session',
+    createTableIfMissing: false
+  }),
+  secret: process.env.SESSION_SECRET || 'keyboard cat',
+  resave: false,
+  saveUninitialized: true, // importante per inizializzare le nuove sessioni
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,
+    secure: false,
+    sameSite: 'lax'
+  }
+})));
+
+
 io.on('connection', (socket) => {
 
 socket.on('finalizza-prenotazione', ({ evento }) => {
@@ -152,7 +187,6 @@ socket.on('finalizza-prenotazione', ({ evento }) => {
   console.log('🔌 Client connesso via WebSocket');
 
 socket.on('richiesta-blocchi', ({ evento }) => {
-
   // 🔐 Registra l'evento corrente del socket
   socketEvento[socket.id] = evento;
 
@@ -160,19 +194,36 @@ socket.on('richiesta-blocchi', ({ evento }) => {
   if (!utentiConnessiPerEvento[evento]) utentiConnessiPerEvento[evento] = [];
   utentiConnessiPerEvento[evento].push(socket.id);
 
-  // 📍 Calcola posizione
+  // 📍 Calcola posizione e totale
   const posizione = utentiConnessiPerEvento[evento].indexOf(socket.id) + 1;
   const totale = utentiConnessiPerEvento[evento].length;
+  const MAX_UTENTI_INTERATTIVI = 2;
 
-  io.to(socket.id).emit('posizione-utente', { totale, posizione });
-
-  // 🔁 Aggiorna anche tutti gli altri con la nuova posizione
+  // 🔁 Invia a tutti gli utenti connessi all'evento la loro posizione
   utentiConnessiPerEvento[evento].forEach((id, index) => {
-    io.to(id).emit('posizione-utente', {
+    const messaggio = {
       totale,
       posizione: index + 1
-    });
+    };
+
+    io.to(id).emit('posizione-utente', messaggio);
+
+    if (messaggio.posizione > MAX_UTENTI_INTERATTIVI) {
+      console.log(`⏳ Socket ${id} in attesa (#${messaggio.posizione})`);
+    }
   });
+
+  // 📤 Invio overlay coda all'utente corrente
+  const tuaPosizione = posizione;
+  const sessioniAttiveCorrenti = sessioniAttive;
+
+  socket.emit("posizione-coda", {
+    tuaPosizione,
+    sessioniAttive: sessioniAttiveCorrenti
+  });
+
+  // 🔊 Debug client ID
+  console.log('👤 Client ID:', socket.id, '| Evento:', evento);
 
   // ✅ INVIA I POSTI GIÀ BLOCCATI al nuovo utente
   const blocchi = blocchiTemporanei[evento]
@@ -181,8 +232,8 @@ socket.on('richiesta-blocchi', ({ evento }) => {
 
   socket.emit('blocchi-esistenti', { evento, posti: blocchi });
 
-// ⏱️ Avvia il ciclo di inattività con reinserimento in coda
-gestisciInattivita(socket, evento);
+  // ⏱️ Avvia il ciclo di inattività
+  gestisciInattivita(socket, evento);
 });
   
   
@@ -299,8 +350,10 @@ socket.on('libera-posti', ({ evento, posti }) => {
       });
     });
   }
-}
 
+  const totale = utentiConnessiPerEvento[evento]?.length || 0;
+  io.emit('utenti-attivi', totale); // 👈 AGGIUNGI QUESTO
+}
     clearTimeout(timeoutSessione[socket.id]);
     delete timeoutSessione[socket.id];
     delete socketPosti[socket.id];
@@ -465,7 +518,7 @@ app.use(express.static('public'));
 app.use('/eventi', express.static(path.join(__dirname, 'eventi')));
 
 app.get('/stato-coda', (req, res) => {
-  const clientId = req.ip; // oppure usa req.sessionID se Express-session è configurato
+  const clientId = req.sessionID;
   const posizione = clientSessionIds.get(clientId) || 0;
 
   res.json({
@@ -477,7 +530,7 @@ app.get('/stato-coda', (req, res) => {
 
 // ✅ Versione corretta per struttura reale della tabella `eventi`
 app.post('/genera-pdf-e-invia', async (req, res) => {
-  const clientId = req.ip;
+  const clientId = req.sessionID;
   let inCoda = sessioniAttive >= MAX_SESSIONI_SIMULTANEE;
 
   if (inCoda) {

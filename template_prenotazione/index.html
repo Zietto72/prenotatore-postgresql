@@ -8,6 +8,16 @@
 </head>
 <body>
 <header id="intestazioneSpettacolo" style="text-align: center; font-size: 25px; margin-bottom: 0px;"></header>
+
+<!-- 🛑 Blocco visivo per utenti oltre la posizione 2 -->
+<div id="overlayBloccaCoda" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(200,200,200,0.85); justify-content:center; align-items:center; text-align:center;">
+  <div>
+    <h2 style="color: #444;">Attendi il tuo turno</h2>
+    <p id="messaggioCoda" style="font-size: 18px;"></p>
+  </div>
+</div>
+
+
 <!-- 🛡️ Overlay per bloccare interazioni quando una modale è aperta -->
 <div id="overlayBloccaInterazioni" style="
   display: none;
@@ -160,24 +170,7 @@
     OK
   </button>
 </div>
-<!-- 🛑 Blocco visivo per utenti oltre la posizione 2 -->
-<div id="overlayBloccaCoda" style="
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(200, 200, 200, 0.85);
-  z-index: 9999;
-  font-family: sans-serif;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 20px;
-">
-  <div>
-    <h2 style="color: #444;">Attendi il tuo turno</h2>
-    <p id="messaggioCoda" style="font-size: 18px;"></p>
-  </div>
-</div>
+
 
 <!-- Libreria Socket.IO -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
