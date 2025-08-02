@@ -1,8 +1,35 @@
 require('dotenv').config();
+const express = require('express');           // ✅ Aggiunto
+const app = express();                        // ✅ Aggiunto
 const { generaPDF, formattaDataItaliana } = require('./pdfGenerator');
 const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
+
 const session = require('express-session');
+const { createClient } = require('redis');
+const { RedisStore } = require('connect-redis'); // ✅ questa è la forma corretta
+
+const redisClient = createClient({
+  url: process.env.REDIS_URL || 'redis://localhost:6379'
+});
+redisClient.connect().catch(console.error);
+
+const store = new RedisStore({
+  client: redisClient,
+  prefix: "sess:"
+});
+
+app.use(session({
+  store,
+  secret: process.env.SESSION_SECRET || 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
+}));
 
 // 🔧 TIMEOUT CONFIGURABILI (in millisecondi)
 const TIMEOUT_INATTIVITA_LOOP_MS    = 300000;  // tempo max inattività utente senza selezione
@@ -44,9 +71,6 @@ async function eseguiConSlotDisponibile(fn, clientId) {
   });
 }
 
-
-const express = require('express');
-const app = express();
 const http = require('http').createServer(app);
 const { Server } = require('socket.io');
 
@@ -324,18 +348,6 @@ const pool = new Pool({
   connectionTimeoutMillis: 5000 // ✅ (facoltativo) attende max 5s per connettersi
 });
 
-// --- Gestione sessioni con PostgreSQL ---
-const pgSession = require('connect-pg-simple')(session);
-app.use(session({
-  store: new pgSession({
-    pool: pool,
-    tableName: 'session' // verrà creata automaticamente
-  }),
-  secret: 'una-chiave-super-segreta',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: DURATA_SESSIONE_MS } // 1 giorno
-}));
 
 // --- Endpoint di test connessione DB ---
 app.get('/test-db-postgres', async (req, res) => {
@@ -379,8 +391,6 @@ app.get('/api/pdf-exists/:evento/:filename', (req, res) => {
   res.json({ exists: fs.existsSync(filePath) });
 });
 
-// --- Middleware ---
-app.use(bodyParser.json({ limit: '10mb' }));
 
 // 💾 Salva le modifiche della configurazione utente loggato
 app.post('/salva-config-utente', requireLogin, async (req, res) => {
