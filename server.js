@@ -394,7 +394,7 @@ const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-  max: 28, // ✅ aumenta il numero massimo di connessioni contemporanee
+  max: 20, // ✅ aumenta il numero massimo di connessioni contemporanee
   idleTimeoutMillis: 30000, // ✅ (facoltativo) chiude connessioni inattive dopo 30s
   connectionTimeoutMillis: 5000 // ✅ (facoltativo) attende max 5s per connettersi
 });
