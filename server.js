@@ -318,7 +318,10 @@ const QRCode = require('qrcode');
 const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
+  max: 28, // ✅ aumenta il numero massimo di connessioni contemporanee
+  idleTimeoutMillis: 30000, // ✅ (facoltativo) chiude connessioni inattive dopo 30s
+  connectionTimeoutMillis: 5000 // ✅ (facoltativo) attende max 5s per connettersi
 });
 
 // --- Gestione sessioni con PostgreSQL ---
@@ -465,40 +468,38 @@ app.get('/stato-coda', (req, res) => {
 });
 
 // ✅ Versione corretta per struttura reale della tabella `eventi`
-
 app.post('/genera-pdf-e-invia', async (req, res) => {
+  const clientId = req.ip;
+  let inCoda = sessioniAttive >= MAX_SESSIONI_SIMULTANEE;
 
-const clientId = req.ip;
-let inCoda = sessioniAttive >= MAX_SESSIONI_SIMULTANEE;
-if (inCoda) {
-  console.log('⏳ Utente in coda per generazione PDF:', clientId);
-  // 👇 Non rispondere subito, ma metti un flag per il client se serve
-  req.inCoda = true;
-}
+  if (inCoda) {
+    console.log('⏳ Utente in coda per generazione PDF:', clientId);
+    req.inCoda = true;
+  }
 
+// ✅ Risposta immediata al client, con info se è in coda
+res.status(200).json({
+  success: true,
+  ...(inCoda ? { message: "coda" } : {})
+});
+
+  // 🔁 Elabora la prenotazione in background
   try {
-    await eseguiConSlotDisponibile(() => gestisciPrenotazione(req, res), req.ip);
+    await eseguiConSlotDisponibile(() => gestisciPrenotazione(req), clientId);
   } catch (err) {
     console.error('❌ Errore durante eseguiConSlotDisponibile:', err);
-    if (!res.headersSent) {
-      res.status(500).json({ error: 'Errore durante la prenotazione' });
-    }
+    // niente res.json qui: è già stato inviato prima
   }
 });
 
 
-
-
-async function gestisciPrenotazione(req, res) {
-  const nodemailer = require('nodemailer');
-  const sharp = require('sharp');
-  const QRCode = require('qrcode');
-  const { jsPDF } = require('jspdf');
-
+async function gestisciPrenotazione(req) {
+const nodemailer = require('nodemailer');
   try {
-    const { evento, prenotatore, email, telefono, spettatori, totale } = req.body;
-    if (!evento || !prenotatore || !email || !spettatori) {
-      return res.status(400).json({ error: 'Dati mancanti' });
+    const { evento, prenotatore, email, telefono, spettatori, totale, socketId } = req.body;
+    if (!evento || !prenotatore || !email || !spettatori || !socketId) {
+      console.warn('⚠️ Prenotazione ignorata: dati mancanti');
+      return;
     }
 
     const eventFolder = path.join(__dirname, 'eventi', evento);
@@ -506,8 +507,12 @@ async function gestisciPrenotazione(req, res) {
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
     const { rows } = await pool.query('SELECT * FROM eventi WHERE slug = $1', [evento]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Evento non trovato' });
+    if (rows.length === 0) {
+      console.warn(`⚠️ Evento ${evento} non trovato`);
+      return;
+    }
 
+    io.to(socketId).emit('stato-prenotazione', { fase: 'salvataggio-db', percentuale: 20 });
     await pool.query('BEGIN');
 
     const config = rows[0];
@@ -521,7 +526,7 @@ async function gestisciPrenotazione(req, res) {
       note_pdf: notespdf = ''
     } = config;
 
-  const dataFormattata = formattaDataItaliana(showDate, showTime);
+    const dataFormattata = formattaDataItaliana(showDate, showTime);
     const imgEventoUrl = `${baseUrl}/eventi/${evento}/${imgEvento}?t=${Date.now()}`;
     const bookingCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
@@ -532,39 +537,53 @@ async function gestisciPrenotazione(req, res) {
       );
       if (check.rows.length > 0) {
         await pool.query('ROLLBACK');
-        return res.status(409).json({ error: `⚠️ Il posto ${s.posto} è già stato prenotato.` });
+        console.warn(`⚠️ Il posto ${s.posto} è già prenotato`);
+        return;
       }
     }
 
-    for (const s of spettatori) {
-      await pool.query(`
-        INSERT INTO prenotazioni (evento, posto, nome, email, telefono, prenotatore, booking_code)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [evento, s.posto, s.nome, email, telefono, prenotatore, bookingCode]
-      );
+    const values = [];
+    const placeholders = spettatori.map((s, i) => {
+      values.push(evento, s.posto, s.nome, email, telefono, prenotatore, bookingCode);
+      const base = i * 7;
+      return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7})`;
+    }).join(', ');
+
+await pool.query(`
+  INSERT INTO prenotazioni (evento, posto, nome, email, telefono, prenotatore, booking_code)
+  VALUES ${placeholders}
+`, values);
+
+await pool.query('COMMIT'); // 👈 SPOSTATA QUI
+
+io.to(socketId).emit('stato-prenotazione', { fase: 'generazione-pdf', percentuale: 50 });
+
+let pdfLinks;
+try {
+  pdfLinks = await generaPDF({
+        evento,
+        spettatori,
+        eventFolder,
+        outputDir,
+        svgFile,
+        imgEvento,
+        imgIntest,
+        showName,
+        showDate,
+        showTime,
+        prenotatore,
+        email,
+        notespdf,
+        bookingCode
+      });
+
+    } catch (err) {
+      await pool.query('ROLLBACK');
+      console.error('❌ Errore generazione PDF:', err);
+      return;
     }
 
-    const postiPrenotati = spettatori.map(s => s.posto);
-    io.emit('posti-prenotati', { evento, posti: postiPrenotati });
-
-    const pdfLinks = await generaPDF({
-      evento,
-      spettatori,
-      eventFolder,
-      outputDir,
-      svgFile,
-      imgEvento,
-      imgIntest,
-      showName,
-      showDate,
-      showTime, 
-      prenotatore,
-      email,
-      notespdf,
-      bookingCode
-    });
-
-    await pool.query('COMMIT');
+    io.to(socketId).emit('stato-prenotazione', { fase: 'invio-email', percentuale: 80 });
 
     const templatePath = path.join(eventFolder, 'email.html');
     let template = fs.readFileSync(templatePath, 'utf8');
@@ -609,30 +628,31 @@ async function gestisciPrenotazione(req, res) {
       subject: 'Conferma Prenotazione',
       html: htmlEmail
     });
+    await new Promise(res => setTimeout(res, 300)); // simula carico email
 
-    await pool.query(
-      `UPDATE prenotazioni
-       SET email_inviata = TRUE
-       WHERE evento = $1 AND booking_code = $2`,
-      [evento, bookingCode]
-    );
+// ✅ Sicuro: aggiorna tutte le righe con quel booking_code
+await pool.query(`
+  UPDATE prenotazioni
+  SET email_inviata = TRUE
+  WHERE evento = $1 AND booking_code = $2
+`, [evento, bookingCode]);
 
-    res.json({ success: true, pdfs: pdfLinks });
-    
+    io.to(socketId).emit('stato-prenotazione', { fase: 'completata', percentuale: 100 });
+
     for (const [id, ev] of Object.entries(socketEvento)) {
-  if (ev === evento) {
-    const s = io.sockets.sockets.get(id);
-    if (s) s.staPrenotando = false;
-  }
-}
+      if (ev === evento) {
+        const s = io.sockets.sockets.get(id);
+        if (s) s.staPrenotando = false;
+      }
+    }
+
+    console.log(`✅ Prenotazione completata per ${email} (${evento})`);
 
   } catch (err) {
     console.error('❌ Errore /genera-pdf-e-invia:', err);
     await pool.query('ROLLBACK');
-    res.status(500).json({ error: 'Errore interno del server' });
   }
 }
-
 
 
 

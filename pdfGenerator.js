@@ -60,6 +60,7 @@ module.exports = {
     await Promise.all(spettatori.map(s =>
       limit(async () => {
         const safeName = s.nome.trim().replace(/\s+/g, '_');
+        await new Promise(res => setTimeout(res, 800)); // simula carico PDF
         const nomeFile = `${s.posto}_${safeName}.pdf`;
         const filePath = path.join(outputDir, nomeFile);
 

@@ -1,0 +1,84 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 300,
+      "vusers.created": 300,
+      "errors.Cannot read properties of undefined (reading 'toLowerCase')": 300,
+      "vusers.failed": 300
+    },
+    "rates": {},
+    "firstCounterAt": 1754137955296,
+    "lastCounterAt": 1754137985213,
+    "firstMetricAt": 1754137955296,
+    "lastMetricAt": 1754137985213,
+    "period": 1754137980000,
+    "summaries": {},
+    "histograms": {}
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 45,
+        "vusers.created": 45,
+        "errors.Cannot read properties of undefined (reading 'toLowerCase')": 45,
+        "vusers.failed": 45
+      },
+      "rates": {},
+      "firstCounterAt": 1754137955296,
+      "lastCounterAt": 1754137959954,
+      "firstMetricAt": 1754137955296,
+      "lastMetricAt": 1754137959954,
+      "period": "1754137950000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 100,
+        "vusers.created": 100,
+        "errors.Cannot read properties of undefined (reading 'toLowerCase')": 100,
+        "vusers.failed": 100
+      },
+      "rates": {},
+      "firstCounterAt": 1754137960005,
+      "lastCounterAt": 1754137969957,
+      "firstMetricAt": 1754137960005,
+      "lastMetricAt": 1754137969957,
+      "period": "1754137960000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 100,
+        "vusers.created": 100,
+        "errors.Cannot read properties of undefined (reading 'toLowerCase')": 100,
+        "vusers.failed": 100
+      },
+      "rates": {},
+      "firstCounterAt": 1754137970008,
+      "lastCounterAt": 1754137979958,
+      "firstMetricAt": 1754137970008,
+      "lastMetricAt": 1754137979958,
+      "period": "1754137970000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 55,
+        "vusers.created": 55,
+        "errors.Cannot read properties of undefined (reading 'toLowerCase')": 55,
+        "vusers.failed": 55
+      },
+      "rates": {},
+      "firstCounterAt": 1754137980010,
+      "lastCounterAt": 1754137985213,
+      "firstMetricAt": 1754137980010,
+      "lastMetricAt": 1754137985213,
+      "period": "1754137980000",
+      "summaries": {},
+      "histograms": {}
+    }
+  ]
+}

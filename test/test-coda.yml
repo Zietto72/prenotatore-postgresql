@@ -1,0 +1,23 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+  - duration: 60         # 60 secondi
+    arrivalRate: 100      # 100 utenti al secondo × 60s = 6000 richieste
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  processor: "./genera-posti-6000-utenti.js"
+
+scenarios:
+  - name: "Prenotazioni garantite (PDF/Email stress)"
+    flow:
+      - function: generaPosti
+      - post:
+          url: "/genera-pdf-e-invia"
+          json:
+            evento: "2025-07-28_Prova"
+            prenotatore: "{{ nome }}"
+            email: "{{ email }}"
+            telefono: "{{ telefono }}"
+            totale: 60.00
+            spettatori: "{{ spettatori }}"

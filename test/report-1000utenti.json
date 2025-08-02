@@ -1,0 +1,663 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 300,
+      "vusers.created": 300,
+      "http.requests": 300,
+      "http.codes.200": 300,
+      "http.responses": 300,
+      "http.downloaded_bytes": 4800,
+      "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 300,
+      "vusers.failed": 0,
+      "vusers.completed": 300
+    },
+    "rates": {
+      "http.request_rate": 10
+    },
+    "firstCounterAt": 1754138724507,
+    "firstHistogramAt": 1754138724532,
+    "lastCounterAt": 1754138754417,
+    "lastHistogramAt": 1754138754417,
+    "firstMetricAt": 1754138724507,
+    "lastMetricAt": 1754138754417,
+    "period": 1754138750000,
+    "summaries": {
+      "http.response_time": {
+        "min": 0,
+        "max": 8,
+        "count": 300,
+        "mean": 0.4,
+        "p50": 0,
+        "median": 0,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 1,
+        "p999": 2
+      },
+      "http.response_time.2xx": {
+        "min": 0,
+        "max": 8,
+        "count": 300,
+        "mean": 0.4,
+        "p50": 0,
+        "median": 0,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 1,
+        "p999": 2
+      },
+      "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+        "min": 0,
+        "max": 8,
+        "count": 300,
+        "mean": 0.4,
+        "p50": 0,
+        "median": 0,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 1,
+        "p999": 2
+      },
+      "vusers.session_length": {
+        "min": 1.2,
+        "max": 27,
+        "count": 300,
+        "mean": 2.3,
+        "p50": 1.9,
+        "median": 1.9,
+        "p75": 2.1,
+        "p90": 2.9,
+        "p95": 3.6,
+        "p99": 10.3,
+        "p999": 17.3
+      }
+    },
+    "histograms": {
+      "http.response_time": {
+        "min": 0,
+        "max": 8,
+        "count": 300,
+        "mean": 0.4,
+        "p50": 0,
+        "median": 0,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 1,
+        "p999": 2
+      },
+      "http.response_time.2xx": {
+        "min": 0,
+        "max": 8,
+        "count": 300,
+        "mean": 0.4,
+        "p50": 0,
+        "median": 0,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 1,
+        "p999": 2
+      },
+      "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+        "min": 0,
+        "max": 8,
+        "count": 300,
+        "mean": 0.4,
+        "p50": 0,
+        "median": 0,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 1,
+        "p999": 2
+      },
+      "vusers.session_length": {
+        "min": 1.2,
+        "max": 27,
+        "count": 300,
+        "mean": 2.3,
+        "p50": 1.9,
+        "median": 1.9,
+        "p75": 2.1,
+        "p90": 2.9,
+        "p95": 3.6,
+        "p99": 10.3,
+        "p999": 17.3
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 51,
+        "vusers.created": 51,
+        "http.requests": 51,
+        "http.codes.200": 51,
+        "http.responses": 51,
+        "http.downloaded_bytes": 816,
+        "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 51,
+        "vusers.failed": 0,
+        "vusers.completed": 51
+      },
+      "rates": {
+        "http.request_rate": 10
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1754138724507,
+      "firstHistogramAt": 1754138724532,
+      "lastCounterAt": 1754138729508,
+      "lastHistogramAt": 1754138729508,
+      "firstMetricAt": 1754138724507,
+      "lastMetricAt": 1754138729508,
+      "period": "1754138720000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 8,
+          "count": 51,
+          "mean": 0.6,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "http.response_time.2xx": {
+          "min": 0,
+          "max": 8,
+          "count": 51,
+          "mean": 0.6,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 0,
+          "max": 8,
+          "count": 51,
+          "mean": 0.6,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "vusers.session_length": {
+          "min": 1.6,
+          "max": 27,
+          "count": 51,
+          "mean": 4.2,
+          "p50": 2.2,
+          "median": 2.2,
+          "p75": 3.6,
+          "p90": 9.9,
+          "p95": 10.3,
+          "p99": 17.3,
+          "p999": 17.3
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 8,
+          "count": 51,
+          "mean": 0.6,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "http.response_time.2xx": {
+          "min": 0,
+          "max": 8,
+          "count": 51,
+          "mean": 0.6,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 0,
+          "max": 8,
+          "count": 51,
+          "mean": 0.6,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "vusers.session_length": {
+          "min": 1.6,
+          "max": 27,
+          "count": 51,
+          "mean": 4.2,
+          "p50": 2.2,
+          "median": 2.2,
+          "p75": 3.6,
+          "p90": 9.9,
+          "p95": 10.3,
+          "p99": 17.3,
+          "p999": 17.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 100,
+        "vusers.created": 100,
+        "http.requests": 100,
+        "http.codes.200": 100,
+        "http.responses": 100,
+        "http.downloaded_bytes": 1600,
+        "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 100,
+        "vusers.failed": 0,
+        "vusers.completed": 100
+      },
+      "rates": {
+        "http.request_rate": 10
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1754138730006,
+      "firstHistogramAt": 1754138730008,
+      "lastCounterAt": 1754138739508,
+      "lastHistogramAt": 1754138739508,
+      "firstMetricAt": 1754138730006,
+      "lastMetricAt": 1754138739508,
+      "period": "1754138730000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "http.response_time.2xx": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "vusers.session_length": {
+          "min": 1.2,
+          "max": 4.7,
+          "count": 100,
+          "mean": 2.1,
+          "p50": 1.9,
+          "median": 1.9,
+          "p75": 2.2,
+          "p90": 2.8,
+          "p95": 3,
+          "p99": 4,
+          "p999": 4
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "http.response_time.2xx": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "vusers.session_length": {
+          "min": 1.2,
+          "max": 4.7,
+          "count": 100,
+          "mean": 2.1,
+          "p50": 1.9,
+          "median": 1.9,
+          "p75": 2.2,
+          "p90": 2.8,
+          "p95": 3,
+          "p99": 4,
+          "p999": 4
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 100,
+        "vusers.created": 100,
+        "http.requests": 100,
+        "http.codes.200": 100,
+        "http.responses": 100,
+        "http.downloaded_bytes": 1600,
+        "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 100,
+        "vusers.failed": 0,
+        "vusers.completed": 100
+      },
+      "rates": {
+        "http.request_rate": 10
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1754138740006,
+      "firstHistogramAt": 1754138740009,
+      "lastCounterAt": 1754138749508,
+      "lastHistogramAt": 1754138749508,
+      "firstMetricAt": 1754138740006,
+      "lastMetricAt": 1754138749508,
+      "period": "1754138740000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "http.response_time.2xx": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "vusers.session_length": {
+          "min": 1.3,
+          "max": 3.7,
+          "count": 100,
+          "mean": 1.9,
+          "p50": 1.8,
+          "median": 1.8,
+          "p75": 2,
+          "p90": 2.2,
+          "p95": 2.7,
+          "p99": 3.2,
+          "p999": 3.2
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "http.response_time.2xx": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 0,
+          "max": 1,
+          "count": 100,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "vusers.session_length": {
+          "min": 1.3,
+          "max": 3.7,
+          "count": 100,
+          "mean": 1.9,
+          "p50": 1.8,
+          "median": 1.8,
+          "p75": 2,
+          "p90": 2.2,
+          "p95": 2.7,
+          "p99": 3.2,
+          "p999": 3.2
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Prenotazioni garantite (PDF/Email stress)": 49,
+        "vusers.created": 49,
+        "http.requests": 49,
+        "http.codes.200": 49,
+        "http.responses": 49,
+        "http.downloaded_bytes": 784,
+        "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 49,
+        "vusers.failed": 0,
+        "vusers.completed": 49
+      },
+      "rates": {
+        "http.request_rate": 10
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1754138750006,
+      "firstHistogramAt": 1754138750008,
+      "lastCounterAt": 1754138754417,
+      "lastHistogramAt": 1754138754417,
+      "firstMetricAt": 1754138750006,
+      "lastMetricAt": 1754138754417,
+      "period": "1754138750000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 1,
+          "count": 49,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "http.response_time.2xx": {
+          "min": 0,
+          "max": 1,
+          "count": 49,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 0,
+          "max": 1,
+          "count": 49,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "vusers.session_length": {
+          "min": 1.5,
+          "max": 3,
+          "count": 49,
+          "mean": 1.9,
+          "p50": 1.8,
+          "median": 1.8,
+          "p75": 2,
+          "p90": 2.1,
+          "p95": 2.3,
+          "p99": 2.9,
+          "p999": 2.9
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 1,
+          "count": 49,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "http.response_time.2xx": {
+          "min": 0,
+          "max": 1,
+          "count": 49,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 0,
+          "max": 1,
+          "count": 49,
+          "mean": 0.3,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 1
+        },
+        "vusers.session_length": {
+          "min": 1.5,
+          "max": 3,
+          "count": 49,
+          "mean": 1.9,
+          "p50": 1.8,
+          "median": 1.8,
+          "p75": 2,
+          "p90": 2.1,
+          "p95": 2.3,
+          "p99": 2.9,
+          "p999": 2.9
+        }
+      }
+    }
+  ]
+}

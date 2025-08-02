@@ -8,6 +8,15 @@
 </head>
 <body>
 <header id="intestazioneSpettacolo" style="text-align: center; font-size: 25px; margin-bottom: 0px;"></header>
+<!-- 🛡️ Overlay per bloccare interazioni quando una modale è aperta -->
+<div id="overlayBloccaInterazioni" style="
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 800;
+  pointer-events: auto;
+"></div>
 <div id="infoCoda" style="text-align:center;margin-top:1em;font-weight:bold;"></div>
    <div id="svgContainer" style="width: 100%; min-height: 300px; display: block;">
     <!-- L'SVG verrà caricato dinamicamente -->
@@ -35,15 +44,6 @@
 
   <!-- MODALI QUI (prenotatore, spettatori, riepilogo, messaggio) -->
   <!-- ...omessi per brevità, nessuna modifica necessaria in questi -->
-
-
-<!-- Libreria Socket.IO -->
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
-<!-- Il tuo script -->
-<script type="module" src="script.js"></script>
-
-  <!-- Script per aggiornare il prezzo dinamicamente nel box iniziale -->
 
 
 
@@ -118,18 +118,16 @@
     Sto inviando la tua prenotazione<span class="puntini">.</span>
   </div>
 
-  <!-- Barra di avanzamento -->
-  <div style="width: 100%; background-color: #ddd; border-radius: 8px;">
-    <div id="barraInterna" style="
-      width: 0%;
-      height: 12px;
-      background-color: #007bff;
-      border-radius: 8px;
-      transition: width 1s ease-in-out;
-    "></div>
-  </div>
+<!-- Barra di avanzamento -->
+<div style="width: 100%; background-color: #ddd; border-radius: 8px;">
+  <div id="barraInterna" style="
+    width: 0%;
+    height: 12px;
+    background-color: #007bff;
+    border-radius: 8px;
+    transition: width 1s ease-in-out;
+  "></div>
 </div>
-
 
 
 <div id="messaggioConferma" style="
@@ -150,7 +148,7 @@
   <p style="margin-bottom: 20px;">
     ✅ Prenotazione confermata!<br>Controlla tua email per verificare se hai ricevuto i PDF della tua prenotazione.<br>Se non la trovi controlla nella SPAM.
   </p>
-  <button onclick="chiudiMessaggioConferma()" style="
+  <button id="okConfermaBtn" style="
     padding: 10px 20px;
     font-size: 18px;
     background-color: white;
@@ -180,5 +178,12 @@
     <p id="messaggioCoda" style="font-size: 18px;"></p>
   </div>
 </div>
+
+<!-- Libreria Socket.IO -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<!-- Il tuo script -->
+<script type="module" src="script.js"></script>
+
 </body>
 </html>

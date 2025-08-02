@@ -36,13 +36,21 @@
   },
   "homepage": "https://github.com/Zietto72/teatro-booking-2#readme",
   "devDependencies": {
+    "@eslint/css": "^0.10.0",
+    "@eslint/js": "^9.32.0",
+    "@eslint/json": "^0.13.1",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
     "autoprefixer": "^10.4.21",
+    "eslint": "^9.32.0",
+    "globals": "^16.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11",
     "vite": "^6.3.5"
+  },
+  "directories": {
+    "test": "test"
   },
   "description": ""
 }

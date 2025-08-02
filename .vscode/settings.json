@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "pgOptions": {
+                "ssl": {
+                    "rejectUnauthorized": true
+                }
+            },
+            "previewLimit": 50,
+            "server": "dpg-d1tu9m49c44c73cettgg-a.frankfurt-postgres.render.com",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "RenderDB",
+            "database": "booking_prenotazioni",
+            "username": "zietto72",
+            "password": "a3ilkg7NJgJ9gE1CsKy7LVJHRvzbP8DQ"
+        }
+    ]
+}
