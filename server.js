@@ -710,6 +710,7 @@ app.get('/resoconto', async (req, res) => {
   }
 });
 
+/*
 // 2) Ritorna solo i posti occupati
 app.get('/occupiedSeats', async (req, res) => {
   try {
@@ -721,6 +722,7 @@ app.get('/occupiedSeats', async (req, res) => {
     res.status(500).json({ error: 'Errore lettura posti occupati' });
   }
 });
+*/
 
 // 2bis) Ritorna solo i posti occupati di un evento specifico
 app.get('/eventi/:evento/occupied-seats', async (req, res) => {
