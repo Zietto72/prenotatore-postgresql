@@ -6,27 +6,25 @@ const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 
 const session = require('express-session');
-const { createClient } = require('redis');
-const { RedisStore } = require('connect-redis'); // ✅ questa è la forma corretta
-
-const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
-redisClient.connect().catch(console.error);
-
-const store = new RedisStore({
-  client: redisClient,
-  prefix: "sess:"
-});
 
 app.use(session({
-  store,
   secret: process.env.SESSION_SECRET || 'keyboard cat',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000,
-    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000, // 1 giorno
+    secure: false,
+    sameSite: 'lax'
+  }
+}));
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 1 giorno
+    secure: false,
     sameSite: 'lax'
   }
 }));
