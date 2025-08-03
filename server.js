@@ -30,6 +30,7 @@ const expressSession = session({
   }
 });
 
+app.use(express.json());
 app.use(expressSession);
 
 // 🔧 TIMEOUT CONFIGURABILI (in millisecondi)
@@ -396,7 +397,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
   max: 20, // ✅ aumenta il numero massimo di connessioni contemporanee
   idleTimeoutMillis: 30000, // ✅ (facoltativo) chiude connessioni inattive dopo 30s
-  connectionTimeoutMillis: 5000 // ✅ (facoltativo) attende max 5s per connettersi
+  connectionTimeoutMillis: 15000 // ✅ (facoltativo) attende max 15s per connettersi
 });
 
 
@@ -562,6 +563,7 @@ async function gestisciPrenotazione(req) {
     const { evento, prenotatore, email, telefono, spettatori, totale, socketId } = req.body;
     if (!evento || !prenotatore || !email || !spettatori || !socketId) {
       console.warn('⚠️ Prenotazione ignorata: dati mancanti');
+      console.warn('⚠️ Dati ricevuti:', req.body);
       return;
     }
 
