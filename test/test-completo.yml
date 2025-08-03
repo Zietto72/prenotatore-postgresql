@@ -1,0 +1,23 @@
+config:
+  target: "https://prenotatore-postgresql.onrender.com"
+  phases:
+    - duration: 20            # 20 secondi
+      arrivalRate: 20         # 20 utenti/s × 20s = 400 utenti totali
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  processor: "./genera-dati-completi.js"
+
+scenarios:
+  - name: "Test completo 3 eventi × 400 utenti × 4 posti"
+    flow:
+      - function: generaDatiUtente
+      - post:
+          url: "/genera-pdf-e-invia"
+          json:
+            evento: "{{ evento }}"
+            prenotatore: "{{ nome }}"
+            email: "{{ email }}"
+            telefono: "{{ telefono }}"
+            totale: 30.00
+            spettatori: "{{ spettatori }}"

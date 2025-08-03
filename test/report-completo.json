@@ -1,0 +1,531 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.Test completo 3 eventi × 400 utenti × 4 posti": 400,
+      "vusers.created": 400,
+      "http.requests": 400,
+      "http.codes.200": 400,
+      "http.responses": 400,
+      "http.downloaded_bytes": 7960,
+      "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 400,
+      "vusers.failed": 0,
+      "vusers.completed": 400
+    },
+    "rates": {
+      "http.request_rate": 20
+    },
+    "firstCounterAt": 1754229418815,
+    "firstHistogramAt": 1754229419356,
+    "lastCounterAt": 1754229439190,
+    "lastHistogramAt": 1754229439190,
+    "firstMetricAt": 1754229418815,
+    "lastMetricAt": 1754229439190,
+    "period": 1754229430000,
+    "summaries": {
+      "http.response_time": {
+        "min": 42,
+        "max": 565,
+        "count": 400,
+        "mean": 79,
+        "p50": 58.6,
+        "median": 58.6,
+        "p75": 71.5,
+        "p90": 117.9,
+        "p95": 175.9,
+        "p99": 487.9,
+        "p999": 561.2
+      },
+      "http.response_time.2xx": {
+        "min": 42,
+        "max": 565,
+        "count": 400,
+        "mean": 79,
+        "p50": 58.6,
+        "median": 58.6,
+        "p75": 71.5,
+        "p90": 117.9,
+        "p95": 175.9,
+        "p99": 487.9,
+        "p999": 561.2
+      },
+      "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+        "min": 42,
+        "max": 565,
+        "count": 400,
+        "mean": 79,
+        "p50": 58.6,
+        "median": 58.6,
+        "p75": 71.5,
+        "p90": 117.9,
+        "p95": 175.9,
+        "p99": 487.9,
+        "p999": 561.2
+      },
+      "vusers.session_length": {
+        "min": 85.4,
+        "max": 1094.2,
+        "count": 400,
+        "mean": 148.2,
+        "p50": 111.1,
+        "median": 111.1,
+        "p75": 149.9,
+        "p90": 232.8,
+        "p95": 340.4,
+        "p99": 539.2,
+        "p999": 889.1
+      }
+    },
+    "histograms": {
+      "http.response_time": {
+        "min": 42,
+        "max": 565,
+        "count": 400,
+        "mean": 79,
+        "p50": 58.6,
+        "median": 58.6,
+        "p75": 71.5,
+        "p90": 117.9,
+        "p95": 175.9,
+        "p99": 487.9,
+        "p999": 561.2
+      },
+      "http.response_time.2xx": {
+        "min": 42,
+        "max": 565,
+        "count": 400,
+        "mean": 79,
+        "p50": 58.6,
+        "median": 58.6,
+        "p75": 71.5,
+        "p90": 117.9,
+        "p95": 175.9,
+        "p99": 487.9,
+        "p999": 561.2
+      },
+      "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+        "min": 42,
+        "max": 565,
+        "count": 400,
+        "mean": 79,
+        "p50": 58.6,
+        "median": 58.6,
+        "p75": 71.5,
+        "p90": 117.9,
+        "p95": 175.9,
+        "p99": 487.9,
+        "p999": 561.2
+      },
+      "vusers.session_length": {
+        "min": 85.4,
+        "max": 1094.2,
+        "count": 400,
+        "mean": 148.2,
+        "p50": 111.1,
+        "median": 111.1,
+        "p75": 149.9,
+        "p90": 232.8,
+        "p95": 340.4,
+        "p99": 539.2,
+        "p999": 889.1
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.Test completo 3 eventi × 400 utenti × 4 posti": 22,
+        "vusers.created": 22,
+        "http.requests": 22,
+        "http.codes.200": 20,
+        "http.responses": 20,
+        "http.downloaded_bytes": 360,
+        "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 17,
+        "vusers.failed": 0,
+        "vusers.completed": 17
+      },
+      "rates": {
+        "http.request_rate": 22
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1754229418815,
+      "firstHistogramAt": 1754229419356,
+      "lastCounterAt": 1754229419999,
+      "lastHistogramAt": 1754229419999,
+      "firstMetricAt": 1754229418815,
+      "lastMetricAt": 1754229419999,
+      "period": "1754229410000",
+      "summaries": {
+        "http.response_time": {
+          "min": 57,
+          "max": 565,
+          "count": 20,
+          "mean": 210.7,
+          "p50": 92.8,
+          "median": 92.8,
+          "p75": 415.8,
+          "p90": 497.8,
+          "p95": 561.2,
+          "p99": 561.2,
+          "p999": 561.2
+        },
+        "http.response_time.2xx": {
+          "min": 57,
+          "max": 565,
+          "count": 20,
+          "mean": 210.7,
+          "p50": 92.8,
+          "median": 92.8,
+          "p75": 415.8,
+          "p90": 497.8,
+          "p95": 561.2,
+          "p99": 561.2,
+          "p999": 561.2
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 57,
+          "max": 497,
+          "count": 17,
+          "mean": 177.9,
+          "p50": 92.8,
+          "median": 92.8,
+          "p75": 183.1,
+          "p90": 415.8,
+          "p95": 487.9,
+          "p99": 487.9,
+          "p999": 487.9
+        },
+        "vusers.session_length": {
+          "min": 112.4,
+          "max": 546.3,
+          "count": 17,
+          "mean": 251.6,
+          "p50": 179.5,
+          "median": 179.5,
+          "p75": 237.5,
+          "p90": 539.2,
+          "p95": 539.2,
+          "p99": 539.2,
+          "p999": 539.2
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 57,
+          "max": 565,
+          "count": 20,
+          "mean": 210.7,
+          "p50": 92.8,
+          "median": 92.8,
+          "p75": 415.8,
+          "p90": 497.8,
+          "p95": 561.2,
+          "p99": 561.2,
+          "p999": 561.2
+        },
+        "http.response_time.2xx": {
+          "min": 57,
+          "max": 565,
+          "count": 20,
+          "mean": 210.7,
+          "p50": 92.8,
+          "median": 92.8,
+          "p75": 415.8,
+          "p90": 497.8,
+          "p95": 561.2,
+          "p99": 561.2,
+          "p999": 561.2
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 57,
+          "max": 497,
+          "count": 17,
+          "mean": 177.9,
+          "p50": 92.8,
+          "median": 92.8,
+          "p75": 183.1,
+          "p90": 415.8,
+          "p95": 487.9,
+          "p99": 487.9,
+          "p999": 487.9
+        },
+        "vusers.session_length": {
+          "min": 112.4,
+          "max": 546.3,
+          "count": 17,
+          "mean": 251.6,
+          "p50": 179.5,
+          "median": 179.5,
+          "p75": 237.5,
+          "p90": 539.2,
+          "p95": 539.2,
+          "p99": 539.2,
+          "p999": 539.2
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Test completo 3 eventi × 400 utenti × 4 posti": 200,
+        "vusers.created": 200,
+        "http.requests": 200,
+        "http.codes.200": 197,
+        "http.responses": 197,
+        "http.downloaded_bytes": 3940,
+        "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 200,
+        "vusers.failed": 0,
+        "vusers.completed": 200
+      },
+      "rates": {
+        "http.request_rate": 20
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1754229420000,
+      "firstHistogramAt": 1754229420000,
+      "lastCounterAt": 1754229429920,
+      "lastHistogramAt": 1754229429920,
+      "firstMetricAt": 1754229420000,
+      "lastMetricAt": 1754229429920,
+      "period": "1754229420000",
+      "summaries": {
+        "http.response_time": {
+          "min": 43,
+          "max": 289,
+          "count": 197,
+          "mean": 75,
+          "p50": 61,
+          "median": 61,
+          "p75": 74.4,
+          "p90": 111.1,
+          "p95": 159.2,
+          "p99": 267.8,
+          "p999": 273.2
+        },
+        "http.response_time.2xx": {
+          "min": 43,
+          "max": 289,
+          "count": 197,
+          "mean": 75,
+          "p50": 61,
+          "median": 61,
+          "p75": 74.4,
+          "p90": 111.1,
+          "p95": 159.2,
+          "p99": 267.8,
+          "p999": 273.2
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 43,
+          "max": 565,
+          "count": 200,
+          "mean": 79.8,
+          "p50": 61,
+          "median": 61,
+          "p75": 74.4,
+          "p90": 113.3,
+          "p95": 179.5,
+          "p99": 290.1,
+          "p999": 561.2
+        },
+        "vusers.session_length": {
+          "min": 90.6,
+          "max": 1094.2,
+          "count": 200,
+          "mean": 157,
+          "p50": 115.6,
+          "median": 115.6,
+          "p75": 165.7,
+          "p90": 232.8,
+          "p95": 333.7,
+          "p99": 788.5,
+          "p999": 889.1
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 43,
+          "max": 289,
+          "count": 197,
+          "mean": 75,
+          "p50": 61,
+          "median": 61,
+          "p75": 74.4,
+          "p90": 111.1,
+          "p95": 159.2,
+          "p99": 267.8,
+          "p999": 273.2
+        },
+        "http.response_time.2xx": {
+          "min": 43,
+          "max": 289,
+          "count": 197,
+          "mean": 75,
+          "p50": 61,
+          "median": 61,
+          "p75": 74.4,
+          "p90": 111.1,
+          "p95": 159.2,
+          "p99": 267.8,
+          "p999": 273.2
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 43,
+          "max": 565,
+          "count": 200,
+          "mean": 79.8,
+          "p50": 61,
+          "median": 61,
+          "p75": 74.4,
+          "p90": 113.3,
+          "p95": 179.5,
+          "p99": 290.1,
+          "p999": 561.2
+        },
+        "vusers.session_length": {
+          "min": 90.6,
+          "max": 1094.2,
+          "count": 200,
+          "mean": 157,
+          "p50": 115.6,
+          "median": 115.6,
+          "p75": 165.7,
+          "p90": 232.8,
+          "p95": 333.7,
+          "p99": 788.5,
+          "p999": 889.1
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Test completo 3 eventi × 400 utenti × 4 posti": 178,
+        "vusers.created": 178,
+        "http.requests": 178,
+        "http.codes.200": 183,
+        "http.responses": 183,
+        "http.downloaded_bytes": 3660,
+        "plugins.metrics-by-endpoint./genera-pdf-e-invia.codes.200": 183,
+        "vusers.failed": 0,
+        "vusers.completed": 183
+      },
+      "rates": {
+        "http.request_rate": 20
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1754229430003,
+      "firstHistogramAt": 1754229430003,
+      "lastCounterAt": 1754229439190,
+      "lastHistogramAt": 1754229439190,
+      "firstMetricAt": 1754229430003,
+      "lastMetricAt": 1754229439190,
+      "period": "1754229430000",
+      "summaries": {
+        "http.response_time": {
+          "min": 42,
+          "max": 497,
+          "count": 183,
+          "mean": 68.9,
+          "p50": 56.3,
+          "median": 56.3,
+          "p75": 64.7,
+          "p90": 94.6,
+          "p95": 133,
+          "p99": 273.2,
+          "p999": 295.9
+        },
+        "http.response_time.2xx": {
+          "min": 42,
+          "max": 497,
+          "count": 183,
+          "mean": 68.9,
+          "p50": 56.3,
+          "median": 56.3,
+          "p75": 64.7,
+          "p90": 94.6,
+          "p95": 133,
+          "p99": 273.2,
+          "p999": 295.9
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 42,
+          "max": 497,
+          "count": 183,
+          "mean": 68.9,
+          "p50": 56.3,
+          "median": 56.3,
+          "p75": 64.7,
+          "p90": 94.6,
+          "p95": 133,
+          "p99": 273.2,
+          "p999": 295.9
+        },
+        "vusers.session_length": {
+          "min": 85.4,
+          "max": 544.2,
+          "count": 183,
+          "mean": 129,
+          "p50": 104.6,
+          "median": 104.6,
+          "p75": 115.6,
+          "p90": 179.5,
+          "p95": 301.9,
+          "p99": 407.5,
+          "p999": 441.5
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 42,
+          "max": 497,
+          "count": 183,
+          "mean": 68.9,
+          "p50": 56.3,
+          "median": 56.3,
+          "p75": 64.7,
+          "p90": 94.6,
+          "p95": 133,
+          "p99": 273.2,
+          "p999": 295.9
+        },
+        "http.response_time.2xx": {
+          "min": 42,
+          "max": 497,
+          "count": 183,
+          "mean": 68.9,
+          "p50": 56.3,
+          "median": 56.3,
+          "p75": 64.7,
+          "p90": 94.6,
+          "p95": 133,
+          "p99": 273.2,
+          "p999": 295.9
+        },
+        "plugins.metrics-by-endpoint.response_time./genera-pdf-e-invia": {
+          "min": 42,
+          "max": 497,
+          "count": 183,
+          "mean": 68.9,
+          "p50": 56.3,
+          "median": 56.3,
+          "p75": 64.7,
+          "p90": 94.6,
+          "p95": 133,
+          "p99": 273.2,
+          "p999": 295.9
+        },
+        "vusers.session_length": {
+          "min": 85.4,
+          "max": 544.2,
+          "count": 183,
+          "mean": 129,
+          "p50": 104.6,
+          "median": 104.6,
+          "p75": 115.6,
+          "p90": 179.5,
+          "p95": 301.9,
+          "p99": 407.5,
+          "p999": 441.5
+        }
+      }
+    }
+  ]
+}

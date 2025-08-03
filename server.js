@@ -555,7 +555,9 @@ res.status(200).json({
 
 
 async function gestisciPrenotazione(req) {
-const nodemailer = require('nodemailer');
+  const nodemailer = require('nodemailer');
+  const client = await pool.connect(); // 🔑 connessione dedicata
+
   try {
     const { evento, prenotatore, email, telefono, spettatori, totale, socketId } = req.body;
     if (!evento || !prenotatore || !email || !spettatori || !socketId) {
@@ -567,14 +569,15 @@ const nodemailer = require('nodemailer');
     const outputDir = path.join(eventFolder, 'PDF');
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-    const { rows } = await pool.query('SELECT * FROM eventi WHERE slug = $1', [evento]);
+    const { rows } = await client.query('SELECT * FROM eventi WHERE slug = $1', [evento]);
     if (rows.length === 0) {
       console.warn(`⚠️ Evento ${evento} non trovato`);
       return;
     }
 
     io.to(socketId).emit('stato-prenotazione', { fase: 'salvataggio-db', percentuale: 20 });
-    await pool.query('BEGIN');
+
+    await client.query('BEGIN');
 
     const config = rows[0];
     const {
@@ -592,12 +595,12 @@ const nodemailer = require('nodemailer');
     const bookingCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
     for (const s of spettatori) {
-      const check = await pool.query(
+      const check = await client.query(
         'SELECT 1 FROM prenotazioni WHERE evento = $1 AND posto = $2',
         [evento, s.posto]
       );
       if (check.rows.length > 0) {
-        await pool.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.warn(`⚠️ Il posto ${s.posto} è già prenotato`);
         return;
       }
@@ -610,18 +613,18 @@ const nodemailer = require('nodemailer');
       return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7})`;
     }).join(', ');
 
-await pool.query(`
-  INSERT INTO prenotazioni (evento, posto, nome, email, telefono, prenotatore, booking_code)
-  VALUES ${placeholders}
-`, values);
+    await client.query(`
+      INSERT INTO prenotazioni (evento, posto, nome, email, telefono, prenotatore, booking_code)
+      VALUES ${placeholders}
+    `, values);
 
-await pool.query('COMMIT'); // 👈 SPOSTATA QUI
+    await client.query('COMMIT'); // ✅ chiusura transazione
 
-io.to(socketId).emit('stato-prenotazione', { fase: 'generazione-pdf', percentuale: 50 });
+    io.to(socketId).emit('stato-prenotazione', { fase: 'generazione-pdf', percentuale: 50 });
 
-let pdfLinks;
-try {
-  pdfLinks = await generaPDF({
+    let pdfLinks;
+    try {
+      pdfLinks = await generaPDF({
         evento,
         spettatori,
         eventFolder,
@@ -637,9 +640,7 @@ try {
         notespdf,
         bookingCode
       });
-
     } catch (err) {
-      await pool.query('ROLLBACK');
       console.error('❌ Errore generazione PDF:', err);
       return;
     }
@@ -678,8 +679,8 @@ try {
       port: 465,
       secure: true,
       auth: {
-        user: 'AKIA4WFX5S42LKQTJ367',
-        pass: 'BJ0gXwB2brrL/H0KIHC4dzgvl9WTb0NQ+jpjuHGXwV4t'
+        user: process.env.AWS_SES_USER,
+        pass: process.env.AWS_SES_PASS
       }
     });
 
@@ -689,14 +690,20 @@ try {
       subject: 'Conferma Prenotazione',
       html: htmlEmail
     });
-    await new Promise(res => setTimeout(res, 300)); // simula carico email
 
-// ✅ Sicuro: aggiorna tutte le righe con quel booking_code
-await pool.query(`
-  UPDATE prenotazioni
-  SET email_inviata = TRUE
-  WHERE evento = $1 AND booking_code = $2
-`, [evento, bookingCode]);
+    await new Promise(res => setTimeout(res, 300)); // simula carico
+
+    // ✅ nuova connessione per update
+    const updateClient = await pool.connect();
+    try {
+      await updateClient.query(`
+        UPDATE prenotazioni
+        SET email_inviata = TRUE
+        WHERE evento = $1 AND booking_code = $2
+      `, [evento, bookingCode]);
+    } finally {
+      updateClient.release(); // 🔴 rilascio anche di questa connessione
+    }
 
     io.to(socketId).emit('stato-prenotazione', { fase: 'completata', percentuale: 100 });
 
@@ -711,10 +718,12 @@ await pool.query(`
 
   } catch (err) {
     console.error('❌ Errore /genera-pdf-e-invia:', err);
-    await pool.query('ROLLBACK');
+    try {
+      await client.query('ROLLBACK');
+    } catch (_) {}
+    client.release(); // rilascio in caso di errore
   }
 }
-
 
 
 // ✅ Verifica se i posti selezionati sono già occupati

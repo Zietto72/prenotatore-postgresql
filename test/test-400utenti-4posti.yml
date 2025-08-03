@@ -1,17 +1,17 @@
 config:
-  target: "https://prenotatore-postgresql.onrender.com/"
+  target: "https://prenotatore-postgresql.onrender.com"
   phases:
-    - duration: 50           # 50 secondi
-      arrivalRate: 200       # 200 utenti al secondo × 50 = 10.000
+    - duration: 20
+      arrivalRate: 20        # 20 utenti/s × 20s = 400 utenti
   defaults:
     headers:
       Content-Type: "application/json"
-  processor: "./genera-posti-6000-utenti.js"  # Va bene se genera input dinamici
+  processor: "./genera-4-posti.js"
 
 scenarios:
-  - name: "Stress test 10.000 prenotazioni"
+  - name: "400 utenti con 4 posti ciascuno"
     flow:
-      - function: generaPosti
+      - function: genera4Posti
       - post:
           url: "/genera-pdf-e-invia"
           json:
@@ -19,5 +19,5 @@ scenarios:
             prenotatore: "{{ nome }}"
             email: "{{ email }}"
             telefono: "{{ telefono }}"
-            totale: 60.00
+            totale: 30.00
             spettatori: "{{ spettatori }}"
